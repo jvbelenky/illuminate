@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 import streamlit as st
 from guv_calcs.calc_zone import CalcZone, CalcPlane, CalcVol
-
+import requests
 
 def clear_lamp_cache(room):
     if st.session_state.selected_lamp_id:
@@ -339,7 +339,17 @@ def _place_points(grid_size, num_points):
 def get_ies_files():
     """placeholder until I get to grabbing the ies files off the website"""
     # set lamps
-    root = Path("./ies_files")
-    p = root.glob("**/*")
-    ies_files = [x for x in p if x.is_file() and x.suffix == ".ies"]
-    return ies_files
+    # root = Path("./ies_files")
+    # p = root.glob("**/*")
+    # ies_files = [x for x in p if x.is_file() and x.suffix == ".ies"]
+    # return ies_files
+
+    BASE_URL = 'https://assay.osluv.org/static/assay/'
+
+    index_data = requests.get(f'{BASE_URL}/index.json').json()
+
+    output = {}
+    for guid, data in index_data.items():
+        output[data['reporting_name']] =  f'{BASE_URL}/{data["slug"]}.ies'
+
+    return output

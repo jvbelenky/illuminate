@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+import requests
 import plotly.graph_objs as go
 from guv_calcs.room import Room
 from guv_calcs.lamp import Lamp
@@ -76,9 +77,10 @@ if "fig" not in st.session_state:
     )
 fig = st.session_state.fig
 
-ies_files = [None] + get_ies_files() + ["Select local file..."]
 # Set up overall layout
 left_pane, right_pane = st.columns([4, 1])
+
+vendored_lamps = get_ies_files() # (name, URL)
 
 with st.sidebar:
     # Lamp editing sidebar
@@ -97,23 +99,30 @@ with st.sidebar:
             args=[selected_lamp],
         )
 
+        SELECT_LOCAL = "Select local file..."
+
         # File input
-        options = [None] + get_ies_files() + ["Select local file..."]
+        options = [None] + list(vendored_lamps.keys()) + [SELECT_LOCAL]
+        
         fname_idx = options.index(selected_lamp.filename)
         fname = st.selectbox(
-            "Select file", options, key=f"file_{selected_lamp.lamp_id}", index=fname_idx
+            "Select lamp", options, key=f"file_{selected_lamp.lamp_id}", index=fname_idx
         )
 
-        if fname == "Select local file...":
+        fdata = None
+
+        if fname == SELECT_LOCAL:
             uploaded_file = st.file_uploader(
                 "Upload a file", key=f"upload_{selected_lamp.lamp_id}"
             )
             if uploaded_file is not None:
-                fname = uploaded_file.read()
+                fdata = uploaded_file.read()
 
-        if fname not in [None, "Select local file..."]:
+        if fname not in [None, SELECT_LOCAL]:
             if fname != selected_lamp.filename:
-                selected_lamp.reload(fname)
+                if fdata is None:
+                    fdata = requests.get(vendored_lamps[fname]).content
+                selected_lamp.reload(fname, fdata)
             iesfig, iesax = selected_lamp.plot_ies()
             st.pyplot(iesfig, use_container_width=True)
 

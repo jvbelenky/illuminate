@@ -19,6 +19,7 @@ class Lamp:
         lamp_id,
         name=None,
         filename=None,
+        filedata=None,
         x=None,
         y=None,
         z=None,
@@ -47,8 +48,9 @@ class Lamp:
 
         # load file and coordinates
         self.filename = filename
+        self.filedata = filedata
         self.intensity_units = "mW/Sr" if intensity_units is None else intensity_units
-        if self.filename is not None:
+        if self.filedata is not None:
             self._load()
             self._orient()
 
@@ -56,7 +58,7 @@ class Lamp:
         """
         Loads lamp data from an IES file and initializes photometric properties.
         """
-        self.lampdict = read_ies_data(self.filename)
+        self.lampdict = read_ies_data(self.filedata)
         self.valdict = self.lampdict["full_vals"]
         self.thetas = self.valdict["thetas"]
         self.phis = self.valdict["phis"]
@@ -128,9 +130,11 @@ class Lamp:
         self.total_optical_power = total_optical_power(self.interpdict)
         return self.total_optical_power
 
-    def reload(self, filename):
+    def reload(self, filename, filedata):
         """replace the ies file without erasing any position/rotation/aiming information"""
         self.filename = filename
+        self.filedata = filedata
+
         self._load()
         self._orient()
 
@@ -214,7 +218,7 @@ class Lamp:
 
     def plot_ies(self, title="", figsize=(6.4, 4.8)):
         """standard polar plot of an ies file"""
-        fig, ax = plot_ies(self.filename, title=title, figsize=figsize)
+        fig, ax = plot_ies(self.filedata, title=title, figsize=figsize)
         return fig, ax
 
     def plot_3d(
