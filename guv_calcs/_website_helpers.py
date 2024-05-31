@@ -110,7 +110,7 @@ def print_standard_zones(room):
     # st.write(references)
 
 
-def add_new_lamp(room):
+def add_new_lamp(room, interactive=True):
     # initialize lamp
     new_lamp_idx = len(room.lamps) + 1
     # set initial position
@@ -123,8 +123,11 @@ def add_new_lamp(room):
     # Automatically select for editing
     ss.editing = "lamps"
     ss.selected_lamp_id = new_lamp.lamp_id
-    clear_zone_cache(room)
-    st.rerun()
+    if interactive:
+        clear_zone_cache(room)
+        st.rerun()
+    else:
+        return new_lamp_idx
 
 
 def add_new_zone(room):

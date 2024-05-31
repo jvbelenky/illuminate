@@ -52,10 +52,28 @@ ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 
+if "lampfile_options" not in st.session_state:
+    ies_files = get_local_ies_files()  # local files for testing
+    vendored_lamps = get_ies_files()  # files from assays.osluv.org
+    ss.vendored_lamps = vendored_lamps
+    options = [None] + list(vendored_lamps.keys()) + [SELECT_LOCAL]
+    ss.lampfile_options = options
+
 # Check and initialize session state variables
-if "room" not in ss:
+if "room" not in st.session_state:
     ss.room = Room()
     ss.room = add_standard_zones(ss.room)
+    
+    preview_lamp = st.query_params.get("preview_lamp")
+    if preview_lamp:
+        lamp_id = add_new_lamp(ss.room, interactive=False)
+        lamp = ss.room.lamps[f'Lamp{lamp_id}']
+        fdata = requests.get(ss.vendored_lamps[preview_lamp]).content
+        lamp.reload(filename=preview_lamp, filedata=fdata)
+        ss.room.calculate()
+        ss.editing = "results"
+        st.rerun()
+
 room = ss.room
 
 if "editing" not in ss:
@@ -67,15 +85,8 @@ if "selected_lamp_id" not in ss:
 if "selected_zone_id" not in ss:
     ss.selected_zone_id = None  # use None when no lamp is selected
 
-if "lampfile_options" not in ss:
-    ies_files = get_local_ies_files()  # local files for testing
-    vendored_lamps = get_ies_files()  # files from assays.osluv.org
-    ss.vendored_lamps = vendored_lamps
-    options = [None] + list(vendored_lamps.keys()) + [SELECT_LOCAL]
-    ss.lampfile_options = options
-
-if "uploaded_files" not in ss:
-    ss.uploaded_files = {}
+if "uploaded_files" not in st.session_state:
+    st.session_state.uploaded_files = {}
 
 if "fig" not in ss:
     ss.fig = go.Figure()
