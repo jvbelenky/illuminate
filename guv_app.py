@@ -52,7 +52,7 @@ ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 
-if "lampfile_options" not in st.session_state:
+if "lampfile_options" not in ss:
     ies_files = get_local_ies_files()  # local files for testing
     vendored_lamps = get_ies_files()  # files from assays.osluv.org
     ss.vendored_lamps = vendored_lamps
@@ -60,7 +60,7 @@ if "lampfile_options" not in st.session_state:
     ss.lampfile_options = options
 
 # Check and initialize session state variables
-if "room" not in st.session_state:
+if "room" not in ss:
     ss.room = Room()
     ss.room = add_standard_zones(ss.room)
     
@@ -85,8 +85,8 @@ if "selected_lamp_id" not in ss:
 if "selected_zone_id" not in ss:
     ss.selected_zone_id = None  # use None when no lamp is selected
 
-if "uploaded_files" not in st.session_state:
-    st.session_state.uploaded_files = {}
+if "uploaded_files" not in ss:
+    ss.uploaded_files = {}
 
 if "fig" not in ss:
     ss.fig = go.Figure()
