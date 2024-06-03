@@ -128,5 +128,6 @@ with right_pane:
     fig.layout.scene.aspectratio.y *= ar_scale
     fig.layout.scene.aspectratio.z *= ar_scale
 
+    fig.layout.scene.xaxis.range = fig.layout.scene.xaxis.range[::-1]
 
     st.plotly_chart(fig, use_container_width=True, height=750)
