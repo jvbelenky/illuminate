@@ -115,9 +115,6 @@ with left_pane:
 
 # plot
 with right_pane:
-
-    
-
     if ss.selected_lamp_id:
         select_id = ss.selected_lamp_id
     elif ss.selected_zone_id:
@@ -125,4 +122,11 @@ with right_pane:
     else:
         select_id = None
     fig = room.plotly(fig=fig, select_id=select_id)
+
+    ar_scale = 0.9 if (ss.editing != "results") else 0.5
+    fig.layout.scene.aspectratio.x *= ar_scale
+    fig.layout.scene.aspectratio.y *= ar_scale
+    fig.layout.scene.aspectratio.z *= ar_scale
+
+
     st.plotly_chart(fig, use_container_width=True, height=750)

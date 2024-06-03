@@ -54,18 +54,18 @@ def top_ribbon(room):
 
 def lamp_select(room, col=None):
     """drop down menu for selecting luminaires"""
-    lamp_names = {"Select luminaire": None}
+    lamp_names = {"Select luminaire to edit": None}
     for lamp_id, lamp in room.lamps.items():
         lamp_names[lamp.name] = lamp_id
     lamp_sel_idx = list(lamp_names.values()).index(ss.selected_lamp_id)
 
     if col is None:
         selected_lamp_name = st.selectbox(
-            "Select luminaire", options=list(lamp_names), index=lamp_sel_idx, label_visibility="collapsed",
+            "Select luminaire to edit", options=list(lamp_names), index=lamp_sel_idx, label_visibility="collapsed",
         )
     else:
         selected_lamp_name = col.selectbox(
-            "Select luminaire", options=list(lamp_names), index=lamp_sel_idx, label_visibility="collapsed",
+            "Select luminaire to edit", options=list(lamp_names), index=lamp_sel_idx, label_visibility="collapsed",
         )
     selected_lamp_id = lamp_names[selected_lamp_name]
     if ss.selected_lamp_id != selected_lamp_id:
@@ -84,17 +84,17 @@ def lamp_select(room, col=None):
 
 def zone_select(room, col=None):
     """drop down menu for selecting calc zones"""
-    zone_names = {"Select calc zone": None}
+    zone_names = {"Select calc zone to edit": None}
     for zone_id, zone in room.calc_zones.items():
         zone_names[zone.name] = zone_id
     zone_sel_idx = list(zone_names.values()).index(ss.selected_zone_id)
     if col is None:
         selected_zone_name = st.selectbox(
-            "Select calculation zone", options=list(zone_names), index=zone_sel_idx, label_visibility="collapsed",
+            "Select calculation zone to edit", options=list(zone_names), index=zone_sel_idx, label_visibility="collapsed",
         )
     else:
         selected_zone_name = col.selectbox(
-            "Select calculation zone", options=list(zone_names), index=zone_sel_idx, label_visibility="collapsed",
+            "Select calculation zone to edit", options=list(zone_names), index=zone_sel_idx, label_visibility="collapsed",
         )
     selected_zone_id = zone_names[selected_zone_name]
     if ss.selected_zone_id != selected_zone_id:

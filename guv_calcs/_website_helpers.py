@@ -95,14 +95,22 @@ def print_standard_zones(room):
         eye_str = ":" + color + "[" + str(eye_max) + "] " + eye.units
     else:
         eye_str = None
-    st.write("Max Skin Dose (8 Hours): ", skin_str)
 
-    if skin.values is not None:
-        st.pyplot(skin.plot_plane(), **{"transparent": "True"})
+    col_1, col_2 = st.columns(2)
 
-    st.write("Max Eye Dose (8 Hours): ", eye_str)
-    if eye.values is not None:
-        st.pyplot(eye.plot_plane(), **{"transparent": "True"})
+    with col_1:
+        st.write("Max Skin Dose (8 Hours): ", skin_str)
+        if skin.values is not None:
+            st.pyplot(skin.plot_plane(), **{"transparent": "True"})
+        else:
+            st.write("(Not available)")
+
+    with col_2:
+        st.write("Max Eye Dose (8 Hours): ", eye_str)
+        if eye.values is not None:
+            st.pyplot(eye.plot_plane(), **{"transparent": "True"})
+        else:
+            st.write("(Not available)")
 
     # st.subheader("References", divider="grey")
     # st.write(references)
