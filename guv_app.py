@@ -123,7 +123,7 @@ with right_pane:
         select_id = None
     fig = room.plotly(fig=fig, select_id=select_id)
 
-    ar_scale = 0.9 if (ss.editing != "results") else 0.5
+    ar_scale = 0.8 if (ss.editing != "results") else 0.5
     fig.layout.scene.aspectratio.x *= ar_scale
     fig.layout.scene.aspectratio.y *= ar_scale
     fig.layout.scene.aspectratio.z *= ar_scale
