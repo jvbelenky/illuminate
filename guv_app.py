@@ -3,6 +3,7 @@ import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import pandas as pd
+import numpy as np
 from guv_calcs.room import Room
 from guv_calcs._top_ribbon import top_ribbon
 from guv_calcs._sidebar import (
@@ -131,19 +132,14 @@ with right_pane:
 
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
-        rows = []
-        for i1, d1 in enumerate(fluence.points[1]):
-            for i2, d2 in enumerate(fluence.points[0]):
-                for i3, d3 in enumerate(fluence.points[2]):
-                    rows.append((d1, d2, d3, fluence.values[i1][i2][i3]))
-        df = pd.DataFrame(rows, columns=('Y', 'X', 'Z', 'Fluence'))
+        X,Y,Z = np.meshgrid(fluence.points[0],fluence.points[1],fluence.points[2])
 
         fig.add_trace(go.Isosurface(
-            x = df.X,
-            y = df.Y,
-            z = df.Z,
-            value = df.Fluence,
-            surface_count = 50,
+            x = X.flatten(),
+            y = Y.flatten(),
+            z = Z.flatten(),
+            value = fluence.values.flatten(),
+            surface_count = 3,
             isomin = 0.1,
             opacity = 0.25,
             colorbar = dict(
