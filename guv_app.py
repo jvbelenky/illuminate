@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
+import pandas as pd
 from guv_calcs.room import Room
 from guv_calcs._top_ribbon import top_ribbon
 from guv_calcs._sidebar import (
@@ -128,5 +129,29 @@ with right_pane:
     fig.layout.scene.aspectratio.y *= ar_scale
     fig.layout.scene.aspectratio.z *= ar_scale
 
+    fluence = room.calc_zones["WholeRoomFluence"]
+    if fluence.values is not None:
+        rows = []
+        for i1, d1 in enumerate(fluence.points[1]):
+            for i2, d2 in enumerate(fluence.points[0]):
+                for i3, d3 in enumerate(fluence.points[2]):
+                    rows.append((d1, d2, d3, fluence.values[i1][i2][i3]))
+        df = pd.DataFrame(rows, columns=('Y', 'X', 'Z', 'Fluence'))
+
+        fig.add_trace(go.Isosurface(
+            x = df.X,
+            y = df.Y,
+            z = df.Z,
+            value = df.Fluence,
+            surface_count = 50,
+            isomin = 0.1,
+            opacity = 0.25,
+            colorbar = dict(
+                title = 'Fluence (uW/cm²)',
+                x=0.9
+            ),
+            name = 'Fluence',
+            customdata = ['Fluence']
+        ))
 
     st.plotly_chart(fig, use_container_width=True, height=750)
