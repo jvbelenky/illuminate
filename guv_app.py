@@ -132,7 +132,7 @@ with right_pane:
 
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
-        X,Y,Z = np.meshgrid(fluence.points[0],fluence.points[1],fluence.points[2])
+        X,Y,Z = np.meshgrid(*fluence.points)
 
         fig.add_trace(go.Isosurface(
             x = X.flatten(),
