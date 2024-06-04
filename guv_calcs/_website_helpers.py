@@ -5,11 +5,10 @@ import pandas as pd
 import streamlit as st
 from guv_calcs.lamp import Lamp
 from guv_calcs.calc_zone import CalcPlane, CalcVol, CalcZone
-from ._widget import clear_lamp_cache, clear_zone_cache, update_lamp_aim_point
+from ._widget import clear_lamp_cache, clear_zone_cache, update_lamp_aim_point, update_lamp_orientation
 
 ss = st.session_state
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
-SIDE_FIRING_LAMPS = ["UVPro222 B1", "UVPro222 B2"]
 
 
 def print_standard_zones(room):
@@ -347,22 +346,27 @@ def add_standard_zones(room):
     return room
 
 
-def add_new_lamp(room, name=None, interactive=True):
+def add_new_lamp(room, name=None, interactive=True, defaults={}):
+    print('add_new_lamp', name, defaults)
     """necessary logic for adding new lamp to room and to state"""
     # initialize lamp
     new_lamp_idx = len(room.lamps) + 1
     # set initial position
-    xpos, ypos = get_lamp_position(lamp_idx=new_lamp_idx, x=room.x, y=room.y)
     new_lamp_id = f"Lamp{new_lamp_idx}"
     name = new_lamp_id if name is None else name
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
         name=name,
-        x=xpos,
-        y=ypos,
-        z=room.z - 0.1,  # eventually this should be set by luminaire size
+        x=defaults.get('x', 3 + (0.1 * (new_lamp_idx-1))),
+        y=defaults.get('y', 2),
+        z=defaults.get('z', room.z - 0.1),
         spectral_weight_source=WEIGHTS_URL,
     )
+    new_lamp.set_tilt(defaults.get('tilt', 0))
+    new_lamp.set_orientation(defaults.get('orientation', 0))
+    new_lamp.rotate(defaults.get('rotation', 0))
+    update_lamp_aim_point(new_lamp)
+    update_lamp_orientation(new_lamp)
     # add to session and to room
     room.add_lamp(new_lamp)
     if interactive:
@@ -390,23 +394,6 @@ def add_new_zone(room):
     ss.selected_zone_id = new_zone_id
     clear_lamp_cache(room)
     st.rerun()
-
-
-def set_default_orientation(lamp, room):
-    if "default_orientation_set" not in ss:
-        # Only do this once
-        if lamp.filename in SIDE_FIRING_LAMPS:
-            lamp.set_tilt(90, dimensions=room.dimensions)
-            update_lamp_aim_point(lamp)
-        ss.default_orientation_set = True
-
-
-def get_lamp_position(lamp_idx, x, y, num_divisions=100):
-    """for every new lamp, guess a reasonable position to initialize it in"""
-    xp = np.linspace(0, x, num_divisions + 1)
-    yp = np.linspace(0, y, num_divisions + 1)
-    xidx, yidx = _get_idx(lamp_idx, num_divisions=num_divisions)
-    return xp[xidx], yp[yidx]
 
 
 def _get_idx(num_points, num_divisions=100):
@@ -481,4 +468,4 @@ def get_ies_files():
         ies_files[data["reporting_name"]] = f"{BASE_URL}/{filename}.ies"
         spectra[data["reporting_name"]] = f"{BASE_URL}/{filename}-spectrum.csv"
 
-    return ies_files, spectra
+    return index_data, ies_files, spectra

@@ -16,7 +16,6 @@ from guv_calcs._website_helpers import (
     get_ies_files,
     add_standard_zones,
     add_new_lamp,
-    set_default_orientation,
 )
 
 # layout / page setup
@@ -49,8 +48,8 @@ if "uploaded_files" not in ss:
 
 if "lampfile_options" not in ss:
     ies_files = get_local_ies_files()  # local files for testing
-    vendored_lamps, vendored_spectra = get_ies_files()  # files from assays.osluv.org
-    ss.vendored_lamps, ss.vendored_spectra = vendored_lamps, vendored_spectra
+    index_data, vendored_lamps, vendored_spectra = get_ies_files()  # files from assays.osluv.org
+    ss.index_data, ss.vendored_lamps, ss.vendored_spectra = index_data, vendored_lamps, vendored_spectra
     options = [None] + list(vendored_lamps.keys()) + [SELECT_LOCAL]
     ss.lampfile_options = options
     ss.spectra_options = []
@@ -79,7 +78,8 @@ if "room" not in ss:
 
     preview_lamp = st.query_params.get("preview_lamp")
     if preview_lamp:
-        lamp_id = add_new_lamp(ss.room, name=preview_lamp, interactive=False)
+        defaults = [x for x in ss.index_data.values() if x['reporting_name']==preview_lamp][0].get('preview_setup', {})
+        lamp_id = add_new_lamp(ss.room, name=preview_lamp, interactive=False, defaults=defaults)
         lamp = ss.room.lamps[lamp_id]
         # load ies data
         fdata = requests.get(ss.vendored_lamps[preview_lamp]).content
@@ -89,8 +89,6 @@ if "room" not in ss:
         lamp.load_spectra(spectra_data)
         fig, ax = plt.subplots()
         ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
-        # orient correctly
-        set_default_orientation(lamp, ss.room)
         # calculate and display results
         ss.room.calculate()
         ss.editing = "results"
