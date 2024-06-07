@@ -1,33 +1,32 @@
-GUV Calcs
+Illuminate-GUV
 ======================
+
+An interactive environment for the [GUV-Calcs](https://github.com/jvbelenky/guv-calcs/) library, deployed at [https://illuminate.osluv.org/](https://illuminate.osluv.org/).
 
 ## Installation and Usage
 
-1. Clone the repo
-
-   ```
-   git clone https://github.com/jvbelenky/guv-calcs.git
-   ```
-   or 
+Clone the repo
    
-   ```
-   git clone git@github.com:jvbelenky/guv-calcs.git
-   ```
+	git clone https://github.com/jvbelenky/illuminate.git
    
-2. Install requirements
+Install the requirements
 
-	```
 	pip install -r requirements.txt
-	```
-	
-3. Update the ies_utils submodule
 
-	```
-	./update_ies.sh
-	```
+Run locally with streamlit 
 
-4. Run locally with streamlit 
-
-	```
 	streamlit run guv_app.py
-	```
+	
+## Roadmap
+
+*Coming soon...*
+
+## License
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
+
+## Contact
+
+Vivian Belenky - j.vivian.belenky@outlook.com - [@vivian_belenky](https://twitter.com/vivian_belenky)
+
+Project Link: [https://github.com/jvbelenky/illuminate/](https://github.com/jvbelenky/illuminate/)
