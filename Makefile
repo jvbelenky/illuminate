@@ -24,8 +24,8 @@ install:
 
 ## Lint using flake8 and black
 lint:
-	black guv_app.py guv_calcs/* app/*
-	flake8 --ignore=E114,E116,E117,E231,E266,E303,E501,W293,W291,W503 guv_app.py guv_calcs/*
+	black guv_app.py app/*
+	flake8 --ignore=E114,E116,E117,E231,E266,E303,E501,W293,W291,W503 guv_app.py app/*
 
 ## Remove compiled python files
 clean:
