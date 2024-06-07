@@ -17,15 +17,13 @@ endif
 #################################################################################
 
 ## Install package
-install:
-	rm -rf dist build */*.egg-info *.egg-info
-	$(PYTHON_INTERPRETER) setup.py sdist
-	pip install .
-
 ## Lint using flake8 and black
 lint:
 	black guv_app.py app/*
 	flake8 --ignore=E114,E116,E117,E231,E266,E303,E501,W293,W291,W503 guv_app.py app/*
+
+build:
+	pip install -r requirements.txt
 
 ## Remove compiled python files
 clean:
@@ -40,4 +38,4 @@ clean:
 run: 
 	streamlit run guv_app.py --server.headless true
 	
-all: lint run
+all: build lint run
