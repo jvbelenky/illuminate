@@ -148,5 +148,5 @@ with right_pane:
     st.plotly_chart(fig, use_container_width=True, height=750)
 
     st.write(
-        "Questions? Comments? Found a bug? Want a feature? Contact j.vivian.belenky@outlook.com"
+        "Questions? Comments? Found a bug? Want a feature? Contact contact-assay@osluv.org"
     )
