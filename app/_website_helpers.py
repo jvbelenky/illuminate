@@ -5,6 +5,7 @@ from pathlib import Path
 from guv_calcs.lamp import Lamp
 from guv_calcs.calc_zone import CalcPlane, CalcVol, CalcZone
 from ._widget import (
+    initialize_lamp,
     clear_lamp_cache,
     clear_zone_cache,
     update_lamp_aim_point,
@@ -89,16 +90,12 @@ def add_new_lamp(room, name=None, interactive=True, defaults={}):
     # set initial position
     new_lamp_id = f"Lamp{new_lamp_idx}"
     name = new_lamp_id if name is None else name
-    if interactive:
-        x, y = get_lamp_position(lamp_idx=new_lamp_idx, x=room.x, y=room.y)
-    else:
-        x = defaults.get("x", 3 + (0.1 * (new_lamp_idx - 1)))
-        y = defaults.get("y", 2)
+    x, y = get_lamp_position(lamp_idx=new_lamp_idx, x=room.x, y=room.y)
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
         name=name,
-        x=x,
-        y=y,
+        x=defaults.get("", x),
+        y=defaults.get("", y),
         z=defaults.get("z", room.z - 0.1),
         spectral_weight_source=WEIGHTS_URL,
     )
@@ -111,6 +108,7 @@ def add_new_lamp(room, name=None, interactive=True, defaults={}):
     room.add_lamp(new_lamp)
     if interactive:
         # select for editing
+        initialize_lamp(new_lamp)
         ss.editing = "lamps"
         ss.selected_lamp_id = new_lamp.lamp_id
         clear_zone_cache(room)

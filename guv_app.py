@@ -31,7 +31,8 @@ st.markdown(
 
 
 # Remove whitespace from the top of the page and sidebar
-st.markdown("""
+st.markdown(
+    """
         <style>
                .css-18e3th9 {
                     padding-top: 0rem;
@@ -46,7 +47,9 @@ st.markdown("""
                     padding-left: 1rem;
                 }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+    unsafe_allow_html=True,
+)
 
 ss = st.session_state
 

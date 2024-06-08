@@ -699,11 +699,14 @@ def results_sidebar(room):
         st.subheader("User Defined Calculation Zones")
         for zone_id, zone in room.calc_zones.items():
             vals = zone.values
-            if vals is not None:
+            if vals is not None and zone.name not in SPECIAL_ZONES:
                 st.subheader(zone.name, ":")
-                st.write("Average:", round(vals.mean(), 3))
-                st.write("Min:", round(vals.min(), 3))
-                st.write("Max:", round(vals.max(), 3))
+                unitstr = zone.units
+                if zone.dose:
+                    unitstr += "/" + str(zone.hours) + " hours"
+                st.write("Average:", round(vals.mean(), 3), unitstr)
+                st.write("Min:", round(vals.min(), 3), unitstr)
+                st.write("Max:", round(vals.max(), 3), unitstr)
 
     st.write("")
     st.write("")

@@ -1,13 +1,76 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import csv
 from pathlib import Path
+
+WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 
 
 def print_standard_zones(room):
     """
     display results of special calc zones
     """
+
+    st.subheader("Photobiological Safety", divider="grey")
+    skin = room.calc_zones["SkinLimits"]
+    eye = room.calc_zones["EyeLimits"]
+    SHOW_SKIN = True if skin.values is not None else False
+    SHOW_EYES = True if eye.values is not None else False
+    if SHOW_SKIN and SHOW_EYES:
+
+        hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv(room)
+        SKIN_EXCEEDED = True if hours_skin_uw < 8 else False
+        EYE_EXCEEDED = True if hours_eye_uw < 8 else False
+
+        # print the max values
+        cols = st.columns([3, 3, 1])
+        skin = room.calc_zones["SkinLimits"]
+        skin_max = round(skin.values.max(), 3)
+        color = "red" if SKIN_EXCEEDED else "blue"
+        skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
+
+        eye = room.calc_zones["EyeLimits"]
+        eye_max = round(eye.values.max(), 3)
+        color = "red" if EYE_EXCEEDED else "blue"
+        eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
+        with cols[0]:
+            st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
+        with cols[1]:
+            st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+
+        SHOW_PLOTS = cols[2].checkbox("Show plots", value=True)
+        if SHOW_PLOTS:
+            cols[0].pyplot(skin.plot_plane(), **{"transparent": "True"})
+            cols[1].pyplot(eye.plot_plane(), **{"transparent": "True"})
+        st.divider()
+        st.markdown(
+            """
+        **__With Monochromatic Assumption:__** 
+        These results assume that all lamps in the simulation are perfectly 
+        monochromatic 222nm sources. They don't rely on any data besides an
+        ies file. For most *filtered* KrCl lamps, but not all, the 
+        monochromatic approximation is a reasonable assumption.
+        """
+        )
+
+        safety_results(hours_skin_uw, hours_eye_uw, st.columns(2), room)
+        st.divider()
+
+        # Now show the weighted versions
+        st.markdown(
+            """
+        **__With Spectral Weighting:__** 
+        These results take into account the spectra of the lamps in the
+        simulation. Because Threshold Limit Values (TLVs) are calculated by 
+        summing over the *entire* spectrum, not just the peak wavelength, some
+        lamps may have effective TLVs substantially below the monochromatic TLVs
+        at 222nm.
+        """
+        )
+        hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv(room)
+        safety_results(hours_skin_w, hours_eye_w, st.columns(2), room)
+
     st.subheader("Efficacy", divider="grey")
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
@@ -32,101 +95,138 @@ def print_standard_zones(room):
     st.write(f"Ozone decay constant: **{room.ozone_decay_constant}**")
     st.write(f"Estimated increase in indoor ozone: {ozone_str}")
 
-    st.subheader("Photobiological Safety", divider="grey")
-    skin = room.calc_zones["SkinLimits"]
-    eye = room.calc_zones["EyeLimits"]
 
-    if skin.values is not None and eye.values is not None:
-        hours_to_tlv, hours_skin, hours_eye = get_hours_to_tlv_room(room)
-        SKIN_EXCEEDED = True if hours_skin < 8 else False
-        EYE_EXCEEDED = True if hours_eye < 8 else False
+def safety_results(hours_skin, hours_eye, cols, room):
+    """print safety results by hours to TLV"""
 
-        if hours_to_tlv > 8:
-            hour_str = ":blue[Indefinite]"
-        else:
-            hour_str = f":red[{round(hours_to_tlv,2)}]"
-        st.write(f"Hours before Threshold Limit Value is reached: **{hour_str}**")
-
-    if skin.values is not None:
-        skin_max = round(skin.values.max(), 3)
-        color = "red" if SKIN_EXCEEDED else "blue"
-        skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
-        if SKIN_EXCEEDED:
-            skin_dim = round((hours_skin / 8) * 100, 1)
-            skin_str += f" *(dimming required: {skin_dim}%)*"
+    hours_to_tlv = min([hours_skin, hours_eye])
+    if hours_to_tlv > 8:
+        hour_str = ":blue[Indefinite]"
     else:
-        skin_str = None
-    if eye.values is not None:
-        eye_max = round(eye.values.max(), 3)
-        color = "red" if EYE_EXCEEDED else "blue"
-        eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
-        if EYE_EXCEEDED:
-            eye_dim = round((hours_eye / 8) * 100, 1)
-            eye_str += f" *(dimming required: {eye_dim}%)*"
-    else:
-        eye_str = None
-
-    col_1, col_2 = st.columns(2)
-
-    with col_1:
-        st.write("Max Skin Dose (8 Hours): ", skin_str)
-        if skin.values is not None:
-            st.pyplot(skin.plot_plane(), **{"transparent": "True"})
-        else:
-            st.write("(Not available)")
-
-    with col_2:
-        st.write("Max Eye Dose (8 Hours): ", eye_str)
-        if eye.values is not None:
-            st.pyplot(eye.plot_plane(), **{"transparent": "True"})
-        else:
-            st.write("(Not available)")
+        hour_str = f":red[{round(hours_to_tlv,2)}]"
+        dim = round((hours_to_tlv / 8) * 100, 1)
+        hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
+    st.write(f"Hours before Threshold Limit Value is reached: {hour_str}")
 
 
-def get_hours_to_tlv_room(room):
+def get_unweighted_hours_to_tlv(room):
+    """
+    calculate hours to tlv without taking into account lamp spectra
+    """
+
+    skin_standard, eye_standard = _get_standards(room.standard)
+    mono_skinmax, mono_eyemax = _get_mono_limits(222, room)
+
+    skin_limits = room.calc_zones["SkinLimits"]
+    eye_limits = room.calc_zones["EyeLimits"]
+
+    skin_hours = mono_skinmax * 8 / skin_limits.values.max()
+    eye_hours = mono_eyemax * 8 / eye_limits.values.max()
+    return skin_hours, eye_hours
+
+
+def get_weighted_hours_to_tlv(room):
     """
     calculate the hours to tlv in a particular room, given a particular installation of lamps
 
     technically speaking; in the event of overlapping beams, it is possible to check which
     lamps are shining on that spot and what their spectra are. this function currently doesn't do that
 
-    TODO: good lord this function is a nightmare. let's bust it up eventually.
+    TODO: good lord this function is a nightmare. let's make it less horrible eventually
     """
 
-    # select standards
-    if "ANSI IES RP 27.1-22" in room.standard:
-        skin_standard = "ANSI IES RP 27.1-22 (Skin)"
-        mono_skinmax = 479
-        eye_standard = "ANSI IES RP 27.1-22 (Eye)"
-        mono_eyemax = 161
-    elif "IEC 62471-6:2022" in room.standard:
-        skin_standard = "IEC 62471-6:2022 (Eye/Skin)"
-        eye_standard = skin_standard
-        mono_skinmax = 23
-        mono_eyemax = mono_skinmax
-    else:
-        raise KeyError(f"Room standard {room.standard} is not valid")
+    skin_standard, eye_standard = _get_standards(room.standard)
+    mono_skinmax, mono_eyemax = _get_mono_limits(222, room)
 
     skin_limits = room.calc_zones["SkinLimits"]
     eye_limits = room.calc_zones["EyeLimits"]
+
+    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps(room)
+
+    # now check that overlapping beams in the calc zone aren't pushing you over the edge
+    # max irradiance in the wholeplane
+    global_skin_max = round(skin_limits.values.max() / 3.6 / 8, 3)  # to uW/cm2
+    global_eye_max = round(eye_limits.values.max() / 3.6 / 8, 3)
+    # max irradiance on the plane produced by each lamp
+    local_skin_max = round(max(skin_maxes), 3)
+    local_eye_max = round(max(eye_maxes), 3)
+
+    if global_skin_max > local_skin_max or global_eye_max > local_eye_max:
+        # first pick a lamp to use the spectra of. one with a spectra is preferred.
+        chosen_lamp = _select_representative_lamp(room, skin_standard)
+        if len(chosen_lamp.spectra) > 0:
+            # calculate weighted if possible
+            new_skin_hours = _get_weighted_hours(
+                chosen_lamp, global_skin_max, skin_standard
+            )
+            new_eye_hours = _get_weighted_hours(
+                chosen_lamp, global_eye_max, eye_standard
+            )
+        else:
+            # these will be in mJ/cm2/8 hrs
+            new_skin_hours = mono_skinmax * 8 / skin_limits.values.max()
+            new_eye_hours = mono_eyemax * 8 / eye_limits.values.max()
+
+        skin_hours.append(new_skin_hours)
+        eyes_hours.append(new_eye_hours)
+    return min(skin_hours), min(eyes_hours)
+
+
+def _get_standards(standard):
+    """return the relevant skin and eye limit standards"""
+    if "ANSI IES RP 27.1-22" in standard:
+        skin_standard = "ANSI IES RP 27.1-22 (Skin)"
+        eye_standard = "ANSI IES RP 27.1-22 (Eye)"
+    elif "IEC 62471-6:2022" in standard:
+        skin_standard = "IEC 62471-6:2022 (Eye/Skin)"
+        eye_standard = skin_standard
+    else:
+        raise KeyError(f"Room standard {standard} is not valid")
+
+    return skin_standard, eye_standard
+
+
+def _get_mono_limits(wavelength, room):
+    """
+    load the monochromatic skin and eye limits at a given wavelength
+    """
+    csv_data = open(WEIGHTS_URL, mode="r", newline="")
+    reader = csv.reader(csv_data, delimiter=",")
+    headers = next(reader, None)  # get headers
+
+    # read standards
+    data = {}
+    for header in headers:
+        data[header] = []
+    for row in reader:
+        for header, value in zip(headers, row):
+            data[header].append(float(value))
+
+    skin_standard, eye_standard = _get_standards(room.standard)
+    skindata = dict(zip(data[headers[0]], data[skin_standard]))
+    eyedata = dict(zip(data[headers[0]], data[eye_standard]))
+
+    return 3 / skindata[wavelength], 3 / eyedata[wavelength]
+
+
+def _tlvs_over_lamps(room):
+    """calculate the hours to TLV over each lamp in the calc zone"""
+
+    skin_standard, eye_standard = _get_standards(room.standard)
+    mono_skinmax, mono_eyemax = _get_mono_limits(222, room)
 
     # iterate over all lamps
     hours_to_tlv_skin, hours_to_tlv_eye = [], []
     skin_maxes, eye_maxes = [], []
     for lamp_id, lamp in room.lamps.items():
         # get max irradiance shown by this lamp upon both zones
-        skin_irradiance = lamp.max_irradiances[
-            "SkinLimits"
-        ]  # this will be in uW/cm2 no matter what
+        skin_irradiance = lamp.max_irradiances["SkinLimits"]
         eye_irradiance = lamp.max_irradiances["EyeLimits"]
-        skin_maxes.append(skin_irradiance)
-        eye_maxes.append(eye_irradiance)
+
         if len(lamp.spectra) > 0:
             # if lamp has a spectra associated with it, calculate the weighted spectra
-            skin_hours = _get_weighted_hours_to_tlv(
-                lamp, skin_irradiance, skin_standard
-            )
-            eye_hours = _get_weighted_hours_to_tlv(lamp, eye_irradiance, eye_standard)
+            skin_hours = _get_weighted_hours(lamp, skin_irradiance, skin_standard)
+            eye_hours = _get_weighted_hours(lamp, eye_irradiance, eye_standard)
         else:
             # if it doesn't, first, yell.
             st.warning(
@@ -137,39 +237,16 @@ def get_hours_to_tlv_room(room):
             eye_hours = mono_eyemax * 8 / eye_irradiance
         hours_to_tlv_skin.append(skin_hours)
         hours_to_tlv_eye.append(eye_hours)
+        skin_maxes.append(skin_irradiance)
+        eye_maxes.append(eye_irradiance)
+    if len(room.lamps.items()) == 0:
+        hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
+        skin_maxes, eye_maxes = [0], [0]
 
-    # now check that overlapping beams in the calc zone aren't pushing you over the edge
-    global_skin_max = skin_limits.values.max() / 3.6 / 8  # to uW/cm2
-    global_eye_max = eye_limits.values.max() / 3.6 / 8
-
-    if global_skin_max > max(skin_maxes) or global_eye_max > max(eye_maxes):
-        # first pick a lamp to use the spectra of. one with a spectra is preferred.
-        chosen_lamp = _select_representative_lamp(room, skin_standard)
-        if len(chosen_lamp.spectra) > 0:
-            # calculate weighted if possible
-            new_hours_to_tlv_skin = _get_weighted_hours_to_tlv(
-                chosen_lamp, global_skin_max, skin_standard
-            )
-            hours_to_tlv_skin.append(new_hours_to_tlv_skin)
-
-            new_hours_to_tlv_eye = _get_weighted_hours_to_tlv(
-                chosen_lamp, global_eye_max, eye_standard
-            )
-            hours_to_tlv_eye.append(new_hours_to_tlv_eye)
-        else:
-            hours_to_tlv_skin.append(
-                mono_skinmax * 8 / skin_limits.values.max()
-            )  # these will be in mJ/cm2/8 hrs
-            hours_to_tlv_eye.append(mono_eyemax * 8 / eye_limits.values.max())
-
-    # return the value of hours_to_tlv that will be most limiting
-    all_hours_to_tlv = hours_to_tlv_skin + hours_to_tlv_eye
-    hours_to_tlv = min(all_hours_to_tlv)
-
-    return hours_to_tlv, min(hours_to_tlv_skin), min(hours_to_tlv_eye)
+    return hours_to_tlv_skin, hours_to_tlv_eye, skin_maxes, eye_maxes
 
 
-def _get_weighted_hours_to_tlv(lamp, irradiance, standard):
+def _get_weighted_hours(lamp, irradiance, standard):
     """
     calculate hours to tlv for a particular lamp, calc zone, and standard
     """
@@ -178,21 +255,19 @@ def _get_weighted_hours_to_tlv(lamp, irradiance, standard):
     wavelength = lamp.spectra["Unweighted"][0]
     rel_intensities = lamp.spectra["Unweighted"][1]
     # determine total power in the spectra as it corresponds to total power
-    indices = np.intersect1d(
-        np.argwhere(wavelength > 200), np.argwhere(wavelength < 280)
-    )
-    spectral_power = rel_intensities[indices].sum()
+    idx = np.intersect1d(np.argwhere(wavelength >= 200), np.argwhere(wavelength <= 280))
+    spectral_power = _sum_spectrum(wavelength[idx], rel_intensities[idx])
     ratio = irradiance / spectral_power
-    power_distribution = (
-        rel_intensities * ratio / 1000
-    )  # to mJ/cm2 - this value is the "true" spectra at the calc zone level
-
+    power_distribution = rel_intensities[idx] * ratio  # true spectra at calc plane
     # load weights according to the standard
     weighting = lamp.spectral_weightings[standard][1]
 
-    weighted_power = power_distribution * weighting
+    # weight the normalized spectra
+    weighted_spectra = power_distribution * weighting[idx]
+    # sum to get weighted power
+    weighted_power = _sum_spectrum(wavelength[idx], weighted_spectra)
 
-    seconds_to_tlv = 3 / _sum_spectrum(wavelength, weighted_power)
+    seconds_to_tlv = 3000 / weighted_power
     hours_to_tlv = seconds_to_tlv / 3600
     return hours_to_tlv
 
@@ -215,7 +290,8 @@ def _select_representative_lamp(room, standard):
     """
     if len(set([lamp.filename for lamp_id, lamp in room.lamps.items()])) <= 1:
         # if they're all the same just use that one.
-        chosen_lamp = room.lamps[room.lamps.keys()[0]]
+        lamp_id = list(room.lamps.keys())[0]
+        chosen_lamp = room.lamps[lamp_id]
     else:
         # otherwise pick the least convenient one
         weighted_sums = {}
@@ -230,7 +306,8 @@ def _select_representative_lamp(room, standard):
             chosen_lamp = room.lamps[chosen_id]
         else:
             # if no lamps have a spectra then it doesn't matter. pick any lamp.
-            chosen_lamp = room.lamps[room.lamps.keys()[0]]
+            lamp_id = list(room.lamps.keys())[0]
+            chosen_lamp = room.lamps[lamp_id]
     return chosen_lamp
 
 
