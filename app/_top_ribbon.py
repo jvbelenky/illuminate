@@ -14,112 +14,116 @@ ss = st.session_state
 
 def top_ribbon(room):
 
-    c = st.columns([1, 1, 1.5, 1, 1.5, 1, 1])
-    edit_room = c[0].button("Edit Room  ", use_container_width=True)
-    add_lamp = c[1].button("Add Luminaire", use_container_width=True)
-    lamp_select(room, c[2])
-    add_calc_zone = c[3].button("Add Calc Zone", use_container_width=True)
-    zone_select(room, c[4])
-    show_results = c[5].button("Show Results", use_container_width=True)
-    calc = c[6].button("Calculate!", type="primary", use_container_width=True)
+    c = st.columns([1, 1, 1, 1, 1.5, 1, 1.5, 1])
 
-    # st.divider()
-    if calc:
-        room.calculate()
-        ss.editing = "results"
-        # clear out any other selected objects and remove ones that haven't been fully initialized
-        clear_lamp_cache(room)
-        clear_zone_cache(room)
-        st.rerun()
-
-    if edit_room:
-        ss.editing = "room"
-        initialize_room(room)
-        clear_lamp_cache(room)
-        clear_zone_cache(room)
-        st.rerun()
-
-    if add_lamp:
-        add_new_lamp(room)
-
-    if add_calc_zone:
-        add_new_zone(room)
-
-    if show_results:
-        ss.editing = "results"
-        clear_lamp_cache(room)
-        clear_zone_cache(room)
-        st.rerun()
-
-
-def lamp_select(room, col=None):
-    """drop down menu for selecting luminaires"""
+    # with c[0]:
+    c[0].button("About", on_click=show_about, args=[room], use_container_width=True)
+    c[1].button("Project", on_click=show_project, args=[room], use_container_width=True)
+    c[2].button("Edit Room", on_click=show_room, args=[room], use_container_width=True)
+    c[3].button(
+        "Add Luminaire", on_click=add_new_lamp, args=[room], use_container_width=True
+    )
     lamp_names = {"Select luminaire to edit": None}
     for lamp_id, lamp in room.lamps.items():
         lamp_names[lamp.name] = lamp_id
     lamp_sel_idx = list(lamp_names.values()).index(ss.selected_lamp_id)
+    c[4].selectbox(
+        "Select luminaire to edit",
+        options=list(lamp_names),
+        on_change=update_lamp_select,
+        args=[lamp_names, room],
+        index=lamp_sel_idx,
+        label_visibility="collapsed",
+        key="lamp_select",
+    )
 
-    if col is None:
-        selected_lamp_name = st.selectbox(
-            "Select luminaire to edit",
-            options=list(lamp_names),
-            index=lamp_sel_idx,
-            label_visibility="collapsed",
-        )
-    else:
-        selected_lamp_name = col.selectbox(
-            "Select luminaire to edit",
-            options=list(lamp_names),
-            index=lamp_sel_idx,
-            label_visibility="collapsed",
-        )
-    selected_lamp_id = lamp_names[selected_lamp_name]
-    if ss.selected_lamp_id != selected_lamp_id:
-        # if different, update and rerun
-        ss.selected_lamp_id = selected_lamp_id
-        if ss.selected_lamp_id is not None:
-            # if lamp is selected, open editing pane
-            ss.editing = "lamps"
-            selected_lamp = room.lamps[ss.selected_lamp_id]
-            # initialize widgets in editing pane
-            initialize_lamp(selected_lamp)
-            # clear widgets of anything to do with zone editing if it's currently loaded
-            clear_zone_cache(room)
-        st.rerun()
+    c[5].button(
+        "Add Calc Zone", on_click=add_new_zone, args=[room], use_container_width=True
+    )
 
-
-def zone_select(room, col=None):
-    """drop down menu for selecting calc zones"""
     zone_names = {"Select calc zone to edit": None}
     for zone_id, zone in room.calc_zones.items():
         zone_names[zone.name] = zone_id
     zone_sel_idx = list(zone_names.values()).index(ss.selected_zone_id)
-    if col is None:
-        selected_zone_name = st.selectbox(
-            "Select calculation zone to edit",
-            options=list(zone_names),
-            index=zone_sel_idx,
-            label_visibility="collapsed",
-        )
+    c[6].selectbox(
+        "Select calculation zone to edit",
+        options=list(zone_names),
+        on_change=update_zone_select,
+        args=[zone_names, room],
+        index=zone_sel_idx,
+        label_visibility="collapsed",
+        key="zone_select",
+    )
+
+    c[7].button(
+        "Calculate!",
+        on_click=calculate,
+        args=[room],
+        type="primary",
+        use_container_width=True,
+    )
+
+
+def show_about(room):
+    """update sidebar to show about/instructions"""
+    ss.editing = "about"
+    clear_lamp_cache(room)
+    clear_zone_cache(room)
+
+
+def show_project(room):
+    """update sidebar to show save/load options"""
+    ss.editing = "project"
+    clear_lamp_cache(room)
+    clear_zone_cache(room)
+
+
+def show_room(room):
+    """update sidebar to show room editing interface"""
+    ss.editing = "room"
+    initialize_room(room)
+    clear_lamp_cache(room)
+    clear_zone_cache(room)
+
+
+def update_lamp_select(lamp_names, room):
+    """update logic to display new lamp selection in sidebar"""
+    clear_lamp_cache(room)  # first clear out anything old
+    ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
+    if ss.selected_lamp_id is not None:
+        # if lamp is selected, open editing pane
+        ss.editing = "lamps"
+        selected_lamp = room.lamps[ss.selected_lamp_id]
+        # initialize widgets in editing pane
+        initialize_lamp(selected_lamp)
+        # clear widgets of anything to do with zone editing if it's currently loaded
+        clear_zone_cache(room)
     else:
-        selected_zone_name = col.selectbox(
-            "Select calculation zone to edit",
-            options=list(zone_names),
-            index=zone_sel_idx,
-            label_visibility="collapsed",
-        )
-    selected_zone_id = zone_names[selected_zone_name]
-    if ss.selected_zone_id != selected_zone_id:
-        ss.selected_zone_id = selected_zone_id
-        if ss.selected_zone_id is not None:
-            selected_zone = room.calc_zones[ss.selected_zone_id]
-            if isinstance(selected_zone, CalcPlane):
-                ss.editing = "planes"
-                initialize_zone(selected_zone)
-            elif isinstance(selected_zone, CalcVol):
-                ss.editing = "volumes"
-                initialize_zone(selected_zone)
-            else:
-                ss.editing = "zones"
-            clear_lamp_cache(room)
-        st.rerun()
+        # this will only happen if users have selected the 'none' option in the dropdown menu
+        ss.editing = None
+
+
+def update_zone_select(zone_names, room):
+    """update logic to display new zone selection in sidebar"""
+    clear_zone_cache(room)
+    ss.selected_zone_id = zone_names[ss["zone_select"]]
+    if ss.selected_zone_id is not None:
+        selected_zone = room.calc_zones[ss.selected_zone_id]
+        if isinstance(selected_zone, CalcPlane):
+            ss.editing = "planes"
+            initialize_zone(selected_zone)
+        elif isinstance(selected_zone, CalcVol):
+            ss.editing = "volumes"
+            initialize_zone(selected_zone)
+        else:
+            ss.editing = "zones"
+        clear_lamp_cache(room)
+    else:
+        # this will only happen if users have selected the 'none' option in the dropdown menu
+        ss.editing = None
+
+
+def calculate(room):
+    """calculate and show results in right pane"""
+    ss.show_results = True
+    room.calculate()

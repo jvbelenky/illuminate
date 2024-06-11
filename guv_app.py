@@ -4,12 +4,14 @@ import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from guv_calcs.room import Room
 from app._top_ribbon import top_ribbon
+from app._plot import room_plot
+from app._results import results_page
+from app._lamp_sidebar import lamp_sidebar
+from app._zone_sidebar import zone_sidebar
 from app._sidebar import (
-    lamp_sidebar,
-    zone_sidebar,
     room_sidebar,
-    results_sidebar,
     default_sidebar,
+    project_sidebar,
 )
 from app._website_helpers import (
     get_local_ies_files,
@@ -54,11 +56,16 @@ st.markdown(
 ss = st.session_state
 
 SELECT_LOCAL = "Select local file..."
-SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
+CONTACT_STR = (
+    "Questions? Comments? Found a bug? Want a feature? Contact contact-assay@osluv.org"
+)
 
 # Check and initialize session state variables
 if "editing" not in ss:
-    ss.editing = None  # determines what displays in the sidebar
+    ss.editing = "about"  # determines what displays in the sidebar
+
+if "show_results" not in ss:
+    ss.show_results = False
 
 if "selected_lamp_id" not in ss:
     ss.selected_lamp_id = None  # use None when no lamp is selected
@@ -126,52 +133,47 @@ if "room" not in ss:
         ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
         # calculate and display results
         ss.room.calculate()
-        ss.editing = "results"
+        ss.show_results = True
+        ss.editing = None  # just for aesthetics
         st.rerun()
 
 room = ss.room
 
 top_ribbon(room)
 
-if ss.editing == "results":
-    left_pane, right_pane = st.columns([3, 1.5])
+if ss.show_results or ss.editing is not None:
+    left_pane, right_pane = st.columns([2, 3])
 else:
-    left_pane, right_pane = st.columns([1.5, 3])
+    left_pane, right_pane = st.columns([1, 100])
+
 
 with left_pane:
-    # Lamp editing sidebar
-    if ss.editing == "lamps" and ss.selected_lamp_id is not None:
-        lamp_sidebar(room)
-    # calc zone editing sidebar
-    elif ss.editing in ["zones", "planes", "volumes"] and ss.selected_zone_id:
-        zone_sidebar(room)
-    # room editing sidebar
-    elif ss.editing == "room":
-        room_sidebar(room)
-    elif ss.editing == "results":
-        results_sidebar(room)
+    if ss.editing is not None:
+        if ss.editing == "lamps" and ss.selected_lamp_id is not None:
+            lamp_sidebar(room)
+        elif ss.editing in ["zones", "planes", "volumes"] and ss.selected_zone_id:
+            zone_sidebar(room)
+        elif ss.editing == "room":
+            room_sidebar(room)
+        elif ss.editing == "about":
+            default_sidebar(room)
+        elif ss.editing == "project":
+            project_sidebar(room)
+        else:
+            st.write("")
+        if ss.show_results:
+            # add this here since it'll look nicer than on the results side
+            st.write(CONTACT_STR)
     else:
-        default_sidebar(room)
+        if ss.show_results:
+            room_plot(room)
+            st.write(CONTACT_STR)
 
-# plot
+        # if not ss.show_results, then this is an empty panel
+
 with right_pane:
-    if ss.selected_lamp_id:
-        select_id = ss.selected_lamp_id
-    elif ss.selected_zone_id:
-        select_id = ss.selected_zone_id
+    if ss.show_results:
+        results_page(room)
     else:
-        select_id = None
-    fig = room.plotly(fig=fig, select_id=select_id)
-
-    ar_scale = 0.8 if (ss.editing != "results") else 0.5
-    fig.layout.scene.aspectratio.x *= ar_scale
-    fig.layout.scene.aspectratio.y *= ar_scale
-    fig.layout.scene.aspectratio.z *= ar_scale
-
-    fig.layout.scene.xaxis.range = fig.layout.scene.xaxis.range[::-1]
-
-    st.plotly_chart(fig, use_container_width=True, height=750)
-
-    st.write(
-        "Questions? Comments? Found a bug? Want a feature? Contact contact-assay@osluv.org"
-    )
+        room_plot(room)
+        st.write(CONTACT_STR)

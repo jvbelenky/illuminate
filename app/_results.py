@@ -1,10 +1,52 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import csv
 from pathlib import Path
+from app._widget import close_results
 
+ss = st.session_state
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
+SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
+
+
+def results_page(room):
+    """display results in the customizable panel"""
+    cols = st.columns([15, 1])
+    cols[0].title("Results")
+    cols[1].write("")
+    cols[1].write("")
+    cols[1].button(
+        "X", on_click=close_results, use_container_width=True, key="close_results"
+    )
+
+    # do some checks first. do we actually have any lamps?
+    msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, and then hit `Calculate`"
+    if not room.lamps:
+        st.warning(msg)
+    elif all(lamp.filedata is None for lampid, lamp in room.lamps.items()):
+        st.warning(msg)
+    else:
+        # check that all positions of lamps and calc zones are where they're supposed to be
+        msgs = room.check_positions()
+        for msg in msgs:
+            if msg is not None:
+                st.warning(msg, icon="⚠️")
+        # if we're good print the results
+        print_standard_zones(room)
+
+    # Display all other results
+    if any(key not in SPECIAL_ZONES for key in room.calc_zones.keys()):
+        st.subheader("User Defined Calculation Zones", divider="grey")
+        for zone_id, zone in room.calc_zones.items():
+            vals = zone.values
+            if vals is not None and zone.zone_id not in SPECIAL_ZONES:
+                st.subheader(zone.name, ":")
+                unitstr = zone.units
+                if zone.dose:
+                    unitstr += "/" + str(zone.hours) + " hours"
+                st.write("Average:", round(vals.mean(), 3), unitstr)
+                st.write("Min:", round(vals.min(), 3), unitstr)
+                st.write("Max:", round(vals.max(), 3), unitstr)
 
 
 def print_standard_zones(room):
@@ -24,7 +66,7 @@ def print_standard_zones(room):
         EYE_EXCEEDED = True if hours_eye_uw < 8 else False
 
         # print the max values
-        cols = st.columns([3, 3, 1])
+        cols = st.columns(2)
         skin = room.calc_zones["SkinLimits"]
         skin_max = round(skin.values.max(), 3)
         color = "red" if SKIN_EXCEEDED else "blue"
@@ -39,41 +81,49 @@ def print_standard_zones(room):
         with cols[1]:
             st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
 
-        SHOW_PLOTS = cols[2].checkbox("Show plots", value=True)
-        if SHOW_PLOTS:
-            cols[0].pyplot(skin.plot_plane(), **{"transparent": "True"})
-            cols[1].pyplot(eye.plot_plane(), **{"transparent": "True"})
-        st.divider()
+        # unweighted hours to TLV
+        hours_to_tlv = min([hours_skin_uw, hours_eye_uw])
+        if hours_to_tlv > 8:
+            hour_str = ":blue[Indefinite]"
+        else:
+            hour_str = f":red[**{round(hours_to_tlv,2)}**]"
+            dim = round((hours_to_tlv / 8) * 100, 1)
+            hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
         st.markdown(
-            """
-        **__With Monochromatic Assumption:__** 
-        These results assume that all lamps in the simulation are perfectly 
-        monochromatic 222nm sources. They don't rely on any data besides an
-        ies file. For most *filtered* KrCl lamps, but not all, the 
-        monochromatic approximation is a reasonable assumption.
-        """
+            f"**Hours before TLV is reached *with monochromatic assumption***: {hour_str}",
+            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
         )
 
-        safety_results(hours_skin_uw, hours_eye_uw, st.columns(2), room)
-        st.divider()
-
-        # Now show the weighted versions
-        st.markdown(
-            """
-        **__With Spectral Weighting:__** 
-        These results take into account the spectra of the lamps in the
-        simulation. Because Threshold Limit Values (TLVs) are calculated by 
-        summing over the *entire* spectrum, not just the peak wavelength, some
-        lamps may have effective TLVs substantially below the monochromatic TLVs
-        at 222nm.
-        """
-        )
+        # weighted hours to TLV
         hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv(room)
-        safety_results(hours_skin_w, hours_eye_w, st.columns(2), room)
+        hours_to_tlv = min([hours_skin_w, hours_eye_w])
+        if hours_to_tlv > 8:
+            hour_str = ":blue[Indefinite]"
+        else:
+            hour_str = f":red[**{round(hours_to_tlv,2)}**]"
+            dim = round((hours_to_tlv / 8) * 100, 1)
+            hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
 
+        st.markdown(
+            f"**Hours before TLV is reached *with spectral weighting***: {hour_str}",
+            help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
+        )
+
+        SHOW_PLOTS = st.checkbox("Show plots", value=True)
+        if SHOW_PLOTS:
+            cols = st.columns(2)
+            cols[0].pyplot(
+                skin.plot_plane(title="8-Hour Skin Dose"), **{"transparent": "True"}
+            )
+            cols[1].pyplot(
+                eye.plot_plane(title="8-Hour Eye Dose"), **{"transparent": "True"}
+            )
+
+    ## Efficacy
     st.subheader("Efficacy", divider="grey")
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
+        fluence.values
         avg_fluence = round(fluence.values.mean(), 3)
         fluence_str = ":blue[" + str(avg_fluence) + "] μW/cm2"
     else:
@@ -84,6 +134,7 @@ def print_standard_zones(room):
         df = get_disinfection_table(avg_fluence, room)
         st.dataframe(df, hide_index=True)
 
+    ## Indoor Air Chem
     st.subheader("Indoor Air Chemistry", divider="grey")
     if fluence.values is not None:
         ozone_ppb = calculate_ozone_increase(room)
@@ -94,19 +145,6 @@ def print_standard_zones(room):
     st.write(f"Air changes from ventilation: **{room.air_changes}**")
     st.write(f"Ozone decay constant: **{room.ozone_decay_constant}**")
     st.write(f"Estimated increase in indoor ozone: {ozone_str}")
-
-
-def safety_results(hours_skin, hours_eye, cols, room):
-    """print safety results by hours to TLV"""
-
-    hours_to_tlv = min([hours_skin, hours_eye])
-    if hours_to_tlv > 8:
-        hour_str = ":blue[Indefinite]"
-    else:
-        hour_str = f":red[{round(hours_to_tlv,2)}]"
-        dim = round((hours_to_tlv / 8) * 100, 1)
-        hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
-    st.write(f"Hours before Threshold Limit Value is reached: {hour_str}")
 
 
 def get_unweighted_hours_to_tlv(room):
@@ -190,21 +228,13 @@ def _get_mono_limits(wavelength, room):
     """
     load the monochromatic skin and eye limits at a given wavelength
     """
-    csv_data = open(WEIGHTS_URL, mode="r", newline="")
-    reader = csv.reader(csv_data, delimiter=",")
-    headers = next(reader, None)  # get headers
-
-    # read standards
-    data = {}
-    for header in headers:
-        data[header] = []
-    for row in reader:
-        for header, value in zip(headers, row):
-            data[header].append(float(value))
+    # just pick the first lamp in the list
+    lamp_id = next(iter(room.lamps))
+    weights = room.lamps[lamp_id].spectral_weightings
 
     skin_standard, eye_standard = _get_standards(room.standard)
-    skindata = dict(zip(data[headers[0]], data[skin_standard]))
-    eyedata = dict(zip(data[headers[0]], data[eye_standard]))
+    skindata = dict(zip(*weights[skin_standard]))
+    eyedata = dict(zip(*weights[eye_standard]))
 
     return 3 / skindata[wavelength], 3 / eyedata[wavelength]
 
@@ -219,26 +249,27 @@ def _tlvs_over_lamps(room):
     hours_to_tlv_skin, hours_to_tlv_eye = [], []
     skin_maxes, eye_maxes = [], []
     for lamp_id, lamp in room.lamps.items():
-        # get max irradiance shown by this lamp upon both zones
-        skin_irradiance = lamp.max_irradiances["SkinLimits"]
-        eye_irradiance = lamp.max_irradiances["EyeLimits"]
+        if len(lamp.max_irradiances) > 0:
+            # get max irradiance shown by this lamp upon both zones
+            skin_irradiance = lamp.max_irradiances["SkinLimits"]
+            eye_irradiance = lamp.max_irradiances["EyeLimits"]
 
-        if len(lamp.spectra) > 0:
-            # if lamp has a spectra associated with it, calculate the weighted spectra
-            skin_hours = _get_weighted_hours(lamp, skin_irradiance, skin_standard)
-            eye_hours = _get_weighted_hours(lamp, eye_irradiance, eye_standard)
-        else:
-            # if it doesn't, first, yell.
-            st.warning(
-                f"{lamp.name} does not have an associated spectra. Photobiological safety calculations will be inaccurate."
-            )
-            # then just use the monochromatic approximation
-            skin_hours = mono_skinmax * 8 / skin_irradiance
-            eye_hours = mono_eyemax * 8 / eye_irradiance
-        hours_to_tlv_skin.append(skin_hours)
-        hours_to_tlv_eye.append(eye_hours)
-        skin_maxes.append(skin_irradiance)
-        eye_maxes.append(eye_irradiance)
+            if len(lamp.spectra) > 0:
+                # if lamp has a spectra associated with it, calculate the weighted spectra
+                skin_hours = _get_weighted_hours(lamp, skin_irradiance, skin_standard)
+                eye_hours = _get_weighted_hours(lamp, eye_irradiance, eye_standard)
+            else:
+                # if it doesn't, first, yell.
+                st.warning(
+                    f"{lamp.name} does not have an associated spectra. Photobiological safety calculations will be inaccurate."
+                )
+                # then just use the monochromatic approximation
+                skin_hours = mono_skinmax * 8 / skin_irradiance
+                eye_hours = mono_eyemax * 8 / eye_irradiance
+            hours_to_tlv_skin.append(skin_hours)
+            hours_to_tlv_eye.append(eye_hours)
+            skin_maxes.append(skin_irradiance)
+            eye_maxes.append(eye_irradiance)
     if len(room.lamps.items()) == 0:
         hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
         skin_maxes, eye_maxes = [0], [0]
@@ -260,15 +291,17 @@ def _get_weighted_hours(lamp, irradiance, standard):
     ratio = irradiance / spectral_power
     power_distribution = rel_intensities[idx] * ratio  # true spectra at calc plane
     # load weights according to the standard
-    weighting = lamp.spectral_weightings[standard][1]
+    weights_list = lamp.spectral_weightings[standard]
+    # interpolate to match the spectra
+    weighting = np.interp(wavelength, weights_list[0], weights_list[1])
 
     # weight the normalized spectra
     weighted_spectra = power_distribution * weighting[idx]
     # sum to get weighted power
     weighted_power = _sum_spectrum(wavelength[idx], weighted_spectra)
 
-    seconds_to_tlv = 3000 / weighted_power
-    hours_to_tlv = seconds_to_tlv / 3600
+    seconds_to_tlv = 3000 / weighted_power  # seconds to reach 3 mJ/3000 uJ
+    hours_to_tlv = seconds_to_tlv / 3600  # hours to limit
     return hours_to_tlv
 
 
@@ -289,9 +322,8 @@ def _select_representative_lamp(room, standard):
     that no single lamp is contributing exclusively to the TLVs
     """
     if len(set([lamp.filename for lamp_id, lamp in room.lamps.items()])) <= 1:
-        # if they're all the same just use that one.
-        lamp_id = list(room.lamps.keys())[0]
-        chosen_lamp = room.lamps[lamp_id]
+        # if they're all the same just use the first lamp in the list
+        chosen_lamp = room.lamps[next(iter(room.lamps))]
     else:
         # otherwise pick the least convenient one
         weighted_sums = {}
@@ -306,8 +338,7 @@ def _select_representative_lamp(room, standard):
             chosen_lamp = room.lamps[chosen_id]
         else:
             # if no lamps have a spectra then it doesn't matter. pick any lamp.
-            lamp_id = list(room.lamps.keys())[0]
-            chosen_lamp = room.lamps[lamp_id]
+            chosen_lamp = room.lamps[next(iter(room.lamps))]
     return chosen_lamp
 
 

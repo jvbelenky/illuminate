@@ -8,6 +8,18 @@ ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 
 
+def close_sidebar(room, which=None, hard=False):
+    ss.editing = None
+    if which == "lamps":
+        clear_lamp_cache(room=room, hard=hard)
+    elif which in ["zones", "planes", "volumes"]:
+        clear_zone_cache(room=room, hard=hard)
+
+
+def close_results():
+    ss.show_results = False
+
+
 def update_lamp_filename(lamp):
     """update lamp filename from widget"""
     fname = ss[f"file_{lamp.lamp_id}"]
@@ -57,36 +69,34 @@ def update_room(room):
 def update_room_standard(room):
     room.standard = ss["room_standard"]
     if "UL8802" in room.standard:
-        print("bonk")
         room.calc_zones["SkinLimits"].set_height(1.9)
         room.calc_zones["EyeLimits"].set_height(1.9)
     else:
-        print("nonk")
         room.calc_zones["SkinLimits"].set_height(1.8)
         room.calc_zones["EyeLimits"].set_height(1.8)
 
 
-def clear_lamp_cache(room):
+def clear_lamp_cache(room, hard=False):
     """
     remove any lamps from the room and the widgets that don't have an
     associated filename, and deselect the lamp.
     """
     if ss.selected_lamp_id:
         selected_lamp = room.lamps[ss.selected_lamp_id]
-        if selected_lamp.filename is None:
+        if selected_lamp.filename is None or hard:
             remove_lamp(selected_lamp)
             room.remove_lamp(ss.selected_lamp_id)
     ss.selected_lamp_id = None
 
 
-def clear_zone_cache(room):
+def clear_zone_cache(room, hard=False):
     """
     remove any calc zones from the room and the widgets that don't have an
     associated zone type, and deselect the zone
     """
     if ss.selected_zone_id:
         selected_zone = room.calc_zones[ss.selected_zone_id]
-        if not isinstance(selected_zone, (CalcPlane, CalcVol)):
+        if not isinstance(selected_zone, (CalcPlane, CalcVol)) or hard:
             remove_zone(selected_zone)
             room.remove_calc_zone(ss.selected_zone_id)
     ss.selected_zone_id = None
@@ -242,14 +252,13 @@ def update_vol_dimensions(zone):
     zone.y2 = ss[f"y2_{zone.zone_id}"]
     zone.z1 = ss[f"z1_{zone.zone_id}"]
     zone.z2 = ss[f"z2_{zone.zone_id}"]
-
     zone.x_spacing = ss[f"x_spacing_{zone.zone_id}"]
     zone.y_spacing = ss[f"y_spacing_{zone.zone_id}"]
     zone.z_spacing = ss[f"z_spacing_{zone.zone_id}"]
 
     zone.offset = ss[f"offset_{zone.zone_id}"]
 
-    zone._update
+    zone._update()
 
 
 def update_lamp_position(lamp):

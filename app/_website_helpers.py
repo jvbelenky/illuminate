@@ -6,6 +6,7 @@ from guv_calcs.lamp import Lamp
 from guv_calcs.calc_zone import CalcPlane, CalcVol, CalcZone
 from ._widget import (
     initialize_lamp,
+    initialize_zone,
     clear_lamp_cache,
     clear_zone_cache,
     update_lamp_aim_point,
@@ -62,12 +63,13 @@ def add_standard_zones(room):
     )
     for zone in [fluence, skinzone, eyezone]:
         room.add_calc_zone(zone)
-        # initialize_zone(zone)
+        initialize_zone(zone)
     return room
 
 
 def add_new_zone(room):
     """necessary logic for adding new calc zone to room and to state"""
+    clear_zone_cache(room)
     # initialize calculation zone
     new_zone_idx = len(room.calc_zones) + 1
     new_zone_id = f"CalcZone{new_zone_idx}"
@@ -80,11 +82,12 @@ def add_new_zone(room):
     ss.editing = "zones"
     ss.selected_zone_id = new_zone_id
     clear_lamp_cache(room)
-    st.rerun()
 
 
 def add_new_lamp(room, name=None, interactive=True, defaults={}):
     """necessary logic for adding new lamp to room and to state"""
+    clear_zone_cache(room)
+    clear_lamp_cache(room)
     # initialize lamp
     new_lamp_idx = len(room.lamps) + 1
     # set initial position
@@ -111,8 +114,6 @@ def add_new_lamp(room, name=None, interactive=True, defaults={}):
         initialize_lamp(new_lamp)
         ss.editing = "lamps"
         ss.selected_lamp_id = new_lamp.lamp_id
-        clear_zone_cache(room)
-        st.rerun()
     else:
         return new_lamp_id
 
