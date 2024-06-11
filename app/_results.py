@@ -352,9 +352,12 @@ def get_disinfection_table(fluence, room):
     df = pd.read_csv(fname)
     df = df[df["Medium"] == "Aerosol"]
     df = df[df["wavelength [nm]"] == wavelength]
-    keys = ["Species", "Medium (specific)", "k [cm2/mJ]", "Ref", "Full Citation"]
+    keys = ["Index","Species", "Medium (specific)", "k1 [cm2/mJ]", "Full Citation"]
+    
 
     df = df[keys].fillna(" ")
+
+    df = df.sort_values("Index")
 
     volume = room.get_volume()
 
@@ -362,7 +365,7 @@ def get_disinfection_table(fluence, room):
     if room.units == "meters":
         volume = volume / (0.3048 ** 3)
 
-    df["eACH-UV"] = (df["k [cm2/mJ]"] * fluence * 3.6).round(2)
+    df["eACH-UV"] = (df["k1 [cm2/mJ]"] * fluence * 3.6).round(2)
     df["CADR-UV [cfm]"] = (df["eACH-UV"] * volume / 60).round(2)
     df["CADR-UV [lps]"] = (df["CADR-UV [cfm]"] * 0.47195).round(2)
     df = df.rename(
@@ -371,16 +374,15 @@ def get_disinfection_table(fluence, room):
 
     newkeys = [
         "Species",
-        # "Medium",
-        "k [cm2/mJ]",
         "eACH-UV",
         "CADR-UV [cfm]",
         "CADR-UV [lps]",
+        "k1 [cm2/mJ]",
         "Reference",
     ]
     df = df[newkeys]
 
-    return df
+    return df 
 
 
 def calculate_ozone_increase(room):
