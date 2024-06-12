@@ -56,9 +56,7 @@ st.markdown(
 ss = st.session_state
 
 SELECT_LOCAL = "Select local file..."
-CONTACT_STR = (
-    "Questions? Comments? Found a bug? Want a feature? Contact contact-assay@osluv.org"
-)
+CONTACT_STR = "Questions? Comments? Found a bug? Want a feature? E-mail contact-assay@osluv.org, or stay anonymous by using [this form](https://docs.google.com/forms/d/e/1FAIpQLSdDzLD3bJVmFvW_M3Pj9H5_91GL1RbTey_eXRSXO-ZBMyLJ-w/viewform)"
 
 # Check and initialize session state variables
 if "editing" not in ss:
@@ -165,11 +163,11 @@ with left_pane:
             st.write("")
         if ss.show_results:
             # add this here since it'll look nicer than on the results side
-            st.write(CONTACT_STR)
+            st.markdown(CONTACT_STR)
     else:
         if ss.show_results:
             room_plot(room)
-            st.write(CONTACT_STR)
+            st.markdown(CONTACT_STR)
 
         # if not ss.show_results, then this is an empty panel
 
@@ -178,4 +176,4 @@ with right_pane:
         results_page(room)
     else:
         room_plot(room)
-        st.write(CONTACT_STR)
+        st.markdown(CONTACT_STR)
