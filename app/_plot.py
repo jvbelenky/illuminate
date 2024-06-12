@@ -1,6 +1,8 @@
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import numpy as np
 
 ss = st.session_state
 
@@ -29,6 +31,31 @@ def room_plot(room):
     fig.layout.scene.aspectratio.y *= ar_scale
     fig.layout.scene.aspectratio.z *= ar_scale
     fig.layout.scene.xaxis.range = fig.layout.scene.xaxis.range[::-1]
+
+    fluence = room.calc_zones["WholeRoomFluence"]
+    if fluence.values is not None:
+        X,Y,Z = np.meshgrid(*fluence.points)
+
+        fig.add_trace(go.Isosurface(
+            x = X.flatten(),
+            y = Y.flatten(),
+            z = Z.flatten(),
+            value = fluence.values.flatten(),
+            surface_count = 3,
+            isomin = room.calc_zones["WholeRoomFluence"].values.mean() / 2,
+            opacity = 0.25,
+            showscale = False,
+            colorbar = None,
+            # dict(
+            #     title = 'Fluence (uW/cm²)',
+            #     x=0.9
+            # ),
+            name = 'Fluence',
+            customdata = ['Fluence'],
+            legendgroup = 'zones',
+            legendgrouptitle_text="Calculation Zones",
+            showlegend = True
+        ))
 
     st.plotly_chart(fig, use_container_width=True, height=750)
 
