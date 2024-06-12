@@ -16,17 +16,17 @@ def results_page(room):
     )
 
     # do some checks first. do we actually have any lamps?
-    msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, and then hit `Calculate`"
+    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, and then hit `Calculate`"
     if not room.lamps:
-        st.warning(msg)
+        st.warning(nolamps_msg)
     elif all(lamp.filedata is None for lampid, lamp in room.lamps.items()):
-        st.warning(msg)
+        st.warning(nolamps_msg)
     else:
         # check that all positions of lamps and calc zones are where they're supposed to be
         msgs = room.check_positions()
         for msg in msgs:
             if msg is not None:
-                st.warning(msg, icon="⚠️")
+                st.warning(msg)
         # if we're good print the results
         print_safety(room)
         print_efficacy(room)

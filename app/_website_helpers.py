@@ -98,8 +98,8 @@ def add_new_lamp(room, name=None, interactive=True, defaults={}):
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
         name=name,
-        x=defaults.get("", x),
-        y=defaults.get("", y),
+        x=defaults.get("x", x),
+        y=defaults.get("y", y),
         z=defaults.get("z", room.z - 0.1),
         spectral_weight_source=WEIGHTS_URL,
     )
