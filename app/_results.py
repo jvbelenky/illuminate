@@ -27,6 +27,9 @@ def results_page(room):
         for msg in msgs:
             if msg is not None:
                 st.warning(msg)
+        # check for using prereleaes lamps
+        if any("PRERELEASE" in lamp.name for lamp in room.lamps.values()):
+            st.warning("You are using at least one prerelease lamp. Data for this light source is preliminary; please do not make safety decisions based on these results.")
         # if we're good print the results
         print_safety(room)
         print_efficacy(room)

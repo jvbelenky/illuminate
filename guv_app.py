@@ -119,9 +119,9 @@ if "room" not in ss:
 
     preview_lamp = st.query_params.get("preview_lamp")
     if preview_lamp:
-        defaults = [
+        defaults = ([
             x for x in ss.index_data.values() if x["reporting_name"] == preview_lamp
-        ][0].get("preview_setup", {})
+        ] + [{}])[0].get("preview_setup", {})
         lamp_id = add_new_lamp(
             ss.room, name=preview_lamp, interactive=False, defaults=defaults
         )
