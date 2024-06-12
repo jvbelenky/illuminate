@@ -102,6 +102,12 @@ def clear_zone_cache(room, hard=False):
     ss.selected_zone_id = None
 
 
+def initialize_results(room):
+    keys = ["air_changes_results", "ozone_decay_constant_results"]
+    vals = [room.air_changes, room.ozone_decay_constant]
+    add_keys(keys, vals)
+
+
 def initialize_room(room):
     keys = [
         "room_x",
@@ -116,6 +122,8 @@ def initialize_room(room):
         "reflectance_floor",
         "air_changes",
         "ozone_decay_constant",
+        "air_changes_results",
+        "ozone_decay_constant_results",
     ]
     vals = [
         room.x,
@@ -128,6 +136,8 @@ def initialize_room(room):
         room.reflectance_south,
         room.reflectance_west,
         room.reflectance_floor,
+        room.air_changes,
+        room.ozone_decay_constant,
         room.air_changes,
         room.ozone_decay_constant,
     ]
@@ -206,6 +216,20 @@ def initialize_zone(zone):
         vals.append(zone.z_spacing)
 
     add_keys(keys, vals)
+
+
+def update_ozone_results(room):
+    room.air_changes = ss["air_changes_results"]
+    room.ozone_decay_constant = ss["ozone_decay_constant_results"]
+    ss["air_changes"] = ss["air_changes_results"]
+    ss["ozone_decay_constant"] = ss["ozone_decay_constant_results"]
+
+
+def update_ozone(room):
+    room.air_changes = ss["air_changes"]
+    room.ozone_decay_constant = ss["ozone_decay_constant"]
+    ss["air_changes_results"] = ss["air_changes"]
+    ss["ozone_decay_constant_results"] = ss["ozone_decay_constant"]
 
 
 def update_lamp_name(lamp):

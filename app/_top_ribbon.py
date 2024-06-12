@@ -6,6 +6,7 @@ from app._widget import (
     initialize_lamp,
     initialize_zone,
     initialize_room,
+    initialize_results,
     clear_lamp_cache,
     clear_zone_cache,
 )
@@ -127,6 +128,7 @@ def update_zone_select(zone_names, room):
 def calculate(room):
     """calculate and show results in right pane"""
     ss.show_results = True
+    initialize_results(room)
     room.calculate()
     # format the figure and disinfection table now so we don't redo it later
     fluence = room.calc_zones["WholeRoomFluence"]

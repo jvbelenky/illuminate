@@ -2,6 +2,7 @@ import streamlit as st
 from app._widget import (
     update_room,
     update_room_standard,
+    update_ozone,
     close_sidebar,
 )
 
@@ -64,14 +65,18 @@ def room_sidebar(room):
     st.subheader("Indoor Chemistry", divider="grey")
     # st.write("Coming soon")
     cols = st.columns(2)
-    room.air_changes = cols[0].number_input(
+    cols[0].number_input(
         "Air changes per hour from ventilation",
+        on_change=update_ozone,
+        args=[room],
         min_value=0.0,
         step=0.1,
         key="air_changes",
     )
-    room.ozone_decay_constant = cols[1].number_input(
+    cols[1].number_input(
         "Ozone decay constant",
+        on_change=update_ozone,
+        args=[room],
         min_value=0.0,
         step=0.1,
         key="ozone_decay_constant",

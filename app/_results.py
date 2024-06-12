@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from app._widget import close_results
+from app._widget import close_results, update_ozone_results
 
 ss = st.session_state
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
@@ -10,9 +10,7 @@ SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 def results_page(room):
     """display results in the customizable panel"""
     cols = st.columns([15, 1])
-    cols[0].title("Results")
-    cols[1].write("")
-    cols[1].write("")
+    cols[0].header("Results")
     cols[1].button(
         "X", on_click=close_results, use_container_width=True, key="close_results"
     )
@@ -30,7 +28,9 @@ def results_page(room):
             if msg is not None:
                 st.warning(msg, icon="⚠️")
         # if we're good print the results
-        print_standard_zones(room)
+        print_safety(room)
+        print_efficacy(room)
+        print_airchem(room)
 
     # Display all other results
     if any(key not in SPECIAL_ZONES for key in room.calc_zones.keys()):
@@ -47,11 +47,8 @@ def results_page(room):
                 st.write("Max:", round(vals.max(), 3), unitstr)
 
 
-def print_standard_zones(room):
-    """
-    display results of special calc zones
-    """
-
+def print_safety(room):
+    """print photobiological safety results"""
     st.subheader("Photobiological Safety", divider="grey")
     skin = room.calc_zones["SkinLimits"]
     eye = room.calc_zones["EyeLimits"]
@@ -117,7 +114,9 @@ def print_standard_zones(room):
                 eye.plot_plane(title="8-Hour Eye Dose"), **{"transparent": "True"}
             )
 
-    # Efficacy
+
+def print_efficacy(room):
+    """print germicidal efficacy results"""
     st.subheader("Efficacy", divider="grey")
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
@@ -136,19 +135,39 @@ def print_standard_zones(room):
         if SHOW_KDATA:
             st.dataframe(ss.kdf, hide_index=True)
         if SHOW_KPLOT or SHOW_KDATA:
-            st.markdown("See any missing data? Let us know [here](https://docs.google.com/forms/d/e/1FAIpQLSdpHgV3I0vYE1i8wsImyepMDumuuEfF9nY6BVtNhErMSW9iPg/viewform)")
+            st.markdown(
+                "See any missing data? Let us know [here](https://docs.google.com/forms/d/e/1FAIpQLSdpHgV3I0vYE1i8wsImyepMDumuuEfF9nY6BVtNhErMSW9iPg/viewform)"
+            )
 
-    # Indoor Air Chem
+
+def print_airchem(room):
+    """display indoor air chemistry results"""
     st.subheader("Indoor Air Chemistry", divider="grey")
+    cols = st.columns(2)
+    cols[0].number_input(
+        "Air changes per hour from ventilation",
+        on_change=update_ozone_results,
+        args=[room],
+        min_value=0.0,
+        step=0.1,
+        key="air_changes_results",
+    )
+    cols[1].number_input(
+        "Ozone decay constant",
+        on_change=update_ozone_results,
+        args=[room],
+        min_value=0.0,
+        step=0.1,
+        key="ozone_decay_constant_results",
+    )
+    fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         ozone_ppb = calculate_ozone_increase(room)
         ozone_color = "red" if ozone_ppb > 5 else "blue"
         ozone_str = f":{ozone_color}[**{round(ozone_ppb,2)} ppb**]"
     else:
         ozone_str = "Not available"
-    st.write(f"Air changes from ventilation: **{room.air_changes}**")
-    st.write(f"Ozone decay constant: **{room.ozone_decay_constant}**")
-    st.write(f"Estimated increase in indoor ozone: {ozone_str}")
+    st.write(f"Estimated increase in indoor ozone from UV: {ozone_str}")
 
 
 def get_unweighted_hours_to_tlv(room):
