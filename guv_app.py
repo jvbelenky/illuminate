@@ -3,7 +3,7 @@ import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from guv_calcs.room import Room
-from app._top_ribbon import top_ribbon
+from app._top_ribbon import top_ribbon, calculate
 from app._plot import room_plot
 from app._results import results_page
 from app._lamp_sidebar import lamp_sidebar
@@ -108,6 +108,9 @@ if "fig" not in ss:
     ss.eyefig = plt.figure()
     ss.skinfig = plt.figure()
     ss.spectrafig, _ = plt.subplots()
+    ss.kfig = None
+    ss.kdf = None
+
 fig = ss.fig
 
 if "room" not in ss:
@@ -132,8 +135,7 @@ if "room" not in ss:
         fig, ax = plt.subplots()
         ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
         # calculate and display results
-        ss.room.calculate()
-        ss.show_results = True
+        calculate(ss.room)  # normally a callback
         ss.editing = None  # just for aesthetics
         st.rerun()
 

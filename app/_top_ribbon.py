@@ -1,6 +1,7 @@
 import streamlit as st
 from guv_calcs.calc_zone import CalcPlane, CalcVol
-from app._website_helpers import add_new_lamp, add_new_zone
+from app._website_helpers import add_new_lamp, add_new_zone, get_disinfection_table
+from app._plot import plot_species
 from app._widget import (
     initialize_lamp,
     initialize_zone,
@@ -127,3 +128,9 @@ def calculate(room):
     """calculate and show results in right pane"""
     ss.show_results = True
     room.calculate()
+    # format the figure and disinfection table now so we don't redo it later
+    fluence = room.calc_zones["WholeRoomFluence"]
+    if fluence.values is not None:
+        avg_fluence = fluence.values.mean()
+        ss.kdf = get_disinfection_table(avg_fluence, room)
+        ss.kfig = plot_species(ss.kdf, avg_fluence)

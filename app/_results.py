@@ -1,7 +1,5 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
-from pathlib import Path
 from app._widget import close_results
 
 ss = st.session_state
@@ -109,7 +107,7 @@ def print_standard_zones(room):
             help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
         )
 
-        SHOW_PLOTS = st.checkbox("Show plots", value=True)
+        SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
             cols[0].pyplot(
@@ -131,8 +129,12 @@ def print_standard_zones(room):
     st.write("Average fluence: ", fluence_str)
 
     if fluence.values is not None:
-        df = get_disinfection_table(avg_fluence, room)
-        st.dataframe(df, hide_index=True)
+        SHOW_KPLOT = st.checkbox("Show Plot", value=True)
+        if SHOW_KPLOT:
+            st.pyplot(ss.kfig)
+        SHOW_KDATA = st.checkbox("Show Data", value=True)
+        if SHOW_KDATA:
+            st.dataframe(ss.kdf, hide_index=True)
 
     ## Indoor Air Chem
     st.subheader("Indoor Air Chemistry", divider="grey")
@@ -340,49 +342,6 @@ def _select_representative_lamp(room, standard):
             # if no lamps have a spectra then it doesn't matter. pick any lamp.
             chosen_lamp = room.lamps[next(iter(room.lamps))]
     return chosen_lamp
-
-
-def get_disinfection_table(fluence, room):
-
-    """assumes all lamps are GUV222. in the future will need something cleverer than this"""
-
-    wavelength = 222
-
-    fname = Path("./data/disinfection_table.csv")
-    df = pd.read_csv(fname)
-    df = df[df["Medium"] == "Aerosol"]
-    df = df[df["wavelength [nm]"] == wavelength]
-    keys = ["Index","Species", "Medium (specific)", "k1 [cm2/mJ]", "Full Citation"]
-    
-
-    df = df[keys].fillna(" ")
-
-    df = df.sort_values("Index")
-
-    volume = room.get_volume()
-
-    # convert to cubic feet for cfm
-    if room.units == "meters":
-        volume = volume / (0.3048 ** 3)
-
-    df["eACH-UV"] = (df["k1 [cm2/mJ]"] * fluence * 3.6).round(2)
-    df["CADR-UV [cfm]"] = (df["eACH-UV"] * volume / 60).round(2)
-    df["CADR-UV [lps]"] = (df["CADR-UV [cfm]"] * 0.47195).round(2)
-    df = df.rename(
-        columns={"Medium (specific)": "Medium", "Full Citation": "Reference"}
-    )
-
-    newkeys = [
-        "Species",
-        "eACH-UV",
-        "CADR-UV [cfm]",
-        "CADR-UV [lps]",
-        "k1 [cm2/mJ]",
-        "Reference",
-    ]
-    df = df[newkeys]
-
-    return df 
 
 
 def calculate_ozone_increase(room):
