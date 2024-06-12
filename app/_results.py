@@ -57,24 +57,26 @@ def print_safety(room):
     if SHOW_SKIN and SHOW_EYES:
 
         hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv(room)
-        SKIN_EXCEEDED = True if hours_skin_uw < 8 else False
-        EYE_EXCEEDED = True if hours_eye_uw < 8 else False
 
         # print the max values
-        cols = st.columns(2)
         skin = room.calc_zones["SkinLimits"]
-        skin_max = round(skin.values.max(), 3)
-        color = "red" if SKIN_EXCEEDED else "blue"
+        skin_max = round(skin.values.max(), 2)
+        color = "red" if hours_skin_uw < 8 else "blue"
         skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
 
         eye = room.calc_zones["EyeLimits"]
-        eye_max = round(eye.values.max(), 3)
-        color = "red" if EYE_EXCEEDED else "blue"
+        eye_max = round(eye.values.max(), 2)
+        color = "red" if hours_eye_uw else "blue"
         eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
+        cols = st.columns(2)
         with cols[0]:
             st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
         with cols[1]:
             st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+
+
+        
+        st.markdown("**Hours before TLV is reached:**")
 
         # unweighted hours to TLV
         hours_to_tlv = min([hours_skin_uw, hours_eye_uw])
@@ -84,8 +86,10 @@ def print_safety(room):
             hour_str = f":red[**{round(hours_to_tlv,2)}**]"
             dim = round((hours_to_tlv / 8) * 100, 1)
             hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
-        st.markdown(
-            f"**Hours before TLV is reached *with monochromatic assumption***: {hour_str}",
+
+        writecols = st.columns([1, 12])
+        writecols[1].markdown(
+            f"With monochromatic assumption: {hour_str}",
             help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
         )
 
@@ -99,19 +103,24 @@ def print_safety(room):
             dim = round((hours_to_tlv / 8) * 100, 1)
             hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
 
-        st.markdown(
-            f"**Hours before TLV is reached *with spectral weighting***: {hour_str}",
+        writecols[1].markdown(
+            f"With spectral weighting: {hour_str}",
             help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
         )
 
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
+            skintitle= "8-Hour Skin Dose (Max: "+str(skin_max)+" "+skin.units+")"
+            eyetitle= "8-Hour Eye Dose (Max: "+str(eye_max)+" "+eye.units+")"
+            
             cols[0].pyplot(
-                skin.plot_plane(title="8-Hour Skin Dose"), **{"transparent": "True"}
+                skin.plot_plane(title=skintitle),
+                **{"transparent": "True"},
             )
             cols[1].pyplot(
-                eye.plot_plane(title="8-Hour Eye Dose"), **{"transparent": "True"}
+                eye.plot_plane(title=eyetitle),
+                **{"transparent": "True"},
             )
 
 
