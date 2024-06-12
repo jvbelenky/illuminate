@@ -117,7 +117,7 @@ def print_standard_zones(room):
                 eye.plot_plane(title="8-Hour Eye Dose"), **{"transparent": "True"}
             )
 
-    ## Efficacy
+    # Efficacy
     st.subheader("Efficacy", divider="grey")
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
@@ -135,8 +135,10 @@ def print_standard_zones(room):
         SHOW_KDATA = st.checkbox("Show Data", value=True)
         if SHOW_KDATA:
             st.dataframe(ss.kdf, hide_index=True)
+        if SHOW_KPLOT or SHOW_KDATA:
+            st.markdown("See any missing data? Let us know [here](https://docs.google.com/forms/d/e/1FAIpQLSdpHgV3I0vYE1i8wsImyepMDumuuEfF9nY6BVtNhErMSW9iPg/viewform)")
 
-    ## Indoor Air Chem
+    # Indoor Air Chem
     st.subheader("Indoor Air Chemistry", divider="grey")
     if fluence.values is not None:
         ozone_ppb = calculate_ozone_increase(room)
