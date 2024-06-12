@@ -252,7 +252,10 @@ def get_ies_files():
 
     for guid, data in index_data.items():
         filename = data["slug"]
-        ies_files[data["reporting_name"]] = f"{BASE_URL}/{filename}.ies"
-        spectra[data["reporting_name"]] = f"{BASE_URL}/{filename}-spectrum.csv"
+        name = data["reporting_name"]
+        if data.get('sketch', False):
+            name += ' (PRERELEASE DATA)'
+        ies_files[name] = f"{BASE_URL}/{filename}.ies"
+        spectra[name] = f"{BASE_URL}/{filename}-spectrum.csv"
 
     return index_data, ies_files, spectra
