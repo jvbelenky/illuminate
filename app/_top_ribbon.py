@@ -91,7 +91,8 @@ def show_room(room):
 def update_lamp_select(lamp_names, room):
     """update logic to display new lamp selection in sidebar"""
     clear_lamp_cache(room)  # first clear out anything old
-    ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
+    if ss["lamp_select"] in lamp_names:
+        ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
     if ss.selected_lamp_id is not None:
         # if lamp is selected, open editing pane
         ss.editing = "lamps"
@@ -108,7 +109,8 @@ def update_lamp_select(lamp_names, room):
 def update_zone_select(zone_names, room):
     """update logic to display new zone selection in sidebar"""
     clear_zone_cache(room)
-    ss.selected_zone_id = zone_names[ss["zone_select"]]
+    if ss["zone_select"] in zone_names:
+        ss.selected_zone_id = zone_names[ss["zone_select"]]
     if ss.selected_zone_id is not None:
         selected_zone = room.calc_zones[ss.selected_zone_id]
         if isinstance(selected_zone, CalcPlane):
