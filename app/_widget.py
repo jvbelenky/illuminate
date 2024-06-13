@@ -22,7 +22,7 @@ def close_results():
 
 def update_lamp_filename(lamp):
     """update lamp filename from widget"""
-    fname = ss[f"file_{lamp.lamp_id}"]
+    fname = set_val(f"file_{lamp.lamp_id}",lamp.filename)
     spectra_data = None
     fdata = None
     if fname != SELECT_LOCAL:
@@ -45,9 +45,9 @@ def update_lamp_filename(lamp):
 
 def update_room(room):
     """update the room dimensions and the special calc zones that live in it"""
-    room.x = ss["room_x"]
-    room.y = ss["room_y"]
-    room.z = ss["room_z"]
+    room.x = set_val("room_x",room.x)
+    room.y = set_val("room_y",room.y)
+    room.z = set_val("room_z",room.z)
     room.set_dimensions()
 
     room.calc_zones["WholeRoomFluence"].set_dimensions(
@@ -219,87 +219,83 @@ def initialize_zone(zone):
 
 
 def update_ozone_results(room):
-    room.air_changes = ss["air_changes_results"]
-    room.ozone_decay_constant = ss["ozone_decay_constant_results"]
-    ss["air_changes"] = ss["air_changes_results"]
-    ss["ozone_decay_constant"] = ss["ozone_decay_constant_results"]
+    room.air_changes = set_val("air_changes_results", room.air_changes)
+    room.ozone_decay_constant = set_val("ozone_decay_constant_results",room.ozone_decay_constant)
+    ss["air_changes"] = set_val("air_changes_results", room.air_changes)
+    ss["ozone_decay_constant"] = set_val("ozone_decay_constant_results",room.ozone_decay_constant)
 
 
 def update_ozone(room):
-    room.air_changes = ss["air_changes"]
-    room.ozone_decay_constant = ss["ozone_decay_constant"]
-    ss["air_changes_results"] = ss["air_changes"]
-    ss["ozone_decay_constant_results"] = ss["ozone_decay_constant"]
+    
+    room.air_changes = set_val("air_changes", room.air_changes)
+    room.ozone_decay_constant = set_val("ozone_decay_constant",room.ozone_decay_constant)
+
+    ss["air_changes_results"] = set_val("air_changes", room.air_changes)
+    ss["ozone_decay_constant_results"] = set_val("ozone_decay_constant",room.ozone_decay_constant)
 
 
 def update_lamp_name(lamp):
     """update lamp name from widget"""
-    lamp.name = ss[f"name_{lamp.lamp_id}"]
-
+    lamp.name = set_val(f"enabled_{lamp.lamp_id}",lamp.name)
 
 def update_zone_name(zone):
     """update zone name from widget"""
-    zone.name = ss[f"name_{zone.zone_id}"]
-
-
+    zone.name = set_val(f"name_{zone.zone_id}",zone.name)
+    
 def update_lamp_visibility(lamp):
     """update whether lamp shows in plot or not from widget"""
-    lamp.enabled = ss[f"enabled_{lamp.lamp_id}"]
-
-
+    lamp.enabled = set_val(f"enabled_{lamp.lamp_id}",lamp.enabled)
+    
 def update_zone_visibility(zone):
     """update whether calculation zone shows up in plot or not from widget"""
-    zone.enabled = ss[f"enabled_{zone.zone_id}"]
-
+    zone.enabled = set_val(f"enabled_{zone.zone_id}",zone.enabled)
 
 def update_plane_dimensions(zone):
     """update dimensions and spacing of calculation volume from widgets"""
-    zone.x1 = ss[f"x1_{zone.zone_id}"]
-    zone.x2 = ss[f"x2_{zone.zone_id}"]
-    zone.y1 = ss[f"y1_{zone.zone_id}"]
-    zone.y2 = ss[f"y2_{zone.zone_id}"]
-    zone.height = ss[f"height_{zone.zone_id}"]
+    
+    zone.x1 = set_val(f"x1_{zone.zone_id}",zone.x1)
+    zone.x2 = set_val(f"x2_{zone.zone_id}",zone.x2)
+    zone.y1 = set_val(f"y1_{zone.zone_id}",zone.y1)
+    zone.y2 = set_val(f"y2_{zone.zone_id}",zone.y2)
+    zone.height = set_val(f"height_{zone.zone_id}",zone.height)
 
-    zone.x_spacing = ss[f"x_spacing_{zone.zone_id}"]
-    zone.y_spacing = ss[f"y_spacing_{zone.zone_id}"]
+    zone.x_spacing = set_val(f"x_spacing_{zone.zone_id}",zone.x_spacing)
+    zone.y_spacing = set_val(f"y_spacing_{zone.zone_id}",zone.y_spacing)
 
-    zone.offset = ss[f"offset_{zone.zone_id}"]
+    zone.offset = set_val(f"offset_{zone.zone_id}",zone.offset)
 
     zone._update()
 
 
 def update_vol_dimensions(zone):
     """update dimensions and spacing of calculation volume from widgets"""
-    zone.x1 = ss[f"x1_{zone.zone_id}"]
-    zone.x2 = ss[f"x2_{zone.zone_id}"]
-    zone.y1 = ss[f"y1_{zone.zone_id}"]
-    zone.y2 = ss[f"y2_{zone.zone_id}"]
-    zone.z1 = ss[f"z1_{zone.zone_id}"]
-    zone.z2 = ss[f"z2_{zone.zone_id}"]
-    zone.x_spacing = ss[f"x_spacing_{zone.zone_id}"]
-    zone.y_spacing = ss[f"y_spacing_{zone.zone_id}"]
-    zone.z_spacing = ss[f"z_spacing_{zone.zone_id}"]
-
-    zone.offset = ss[f"offset_{zone.zone_id}"]
-
+    zone.x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
+    zone.x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
+    zone.y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
+    zone.y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
+    zone.z1 = set_val(f"z1_{zone.zone_id}", zone.z1)
+    zone.z2 = set_val(f"z2_{zone.zone_id}", zone.z2)
+    zone.x_spacing = set_val(f"x_spacing_{zone.zone_id}",zone.x_spacing)
+    zone.y_spacing = set_val(f"y_spacing_{zone.zone_id}",zone.y_spacing)
+    zone.z_spacing = set_val(f"z_spacing_{zone.zone_id}",zone.z_spacing)
+    zone.offset = set_val(f"offset_{zone.zone_id}",zone.offset)
     zone._update()
-
 
 def update_lamp_position(lamp):
     """update lamp position and aim point based on widget input"""
-    x = ss[f"pos_x_{lamp.lamp_id}"]
-    y = ss[f"pos_y_{lamp.lamp_id}"]
-    z = ss[f"pos_z_{lamp.lamp_id}"]
+    
+    x = set_val(f"pos_x_{lamp.lamp_id}",lamp.x)
+    y = set_val(f"pos_y_{lamp.lamp_id}",lamp.y)
+    z = set_val(f"pos_z_{lamp.lamp_id}",lamp.z)
     lamp.move(x, y, z)
     # update widgets
     update_lamp_aim_point(lamp)
 
-
 def update_lamp_orientation(lamp):
     """update lamp object aim point, and tilt/orientation widgets"""
-    aimx = ss[f"aim_x_{lamp.lamp_id}"]
-    aimy = ss[f"aim_y_{lamp.lamp_id}"]
-    aimz = ss[f"aim_z_{lamp.lamp_id}"]
+    aimx = set_val(f"aim_x_{lamp.lamp_id}",lamp.aimx)
+    aimy = set_val(f"aim_y_{lamp.lamp_id}",lamp.aimy)
+    aimz = set_val(f"aim_z_{lamp.lamp_id}",lamp.aimz)
     lamp.aim(aimx, aimy, aimz)
     ss[f"orientation_{lamp.lamp_id}"] = lamp.heading
     ss[f"tilt_{lamp.lamp_id}"] = lamp.bank
@@ -307,14 +303,14 @@ def update_lamp_orientation(lamp):
 
 def update_from_tilt(lamp, room):
     """update tilt+aim point in lamp, and aim point widget"""
-    tilt = ss[f"tilt_{lamp.lamp_id}"]
+    tilt = set_val(f"tilt_{lamp.lamp_id}", lamp.bank)
     lamp.set_tilt(tilt, dimensions=room.dimensions)
     update_lamp_aim_point(lamp)
 
 
 def update_from_orientation(lamp, room):
     """update orientation+aim point in lamp, and aim point widget"""
-    orientation = ss[f"orientation_{lamp.lamp_id}"]
+    orientation = set_val(f"orientation_{lamp.lamp_id}", lamp.heading)
     lamp.set_orientation(orientation, room.dimensions)
     update_lamp_aim_point(lamp)
 
@@ -363,6 +359,13 @@ def remove_zone(zone):
         keys.append(f"zspace_{zone.zone_id}")
         remove_keys(keys)
 
+def set_val(key, default):
+    if key in ss:
+        val = ss[key]
+    else:
+        warnings.warn(f"{key} not in session state")
+        val = default
+    return val
 
 def remove_keys(keys):
     """remove parameters from widget"""
