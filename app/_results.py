@@ -66,7 +66,7 @@ def print_safety(room):
 
         eye = room.calc_zones["EyeLimits"]
         eye_max = round(eye.values.max(), 2)
-        color = "red" if hours_eye_uw else "blue"
+        color = "red" if hours_eye_uw < 8 else "blue"
         eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
         cols = st.columns(2)
         with cols[0]:
@@ -76,7 +76,7 @@ def print_safety(room):
 
 
         
-        st.markdown("**Hours before TLV is reached:**")
+        st.markdown("**Hours before first TLV is reached:**")
 
         # unweighted hours to TLV
         hours_to_tlv = min([hours_skin_uw, hours_eye_uw])
@@ -90,7 +90,7 @@ def print_safety(room):
         writecols = st.columns([1, 12])
         writecols[1].markdown(
             f"With monochromatic assumption: {hour_str}",
-            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
+            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides an ies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption (within 25%.)",
         )
 
         # weighted hours to TLV
