@@ -37,12 +37,12 @@ def room_plot(room):
     fluence = room.calc_zones["WholeRoomFluence"]
     traces = [trace.name for trace in fig.data]
     if fluence.values is not None:
-    
+
         X, Y, Z = np.meshgrid(*fluence.points)
         x, y, z = X.flatten(), Y.flatten(), Z.flatten()
         values = fluence.values.flatten()
         isomin = room.calc_zones["WholeRoomFluence"].values.mean() / 2
-        if "Fluence" not in traces: # add if not in traces
+        if "Fluence" not in traces:  # add if not in traces
             fig.add_trace(
                 go.Isosurface(
                     x=x,
@@ -61,20 +61,19 @@ def room_plot(room):
                     showlegend=True,
                 )
             )
-        else: # update if trace already exists
+        else:  # update if trace already exists
             fig.update_traces(
                 x=x,
                 y=y,
                 z=z,
                 value=values,
-                isomin=isomin,            
-                selector=dict(name="Fluence")
+                isomin=isomin,
+                selector=dict(name="Fluence"),
             )
-            
-    else: # remove if there are no values here        
+
+    else:  # remove if there are no values here
         if "Fluence" in traces:
             del traces[traces.index("Fluence")]
-            
 
     st.plotly_chart(fig, use_container_width=True, height=750)
 

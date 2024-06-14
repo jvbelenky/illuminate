@@ -52,7 +52,7 @@ def print_safety(room):
     st.subheader(
         "Photobiological Safety",
         divider="grey",
-        help="""Photobiological safety standards are set in the USA by the American Conference of Governmental Industrial Hygienists (ACGIH) and elsewhere in the world by the  International Commission on Non-Ionizing Radiation Protection (ICNIRP). At 222 nm, the ACGIH limits for skin are 479 mJ/cm2 over 8 hours, and for eyes they are 161 mJ/cm2 over 8 hours. The ICNIRP limits are the same for both eyes and skin; 23 mJ/cm2 over 8 hours. However, though KrCl lamps are approximately monochromatic, this is only an approximation, and individual KrCl lamps may have different threshold limit values (TLVs) depending on their spectral content.""",
+        help="Photobiological safety standards are set in the USA by the American Conference of Governmental Industrial Hygienists (ACGIH) and elsewhere in the world by the  International Commission on Non-Ionizing Radiation Protection (ICNIRP). At 222 nm, the ACGIH limits for skin are 479 mJ/cm2 over 8 hours, and for eyes they are 161 mJ/cm2 over 8 hours. The ICNIRP limits are the same for both eyes and skin; 23 mJ/cm2 over 8 hours. However, though KrCl lamps are approximately monochromatic, this is only an approximation, and individual KrCl lamps may have different threshold limit values (TLVs) depending on their spectral content.",
     )
     skin = room.calc_zones["SkinLimits"]
     eye = room.calc_zones["EyeLimits"]
@@ -78,35 +78,32 @@ def print_safety(room):
         with cols[1]:
             st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
 
-        st.markdown("**Hours before first TLV is reached:**")
+        cols[0].markdown("**Hours before skin TLV is reached:**")
+        cols[1].markdown("**Hours before eye TLV is reached:**")
+        hours_skin_uw_str = make_hour_string(hours_skin_uw, "skin")
+        hours_eye_uw_str = make_hour_string(hours_eye_uw, "eye")
 
-        # unweighted hours to TLV
-        hours_to_tlv = min([hours_skin_uw, hours_eye_uw])
-        if hours_to_tlv > 8:
-            hour_str = ":blue[Indefinite]"
-        else:
-            hour_str = f":red[**{round(hours_to_tlv,2)}**]"
-            dim = round((hours_to_tlv / 8) * 100, 1)
-            hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
-
-        writecols = st.columns([1, 12])
+        writecols = st.columns([1, 6, 1, 6])
         writecols[1].markdown(
-            f"With monochromatic assumption: {hour_str}",
+            f"With monochromatic assumption: {hours_skin_uw_str}",
+            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
+        )
+        writecols[3].markdown(
+            f"With monochromatic assumption: {hours_eye_uw_str}",
             help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
         )
 
         # weighted hours to TLV
         hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv(room)
-        hours_to_tlv = min([hours_skin_w, hours_eye_w])
-        if hours_to_tlv > 8:
-            hour_str = ":blue[Indefinite]"
-        else:
-            hour_str = f":red[**{round(hours_to_tlv,2)}**]"
-            dim = round((hours_to_tlv / 8) * 100, 1)
-            hour_str += f" *(To be compliant with TLVs, this lamp must be dimmed to {dim}% of its present power)*"
+        hours_skin_w_str = make_hour_string(hours_skin_w, "skin")
+        hours_eye_w_str = make_hour_string(hours_eye_w, "eye")
 
         writecols[1].markdown(
-            f"With spectral weighting: {hour_str}",
+            f"With spectral weighting: {hours_skin_w_str}",
+            help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
+        )
+        writecols[3].markdown(
+            f"With spectral weighting: {hours_eye_w_str}",
             help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
         )
 
@@ -128,12 +125,22 @@ def print_safety(room):
             )
 
 
+def make_hour_string(hours, which):
+
+    if hours > 8:
+        hours_str = f":blue[**Indefinite ({round(hours,2)})**]"
+    else:
+        hours_str = f":red[**{round(hours,2)}**]"
+        dim = round((hours / 8) * 100, 1)
+        hours_str += f" *(To be compliant with {which} TLVs, this lamp must be dimmed to {dim}% of its present power)*"
+    return hours_str
+
 def print_efficacy(room):
     """print germicidal efficacy results"""
     st.subheader(
         "Efficacy",
         divider="grey",
-        help="Equivalent air changes from UV (eACH-UV) in a *well-mixed room* is determined by the average fluence [mW/cm2] multiplied by the susceptibility value k [cm2/mW] multiplied by the number of seconds in an hour (3600). **Note that values of k are highly uncertain and should be considered preliminary.**"
+        help="Equivalent air changes from UV (eACH-UV) in a *well-mixed room* is determined by the average fluence [mW/cm2] multiplied by the susceptibility value k [cm2/mW] multiplied by the number of seconds in an hour (3600). **Note that values of k are highly uncertain and should be considered preliminary.**",
     )
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
@@ -160,9 +167,9 @@ def print_efficacy(room):
 def print_airchem(room):
     """display indoor air chemistry results"""
     st.subheader(
-        "Indoor Air Chemistry",
+        "Ozone Generation",
         divider="grey",
-        help="Given an assumed air change rate from ventilation and an ozone decay rate typical for indoor environments, the anticipated total increase in ozone in parts per billion. This calculation currently assumes an ozone generation constant of 10, calculated by Peng 2022 (DOI: 10.1021/acs.estlett.3c00314) for an Ushio B1. Eventually this calculation will take into account individual lamp spectra."
+        help="Given an assumed air change rate from ventilation and an ozone decay rate typical for indoor environments, the anticipated total increase in ozone in parts per billion. This calculation currently assumes an ozone generation constant of 10, calculated by Peng 2022 (DOI: 10.1021/acs.estlett.3c00314) for an Ushio B1. Eventually this calculation will take into account individual lamp spectra.",
     )
     cols = st.columns(2)
     cols[0].number_input(
@@ -172,7 +179,7 @@ def print_airchem(room):
         min_value=0.0,
         step=0.1,
         key="air_changes_results",
-        help="Note that outdoor ozone is almost always at a higher concentration than indoor ozone. Increasing the air changes from ventilation will reduce the increase in ozone due to GUV, but may increase the total indoor ozone concentration. However, increasing ventilation will also increase the rate of removal of any secondary products that may form from the ozone."
+        help="Note that outdoor ozone is almost always at a higher concentration than indoor ozone. Increasing the air changes from ventilation will reduce the increase in ozone due to GUV, but may increase the total indoor ozone concentration. However, increasing ventilation will also increase the rate of removal of any secondary products that may form from the ozone.",
     )
     cols[1].number_input(
         "Ozone decay constant",
