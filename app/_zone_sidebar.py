@@ -281,6 +281,12 @@ def zone_sidebar(room):
             args=[selected_zone],
             disabled=False,
         )
+        st.checkbox(
+            "Show fluence isosurface",
+            on_change=update_zone_visibility,
+            args=[selected_zone],
+            key=f"show_values_{selected_zone.zone_id}",
+        )
     if ss.editing == "zones":
         st.button(
             "Cancel",
@@ -292,13 +298,13 @@ def zone_sidebar(room):
         )
 
     elif ss.editing in ["planes", "volumes"]:
-        selected_zone.enable = st.checkbox(
+        st.checkbox(
             "Enabled",
-            # value=selected_zone.enable,
             on_change=update_zone_visibility,
             args=[selected_zone],
             key=f"enabled_{selected_zone.zone_id}",
         )
+        
         col7, col8 = st.columns(2)
         col7.button(
             "Delete",

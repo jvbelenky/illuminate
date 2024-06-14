@@ -205,10 +205,11 @@ def initialize_zone(zone):
         f"y_spacing_{zone.zone_id}",
         f"offset_{zone.zone_id}",
         f"enabled_{zone.zone_id}",
+        f"show_values_{zone.zone_id}",
     ]
     if isinstance(zone, CalcPlane):
-        keys.append(f"height_{zone.zone_id}"),
-        keys.append(f"fov80_{zone.zone_id}"),
+        keys.append(f"height_{zone.zone_id}")
+        keys.append(f"fov80_{zone.zone_id}")
     elif isinstance(zone, CalcVol):
         keys.append(f"z1_{zone.zone_id}")
         keys.append(f"z2_{zone.zone_id}")
@@ -224,6 +225,7 @@ def initialize_zone(zone):
         zone.y_spacing,
         zone.offset,
         zone.enabled,
+        zone.show_values,
     ]
     if isinstance(zone, CalcPlane):
         vals.append(zone.height)
@@ -278,6 +280,7 @@ def update_lamp_visibility(lamp):
 def update_zone_visibility(zone):
     """update whether calculation zone shows up in plot or not from widget"""
     zone.enabled = set_val(f"enabled_{zone.zone_id}", zone.enabled)
+    zone.show_values = set_val(f"show_values_{zone.zone_id}", zone.show_values)
 
 
 def update_plane_dimensions(zone):

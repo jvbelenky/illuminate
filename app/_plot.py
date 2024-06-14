@@ -1,8 +1,9 @@
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
-import plotly.graph_objs as go
-import numpy as np
+
+# import plotly.graph_objs as go
+# import numpy as np
 
 ss = st.session_state
 
@@ -14,7 +15,7 @@ def room_plot(room):
         select_id = ss.selected_zone_id
     else:
         select_id = None
-    fig = room.plotly(fig=ss.fig, select_id=select_id)
+    ss.fig = room.plotly(fig=ss.fig, select_id=select_id)
 
     if ss.show_results:
         if ss.editing is None:
@@ -27,55 +28,55 @@ def room_plot(room):
         else:
             ar_scale = 0.6
     # ar_scale = 0.8 if (ss.editing != "results") else 0.5
-    fig.layout.scene.aspectratio.x *= ar_scale
-    fig.layout.scene.aspectratio.y *= ar_scale
-    fig.layout.scene.aspectratio.z *= ar_scale
-    fig.layout.scene.xaxis.range = fig.layout.scene.xaxis.range[::-1]
+    ss.fig.layout.scene.aspectratio.x *= ar_scale
+    ss.fig.layout.scene.aspectratio.y *= ar_scale
+    ss.fig.layout.scene.aspectratio.z *= ar_scale
+    ss.fig.layout.scene.xaxis.range = ss.fig.layout.scene.xaxis.range[::-1]
 
-    # add fluence isosurface
-    # TODO: put this in guv-calcs instead
-    fluence = room.calc_zones["WholeRoomFluence"]
-    traces = [trace.name for trace in fig.data]
-    if fluence.values is not None:
+    # # add fluence isosurface
+    # # TODO: put this in guv-calcs instead
+    # fluence = room.calc_zones["WholeRoomFluence"]
+    # traces = [trace.name for trace in fig.data]
+    # if fluence.values is not None:
 
-        X, Y, Z = np.meshgrid(*fluence.points)
-        x, y, z = X.flatten(), Y.flatten(), Z.flatten()
-        values = fluence.values.flatten()
-        isomin = room.calc_zones["WholeRoomFluence"].values.mean() / 2
-        if "Fluence" not in traces:  # add if not in traces
-            fig.add_trace(
-                go.Isosurface(
-                    x=x,
-                    y=y,
-                    z=z,
-                    value=values,
-                    surface_count=3,
-                    isomin=isomin,
-                    opacity=0.25,
-                    showscale=False,
-                    colorbar=None,
-                    name="Fluence",
-                    customdata=["Fluence"],
-                    legendgroup="zones",
-                    legendgrouptitle_text="Calculation Zones",
-                    showlegend=True,
-                )
-            )
-        else:  # update if trace already exists
-            fig.update_traces(
-                x=x,
-                y=y,
-                z=z,
-                value=values,
-                isomin=isomin,
-                selector=dict(name="Fluence"),
-            )
+    # X, Y, Z = np.meshgrid(*fluence.points)
+    # x, y, z = X.flatten(), Y.flatten(), Z.flatten()
+    # values = fluence.values.flatten()
+    # isomin = room.calc_zones["WholeRoomFluence"].values.mean() / 2
+    # if "Fluence" not in traces:  # add if not in traces
+    # ss.fig.add_trace(
+    # go.Isosurface(
+    # x=x,
+    # y=y,
+    # z=z,
+    # value=values,
+    # surface_count=3,
+    # isomin=isomin,
+    # opacity=0.25,
+    # showscale=False,
+    # colorbar=None,
+    # name="Fluence",
+    # customdata=["Fluence"],
+    # legendgroup="zones",
+    # legendgrouptitle_text="Calculation Zones",
+    # showlegend=True,
+    # )
+    # )
+    # else:  # update if trace already exists
+    # ss.fig.update_traces(
+    # x=x,
+    # y=y,
+    # z=z,
+    # value=values,
+    # isomin=isomin,
+    # selector=dict(name="Fluence"),
+    # )
 
-    else:  # remove if there are no values here
-        if "Fluence" in traces:
-            del traces[traces.index("Fluence")]
+    # else:  # remove if there are no values here
+    # if "Fluence" in traces:
+    # del traces[traces.index("Fluence")]
 
-    st.plotly_chart(fig, use_container_width=True, height=750)
+    st.plotly_chart(ss.fig, use_container_width=True, height=750)
 
 
 def plot_species(df, fluence):
