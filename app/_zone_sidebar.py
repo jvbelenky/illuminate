@@ -17,7 +17,7 @@ ss = st.session_state
 
 def zone_sidebar(room):
     cols = st.columns([10, 1])
-    cols[0].subheader("Edit Calculation Zone")
+    cols[0].header("Edit Calculation Zone")
     cols[1].button(
         "X",
         on_click=close_sidebar,

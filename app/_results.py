@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from app._widget import close_results, update_ozone_results
+from app._widget import close_results, update_ozone_results, update_standard_results
 
 ss = st.session_state
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
@@ -53,6 +53,19 @@ def print_safety(room):
         "Photobiological Safety",
         divider="grey",
         help="Photobiological safety standards are set in the USA by the American Conference of Governmental Industrial Hygienists (ACGIH) and elsewhere in the world by the  International Commission on Non-Ionizing Radiation Protection (ICNIRP). At 222 nm, the ACGIH limits for skin are 479 mJ/cm2 over 8 hours, and for eyes they are 161 mJ/cm2 over 8 hours. The ICNIRP limits are the same for both eyes and skin; 23 mJ/cm2 over 8 hours. However, though KrCl lamps are approximately monochromatic, this is only an approximation, and individual KrCl lamps may have different threshold limit values (TLVs) depending on their spectral content.",
+    )
+    standards = [
+        "ANSI IES RP 27.1-22 (America) - UL8802",
+        "ANSI IES RP 27.1-22 (America)",
+        "IEC 62471-6:2022 (International)",
+    ]
+    st.selectbox(
+        "Select photobiological safety standard",
+        options=standards,
+        on_change=update_standard_results,
+        args=[room],
+        key="room_standard_results",
+        help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead.",
     )
     skin = room.calc_zones["SkinLimits"]
     eye = room.calc_zones["EyeLimits"]
@@ -126,7 +139,7 @@ def print_safety(room):
 
 
 def make_hour_string(hours, which):
-
+    """format string for printing hours to tlv"""
     if hours > 8:
         hours_str = f":blue[**Indefinite ({round(hours,2)})**]"
     else:
@@ -134,6 +147,7 @@ def make_hour_string(hours, which):
         dim = round((hours / 8) * 100, 1)
         hours_str += f" *(To be compliant with {which} TLVs, this lamp must be dimmed to {dim}% of its present power)*"
     return hours_str
+
 
 def print_efficacy(room):
     """print germicidal efficacy results"""
@@ -385,9 +399,11 @@ def _select_representative_lamp(room, standard):
         weighted_sums = {}
         for lamp_id, lamp in room.lamps.items():
             # iterate through all lamps and pick the one with the highest value sum
-            if len(lamp.spectra) > 0:
+            if len(lamp.spectra) > 0 and lamp.filename is not None:
                 # either eye or skin standard can be used for this purpose
-                weighted_sums[lamp_id] = lamp.spectra[standard].sum()
+                wavelength = lamp.spectra[standard][0]
+                intensities = lamp.spectra[standard][1]
+                weighted_sums[lamp_id] = _sum_spectrum(wavelength, intensities)
 
         if len(weighted_sums) > 0:
             chosen_id = max(weighted_sums, key=weighted_sums.get)

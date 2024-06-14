@@ -21,7 +21,7 @@ ss = st.session_state
 def lamp_sidebar(room):
     """all sidebar content for editing luminaires"""
     cols = st.columns([10, 1])
-    cols[0].subheader("Edit Luminaire")
+    cols[0].header("Edit Luminaire")
     cols[1].button(
         "X",
         on_click=close_sidebar,

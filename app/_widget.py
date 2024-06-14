@@ -67,8 +67,19 @@ def update_room(room):
     ss.room = room
 
 
-def update_room_standard(room):
-    room.standard = ss["room_standard"]
+def update_standard(room):
+    room.standard = set_val("room_standard", room.standard)
+    ss["room_standard_results"] = room.standard
+    update_calc_zones(room)
+
+
+def update_standard_results(room):
+    room.standard = set_val("room_standard_results", room.standard)
+    ss["room_standard"] = room.standard
+    update_calc_zones(room)
+
+
+def update_calc_zones(room):
     if "UL8802" in room.standard:
         room.calc_zones["SkinLimits"].set_height(1.9)
         room.calc_zones["EyeLimits"].set_height(1.9)
@@ -104,8 +115,12 @@ def clear_zone_cache(room, hard=False):
 
 
 def initialize_results(room):
-    keys = ["air_changes_results", "ozone_decay_constant_results"]
-    vals = [room.air_changes, room.ozone_decay_constant]
+    keys = [
+        "air_changes_results",
+        "ozone_decay_constant_results",
+        "room_standard_results",
+    ]
+    vals = [room.air_changes, room.ozone_decay_constant, room.standard]
     add_keys(keys, vals)
 
 
@@ -125,6 +140,7 @@ def initialize_room(room):
         "ozone_decay_constant",
         "air_changes_results",
         "ozone_decay_constant_results",
+        "room_standard_results",
     ]
     vals = [
         room.x,
@@ -141,6 +157,7 @@ def initialize_room(room):
         room.ozone_decay_constant,
         room.air_changes,
         room.ozone_decay_constant,
+        room.standard,
     ]
     add_keys(keys, vals)
 

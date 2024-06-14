@@ -1,7 +1,7 @@
 import streamlit as st
 from app._widget import (
     update_room,
-    update_room_standard,
+    update_standard,
     update_ozone,
     close_sidebar,
 )
@@ -56,10 +56,10 @@ def room_sidebar(room):
     st.selectbox(
         "Select photobiological safety standard",
         options=standards,
-        on_change=update_room_standard,
+        on_change=update_standard,
         args=[room],
         key="room_standard",
-        help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead."
+        help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead.",
     )
 
     st.subheader("Indoor Chemistry", divider="grey")
