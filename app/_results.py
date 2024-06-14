@@ -16,7 +16,7 @@ def results_page(room):
     )
 
     # do some checks first. do we actually have any lamps?
-    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, and then hit `Calculate`"
+    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, selecting a file from the drop-down list, and then hit `Calculate`"
     if not room.lamps:
         st.warning(nolamps_msg)
     elif all(lamp.filedata is None for lampid, lamp in room.lamps.items()):
@@ -49,7 +49,11 @@ def results_page(room):
 
 def print_safety(room):
     """print photobiological safety results"""
-    st.subheader("Photobiological Safety", divider="grey")
+    st.subheader(
+        "Photobiological Safety",
+        divider="grey",
+        help="""Photobiological safety standards are set in the USA by the American Conference of Governmental Industrial Hygienists (ACGIH) and elsewhere in the world by the  International Commission on Non-Ionizing Radiation Protection (ICNIRP). At 222 nm, the ACGIH limits for skin are 479 mJ/cm2 over 8 hours, and for eyes they are 161 mJ/cm2 over 8 hours. The ICNIRP limits are the same for both eyes and skin; 23 mJ/cm2 over 8 hours. However, though KrCl lamps are approximately monochromatic, this is only an approximation, and individual KrCl lamps may have different threshold limit values (TLVs) depending on their spectral content.""",
+    )
     skin = room.calc_zones["SkinLimits"]
     eye = room.calc_zones["EyeLimits"]
     SHOW_SKIN = True if skin.values is not None else False
@@ -74,8 +78,6 @@ def print_safety(room):
         with cols[1]:
             st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
 
-
-        
         st.markdown("**Hours before first TLV is reached:**")
 
         # unweighted hours to TLV
@@ -90,7 +92,7 @@ def print_safety(room):
         writecols = st.columns([1, 12])
         writecols[1].markdown(
             f"With monochromatic assumption: {hour_str}",
-            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides an ies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption (within 25%.)",
+            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
         )
 
         # weighted hours to TLV
@@ -111,9 +113,11 @@ def print_safety(room):
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
-            skintitle= "8-Hour Skin Dose (Max: "+str(skin_max)+" "+skin.units+")"
-            eyetitle= "8-Hour Eye Dose (Max: "+str(eye_max)+" "+eye.units+")"
-            
+            skintitle = (
+                "8-Hour Skin Dose (Max: " + str(skin_max) + " " + skin.units + ")"
+            )
+            eyetitle = "8-Hour Eye Dose (Max: " + str(eye_max) + " " + eye.units + ")"
+
             cols[0].pyplot(
                 skin.plot_plane(title=skintitle),
                 **{"transparent": "True"},
@@ -126,7 +130,11 @@ def print_safety(room):
 
 def print_efficacy(room):
     """print germicidal efficacy results"""
-    st.subheader("Efficacy", divider="grey")
+    st.subheader(
+        "Efficacy",
+        divider="grey",
+        help="Equivalent air changes from UV (eACH-UV) in a *well-mixed room* is determined by the average fluence [mW/cm2] multiplied by the susceptibility value k [cm2/mW] multiplied by the number of seconds in an hour (3600). **Note that values of k are highly uncertain and should be considered preliminary.**"
+    )
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         fluence.values
@@ -151,7 +159,11 @@ def print_efficacy(room):
 
 def print_airchem(room):
     """display indoor air chemistry results"""
-    st.subheader("Indoor Air Chemistry", divider="grey")
+    st.subheader(
+        "Indoor Air Chemistry",
+        divider="grey",
+        help="Given an assumed air change rate from ventilation and an ozone decay rate typical for indoor environments, the anticipated total increase in ozone in parts per billion. This calculation currently assumes an ozone generation constant of 10, calculated by Peng 2022 (DOI: 10.1021/acs.estlett.3c00314) for an Ushio B1. Eventually this calculation will take into account individual lamp spectra."
+    )
     cols = st.columns(2)
     cols[0].number_input(
         "Air changes per hour from ventilation",
@@ -160,6 +172,7 @@ def print_airchem(room):
         min_value=0.0,
         step=0.1,
         key="air_changes_results",
+        help="Note that outdoor ozone is almost always at a higher concentration than indoor ozone. Increasing the air changes from ventilation will reduce the increase in ozone due to GUV, but may increase the total indoor ozone concentration. However, increasing ventilation will also increase the rate of removal of any secondary products that may form from the ozone."
     )
     cols[1].number_input(
         "Ozone decay constant",
@@ -168,6 +181,7 @@ def print_airchem(room):
         min_value=0.0,
         step=0.1,
         key="ozone_decay_constant_results",
+        help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
     )
     fluence = room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
@@ -302,6 +316,9 @@ def _tlvs_over_lamps(room):
             hours_to_tlv_eye.append(eye_hours)
             skin_maxes.append(skin_irradiance)
             eye_maxes.append(eye_irradiance)
+        else:
+            hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
+            skin_maxes, eye_maxes = [0], [0]
     if len(room.lamps.items()) == 0:
         hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
         skin_maxes, eye_maxes = [0], [0]

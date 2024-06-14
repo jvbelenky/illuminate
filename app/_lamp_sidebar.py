@@ -189,7 +189,7 @@ def lamp_file_options(selected_lamp):
 
     if selected_lamp.filename in ss.uploaded_files and len(selected_lamp.spectra) == 0:
 
-        st.write(
+        st.warning(
             """In order for GUV photobiological safety calculations to be
              accurate, a spectra is required. Please upload a .csv file with 
              exactly 1 header row, where the first column is wavelengths, and the 

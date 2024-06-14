@@ -221,17 +221,6 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Interpreting the Results", divider="grey")
-    st.write(
-        """
-        After adding a luminaire and clicking `Calculate`, the Results page will show several outputs:
-        
-        - **Efficacy:** GUV system efficacy is determined approximately by the average fluence multiplied by the susceptibility value k. *Note that k values for aerosolized pathogens have high uncertainty associated with them, and these values should be understood as possible ranges.*
-        - **Ozone increase:** Given an assumed air change rate from ventilation and an ozone decay rate typical for indoor environments, the anticipated total increase in ozone in parts per billion.
-        - **Photobiological safety:** Spectrally-weighted calculations for eye and skin safety, per the selected standard. If either limit is exceeded, a dimming requirement is reported. By default, the standard selected is ANSI IES RP 27.1-22, which uses the post-2022 ACGIH Threshold Limit Values (TLVs) with height set by UL8802 at 1.9 meters.
-        """
-    )
-
     st.subheader("Editing the Room", divider="grey")
     st.write(
         """
@@ -289,12 +278,12 @@ def default_sidebar(room):
     st.subheader("Features Under Development", divider="grey")
     st.write(
         """
+        - **Saving and load projects**: Save all the parameters of a project as a .json blob, and upload again
         - **Mobile view**: Clean layout configured for mobile devices\n
         - **Exporting results**: Export the result of any calculation zone, or all calculation zones, for use with other modeling software
         - **Generating a report**: Generate a polished safety and efficacy report of an installation with a click of a button
         - **Copying objects**: Duplicate a luminaire or calculation zone
         - **Interactive plotting**: Place luminaires and draw calculation zones directly onto the interactive visualization plot
-        - **Saving and load projects**: Save all the parameters of a project as a .json blob, and upload again
         - **Locally installable app**: Run easily as a desktop app without internet access
         - **Support for other GUV wavelengths**: Currently, only GUV222 with krypton-chloride lamps is supported. Future releases will also support GUV254        
         - **More accurate near-field modeling**: Definitions of GUV sources that take into account emission surface geometry and near-field radiation distribution.
