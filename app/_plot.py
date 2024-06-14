@@ -73,7 +73,7 @@ def room_plot(room):
             
     else: # remove if there are no values here        
         if "Fluence" in traces:
-            del traces.index("Fluence")
+            del traces[traces.index("Fluence")]
             
 
     st.plotly_chart(fig, use_container_width=True, height=750)
