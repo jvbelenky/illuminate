@@ -35,31 +35,46 @@ def room_plot(room):
     # add fluence isosurface
     # TODO: put this in guv-calcs instead
     fluence = room.calc_zones["WholeRoomFluence"]
+    traces = [trace.name for trace in fig.data]
     if fluence.values is not None:
+    
         X, Y, Z = np.meshgrid(*fluence.points)
-
-        fig.add_trace(
-            go.Isosurface(
-                x=X.flatten(),
-                y=Y.flatten(),
-                z=Z.flatten(),
-                value=fluence.values.flatten(),
-                surface_count=3,
-                isomin=room.calc_zones["WholeRoomFluence"].values.mean() / 2,
-                opacity=0.25,
-                showscale=False,
-                colorbar=None,
-                # dict(
-                #     title = 'Fluence (uW/cm²)',
-                #     x=0.9
-                # ),
-                name="Fluence",
-                customdata=["Fluence"],
-                legendgroup="zones",
-                legendgrouptitle_text="Calculation Zones",
-                showlegend=True,
+        x, y, z = X.flatten(), Y.flatten(), Z.flatten()
+        values = fluence.values.flatten()
+        isomin = room.calc_zones["WholeRoomFluence"].values.mean() / 2
+        if "Fluence" not in traces: # add if not in traces
+            fig.add_trace(
+                go.Isosurface(
+                    x=x,
+                    y=y,
+                    z=z,
+                    value=values,
+                    surface_count=3,
+                    isomin=isomin,
+                    opacity=0.25,
+                    showscale=False,
+                    colorbar=None,
+                    name="Fluence",
+                    customdata=["Fluence"],
+                    legendgroup="zones",
+                    legendgrouptitle_text="Calculation Zones",
+                    showlegend=True,
+                )
             )
-        )
+        else: # update if trace already exists
+            fig.update_traces(
+                x=x,
+                y=y,
+                z=z,
+                value=values,
+                isomin=isomin,            
+                selector=dict(name="Fluence")
+            )
+            
+    else: # remove if there are no values here        
+        if "Fluence" in traces:
+            del traces.index("Fluence")
+            
 
     st.plotly_chart(fig, use_container_width=True, height=750)
 
