@@ -267,6 +267,20 @@ def default_sidebar(room):
         """
     )
 
+    st.subheader("Calculation Time", divider="grey")
+    st.write(
+        """
+        When the `Calculate!` button is pressed, calculations are performed for each luminaire
+        and each calculation zone, such that the number of calculations is the product of the 
+        number of luminaires and the number of calculation zones. With only a few calculation zones
+        and a few luminaires, calculation time should be nearly instantaneous, but for largeer numbers
+        of lamps and calculation zones, calculation time may be several minutes. For this reason, cached
+        results may be viewed with the `Show Results` button. Decreasing the spacing of any calculation volume
+        below 0.05 meters, or generating a very large room, may also result in significantly increased 
+        calculation time.
+        """
+    )
+
     st.subheader("Plotting Interaction", divider="grey")
     st.write(
         """
