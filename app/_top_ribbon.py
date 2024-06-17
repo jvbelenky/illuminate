@@ -16,7 +16,7 @@ ss = st.session_state
 
 def top_ribbon(room):
 
-    c = st.columns([1, 1, 1, 1, 1.5, 1, 1.5, 1])
+    c = st.columns([1, 1, 1, 1, 1.5, 1, 1.5, 1, 1])
 
     # with c[0]:
     c[0].button("About", on_click=show_about, args=[room], use_container_width=True)
@@ -58,6 +58,13 @@ def top_ribbon(room):
     )
 
     c[7].button(
+        "Show Results",
+        on_click=show_results,
+        args=[room],
+        use_container_width=True,
+    )
+
+    c[8].button(
         "Calculate!",
         on_click=calculate,
         args=[room],
@@ -125,6 +132,10 @@ def update_zone_select(zone_names, room):
     else:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
+
+
+def show_results(room):
+    ss.show_results = True
 
 
 def calculate(room):
