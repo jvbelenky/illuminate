@@ -292,6 +292,3 @@ def default_sidebar(room):
         - *...and much more!*
         """
     )
-
-    st.subheader("References", divider="grey")
-    st.write("*Coming soon...*")

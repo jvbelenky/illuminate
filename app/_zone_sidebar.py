@@ -304,7 +304,7 @@ def zone_sidebar(room):
             args=[selected_zone],
             key=f"enabled_{selected_zone.zone_id}",
         )
-        
+
         col7, col8 = st.columns(2)
         col7.button(
             "Delete",

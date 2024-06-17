@@ -204,7 +204,7 @@ def get_disinfection_table(fluence, room):
         "eACH-UV",
         "CADR-UV [cfm]",
         "CADR-UV [lps]",
-        "Kingdom",
+        "Organism",
         "Species",
         "Strain",
         "Type (Viral)",
