@@ -60,7 +60,7 @@ def room_sidebar(room):
         args=[room],
         key="room_standard",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
-        )
+    )
     st.subheader("Indoor Chemistry", divider="grey")
     # st.write("Coming soon")
     cols = st.columns(2)
@@ -212,8 +212,11 @@ def default_sidebar(room):
         key="close_about",
     )
 
-    st.header("A free and open source simulation tool for germicidal UV applications")
-    st.subheader("Getting Started", divider="grey")
+    st.write(
+        "***A free and open source simulation tool for germicidal UV applications***"
+    )
+
+    st.header("Getting Started", divider="grey")
     st.write(
         """
         To run your first simulation, simply click on the `Add Luminaire` 
@@ -266,7 +269,7 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Calculation Time", divider="grey")
+    st.subheader("Calculating", divider="grey")
     st.write(
         """
         When the `Calculate!` button is pressed, calculations are performed for each luminaire
@@ -280,28 +283,62 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Plotting Interaction", divider="grey")
+    st.header("About the Project", divider="grey")
+    st.subheader("Source Libraries")
     st.write(
         """
-        Click and drag anywhere in the plot to change the view mode. To remove a luminaire or calculation 
-        zone from the plot, click on its entry in the legend. Note that invisible luminaires and calculation 
-        zones still participate in calculations. Currently, the room plot is only for visualization, and it 
-        is not possible to select and edit objects in the room by clicking on them.
+        Illuminate is a free and open source web tool, whose development 
+        repository may be found [here](https://github.com/jvbelenky/illuminate/).
+        Its core calculations depend on the [GUV-calcs](https://github.com/jvbelenky/guv-calcs/) library, and it uses 
+        [PhotomPy](https://github.com/jvbelenky/photompy) for the parsing of 
+        photometric files. All three repositories are distributed under an MIT license.
+        The features below are immediate priorities; contribution is highly encouraged.
         """
     )
 
-    st.subheader("Features Under Development", divider="grey")
+    st.subheader("Features Under Development: Illuminate", divider="grey")
+    st.write("Repository Link: [Illuminate](https://github.com/jvbelenky/illuminate)")
+    st.write("*Core Features:*")
+    st.write(
+        """        
+        - **Risk reduction calculations**: Based on known pathogen emission rates, number of people present, community wastewater levels, etc.
+        - **Occupancy-category comm check**: Select an indoor space type from a dropdown list to compare expected UV disinfection rates to recommended rates by ASHRAE 241, CDC, etc.
+        - **Add portable air cleaners to the simulation**: In order to calculate total air cleaning achieved, not just from UV
+        """
+    )
+    st.write("*Tooling Features:*")
     st.write(
         """
         - **Saving and load projects**: Save all the parameters of a project as a .json blob, and upload again
-        - **Mobile view**: Clean layout configured for mobile devices\n
+        - **Mobile view**: Clean layout configured for mobile devices
         - **Exporting results**: Export the result of any calculation zone, or all calculation zones, for use with other modeling software
         - **Generating a report**: Generate a polished safety and efficacy report of an installation with a click of a button
         - **Copying objects**: Duplicate a luminaire or calculation zone
         - **Interactive plotting**: Place luminaires and draw calculation zones directly onto the interactive visualization plot
+        - **In-tool CAD support**: Design complex environments directly in the interface
         - **Locally installable app**: Run easily as a desktop app without internet access
+        - *...and much more!*
+        """
+    )
+
+    st.subheader("Features Under Development: GUV-Calcs", divider="grey")
+    st.write("Repository Link: [GUV-Calcs](https://github.com/jvbelenky/guv-calcs)")
+    st.write(
+        """
+        - **Support for diffuse reflectance**: Include reflectance values in the fluence and irradiance calculations
+        - **Support for design of complex environments**: Whether designing a complex environment 
         - **Support for other GUV wavelengths**: Currently, only GUV222 with krypton-chloride lamps is supported. Future releases will also support GUV254        
         - **More accurate near-field modeling**: Definitions of GUV sources that take into account emission surface geometry and near-field radiation distribution.
-        - *...and much more!*
+        
+        """
+    )
+    st.subheader("Features Under Development: PhotomPy", divider="grey")
+    st.write("Repository Link: [Photompy](https://github.com/jvbelenky/photompy)")
+    st.write(
+        """
+        - **Dialux support**: Support for Dialux (.ldt) files
+        - **A/B Photometry**: Support for Type A and Type B Photometry
+        - **File from angular distribution:** Generate .ies and .ldt files from an angular distribution table
+        - **File editing menu:** More extensive file editing and writing support
         """
     )
