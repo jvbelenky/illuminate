@@ -12,24 +12,27 @@ from app._widget import (
 )
 
 ss = st.session_state
+ADD_LAMP = "Add new luminaire"
+ADD_ZONE = "Add new calculation zone"
 
 
 def top_ribbon():
 
-    c = st.columns([1, 1, 1, 1, 1.5, 1, 1.5, 1, 1])
+    c = st.columns([1, 1, 1, 2, 2, 1, 1])
 
     # with c[0]:
     c[0].button("About", on_click=show_about, use_container_width=True)
     c[1].button("Project", on_click=show_project, use_container_width=True)
     c[2].button("Edit Room", on_click=show_room, use_container_width=True)
-    c[3].button(
-        "Add Luminaire", on_click=add_new_lamp, use_container_width=True
-    )
-    lamp_names = {"Select luminaire to edit": None}
+    # c[3].button(
+    # "Add Luminaire", on_click=add_new_lamp, use_container_width=True
+    # )
+    lamp_names = {"Select luminaire ... ": None}
     for lamp_id, lamp in ss.room.lamps.items():
         lamp_names[lamp.name] = lamp_id
+    lamp_names[ADD_LAMP] = ADD_LAMP
     lamp_sel_idx = list(lamp_names.values()).index(ss.selected_lamp_id)
-    c[4].selectbox(
+    c[3].selectbox(
         "Select luminaire to edit",
         options=list(lamp_names),
         on_change=update_lamp_select,
@@ -39,15 +42,16 @@ def top_ribbon():
         key="lamp_select",
     )
 
-    c[5].button(
-        "Add Calc Zone", on_click=add_new_zone, use_container_width=True
-    )
+    # c[4].button(
+    # "Add Calc Zone", on_click=add_new_zone, use_container_width=True
+    # )
 
-    zone_names = {"Select calc zone to edit": None}
+    zone_names = {"Select calculation zone...": None}
     for zone_id, zone in ss.room.calc_zones.items():
         zone_names[zone.name] = zone_id
+    zone_names[ADD_ZONE] = ADD_ZONE
     zone_sel_idx = list(zone_names.values()).index(ss.selected_zone_id)
-    c[6].selectbox(
+    c[4].selectbox(
         "Select calculation zone to edit",
         options=list(zone_names),
         on_change=update_zone_select,
@@ -57,17 +61,15 @@ def top_ribbon():
         key="zone_select",
     )
 
-    c[7].button(
+    c[5].button(
         "Show Results",
         on_click=show_results,
-        # args=[room],
         use_container_width=True,
     )
 
-    c[8].button(
+    c[6].button(
         "Calculate!",
         on_click=calculate,
-        # args=[room],
         type="primary",
         use_container_width=True,
     )
@@ -100,7 +102,12 @@ def update_lamp_select(lamp_names):
     clear_lamp_cache()  # first clear out anything old
     if ss["lamp_select"] in lamp_names:
         ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
-    if ss.selected_lamp_id is not None:
+    if ss.selected_lamp_id is None:
+        # this will only happen if users have selected the 'none' option in the dropdown menu
+        ss.editing = None
+    elif ss.selected_lamp_id == ADD_LAMP:
+        add_new_lamp()
+    else:
         # if lamp is selected, open editing pane
         ss.editing = "lamps"
         selected_lamp = ss.room.lamps[ss.selected_lamp_id]
@@ -108,9 +115,6 @@ def update_lamp_select(lamp_names):
         initialize_lamp(selected_lamp)
         # clear widgets of anything to do with zone editing if it's currently loaded
         clear_zone_cache()
-    else:
-        # this will only happen if users have selected the 'none' option in the dropdown menu
-        ss.editing = None
 
 
 def update_zone_select(zone_names):
@@ -118,7 +122,12 @@ def update_zone_select(zone_names):
     clear_zone_cache()
     if ss["zone_select"] in zone_names:
         ss.selected_zone_id = zone_names[ss["zone_select"]]
-    if ss.selected_zone_id is not None:
+    if ss.selected_zone_id is None:
+        # this will only happen if users have selected the 'none' option in the dropdown menu
+        ss.editing = None
+    elif ss.selected_zone_id == ADD_ZONE:
+        add_new_zone()
+    else:
         selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         if isinstance(selected_zone, CalcPlane):
             ss.editing = "planes"
@@ -129,9 +138,6 @@ def update_zone_select(zone_names):
         else:
             ss.editing = "zones"
         clear_lamp_cache()
-    else:
-        # this will only happen if users have selected the 'none' option in the dropdown menu
-        ss.editing = None
 
 
 def show_results():

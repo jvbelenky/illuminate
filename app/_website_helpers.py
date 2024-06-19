@@ -66,12 +66,11 @@ def add_standard_zones():
     for zone in [fluence, skinzone, eyezone]:
         ss.room.add_calc_zone(zone)
         initialize_zone(zone)
-    return ss.room
 
 
 def add_new_zone():
     """necessary logic for adding new calc zone to room and to state"""
-    clear_zone_cache()
+    # clear_zone_cache()
     # initialize calculation zone
     new_zone_idx = len(ss.room.calc_zones) + 1
     new_zone_id = f"CalcZone{new_zone_idx}"
@@ -88,8 +87,6 @@ def add_new_zone():
 
 def add_new_lamp(name=None, interactive=True, defaults={}):
     """necessary logic for adding new lamp to room and to state"""
-    clear_zone_cache()
-    clear_lamp_cache()
     # initialize lamp
     new_lamp_idx = len(ss.room.lamps) + 1
     # set initial position
@@ -111,6 +108,8 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
     update_lamp_orientation(new_lamp)
     # add to session and to room
     ss.room.add_lamp(new_lamp)
+    # remove any zone stuff in the buffer
+    clear_zone_cache()
     if interactive:
         # select for editing
         initialize_lamp(new_lamp)

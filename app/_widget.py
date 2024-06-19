@@ -121,7 +121,7 @@ def clear_lamp_cache(hard=False):
     remove any lamps from the room and the widgets that don't have an
     associated filename, and deselect the lamp.
     """
-    if ss.selected_lamp_id:
+    if ss.selected_lamp_id in ss.room.lamps:
         selected_lamp = ss.room.lamps[ss.selected_lamp_id]
         if selected_lamp.filename is None or hard:
             remove_lamp(selected_lamp)
@@ -134,7 +134,7 @@ def clear_zone_cache(hard=False):
     remove any calc zones from the room and the widgets that don't have an
     associated zone type, and deselect the zone
     """
-    if ss.selected_zone_id:
+    if ss.selected_zone_id in ss.room.calc_zones:
         selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         if not isinstance(selected_zone, (CalcPlane, CalcVol)) or hard:
             remove_zone(selected_zone)
