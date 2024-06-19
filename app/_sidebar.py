@@ -212,8 +212,8 @@ def default_sidebar(room):
         key="close_about",
     )
 
-    st.write(
-        "***A free and open source simulation tool for germicidal UV applications***"
+    st.subheader(
+        "***A free and open source simulation tool for germicidal far-UV applications***"
     )
 
     st.header("Getting Started", divider="grey")
@@ -225,7 +225,7 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Editing the Room", divider="grey")
+    st.subheader("Editing the Room")  # , divider="grey")
     st.write(
         """
         In the `Edit Room` menu, you can change the size of the room, the air changes from ventilation and ozone decay
@@ -234,7 +234,7 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Adding and Editing Luminaires", divider="grey")
+    st.subheader("Adding and Editing Luminaires")  # , divider="grey")
     st.write(
         """
         For more complex simulations, you can configure the position and orientation of the luminaire,
@@ -245,7 +245,7 @@ def default_sidebar(room):
         but will still participate in calculations, but not if you uncheck the box labeled `Enabled`.
         """
     )
-    st.subheader("Adding and Editing Calculation Zones", divider="grey")
+    st.subheader("Adding and Editing Calculation Zones")  # , divider="grey")
     st.write(
         """
         Illuminate-GUV comes pre-loaded with three key calculation zones important for 
@@ -269,7 +269,7 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Calculating", divider="grey")
+    st.subheader("Calculating")  # , divider="grey")
     st.write(
         """
         When the `Calculate!` button is pressed, calculations are performed for each luminaire
@@ -284,7 +284,18 @@ def default_sidebar(room):
     )
 
     st.header("About the Project", divider="grey")
-    st.subheader("Source Libraries", divider="grey")
+    st.subheader("Purpose and Scope")
+    st.write(
+        """
+        Currently, Illuminate only supports far-UV sources; calculations will
+        assume that all inputted luminaires are krypton-chloride (KrCl) lamps, as 
+        these are the sources for which we have [characterization data](https://assay.osluv.org/)
+        and a reasonable quantity of [inactivation data](https://docs.google.com/spreadsheets/d/1lVr0aWTFvlcjG2Rp7GPKOan_ET2hwSBoy05Ap8KsUko/edit#gid=0).
+        Eventually, there will be support for other GUV sources, with priority for non-KrCl far-UV sources 
+        and 254nm low-pressure mercury lamps.
+        """
+    )
+    st.subheader("Source Libraries")  # , divider="grey")
     st.write(
         """
         Illuminate is a free and open source web tool based on the Streamlit library, 
@@ -298,7 +309,7 @@ def default_sidebar(room):
 
     st.subheader(
         "Features Under Development: [Illuminate](https://github.com/jvbelenky/illuminate)",
-        divider="grey",
+        # divider="grey",
     )
     st.write("*Core Features:*")
     st.write(
@@ -325,7 +336,7 @@ def default_sidebar(room):
 
     st.subheader(
         "Features Under Development: [GUV-Calcs](https://github.com/jvbelenky/guv-calcs)",
-        divider="grey",
+        # divider="grey",
     )
     st.write(
         """
@@ -338,7 +349,7 @@ def default_sidebar(room):
     )
     st.subheader(
         "Features Under Development: [PhotomPy](https://github.com/jvbelenky/photompy)",
-        divider="grey",
+        # divider="grey",
     )
     st.write(
         """
