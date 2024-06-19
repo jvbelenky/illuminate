@@ -284,20 +284,22 @@ def default_sidebar(room):
     )
 
     st.header("About the Project", divider="grey")
-    st.subheader("Source Libraries")
+    st.subheader("Source Libraries", divider="grey")
     st.write(
         """
-        Illuminate is a free and open source web tool, whose development 
-        repository may be found [here](https://github.com/jvbelenky/illuminate/).
+        Illuminate is a free and open source web tool based on the Streamlit library, 
+        whose development repository may be found [here](https://github.com/jvbelenky/illuminate/).
         Its core calculations depend on the [GUV-calcs](https://github.com/jvbelenky/guv-calcs/) library, and it uses 
         [PhotomPy](https://github.com/jvbelenky/photompy) for the parsing of 
-        photometric files. All three repositories are distributed under an MIT license.
-        The features below are immediate priorities; contribution is highly encouraged.
+        photometric files. All three repositories are distributed under an MIT license and are
+        written primarily in Python. The features below are immediate priorities; contribution is highly encouraged.
         """
     )
 
-    st.subheader("Features Under Development: Illuminate", divider="grey")
-    st.write("Repository Link: [Illuminate](https://github.com/jvbelenky/illuminate)")
+    st.subheader(
+        "Features Under Development: [Illuminate](https://github.com/jvbelenky/illuminate)",
+        divider="grey",
+    )
     st.write("*Core Features:*")
     st.write(
         """        
@@ -321,8 +323,10 @@ def default_sidebar(room):
         """
     )
 
-    st.subheader("Features Under Development: GUV-Calcs", divider="grey")
-    st.write("Repository Link: [GUV-Calcs](https://github.com/jvbelenky/guv-calcs)")
+    st.subheader(
+        "Features Under Development: [GUV-Calcs](https://github.com/jvbelenky/guv-calcs)",
+        divider="grey",
+    )
     st.write(
         """
         - **Support for diffuse reflectance**: Include reflectance values in the fluence and irradiance calculations
@@ -332,8 +336,10 @@ def default_sidebar(room):
         
         """
     )
-    st.subheader("Features Under Development: PhotomPy", divider="grey")
-    st.write("Repository Link: [Photompy](https://github.com/jvbelenky/photompy)")
+    st.subheader(
+        "Features Under Development: [PhotomPy](https://github.com/jvbelenky/photompy)",
+        divider="grey",
+    )
     st.write(
         """
         - **Dialux support**: Support for Dialux (.ldt) files
