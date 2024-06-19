@@ -83,6 +83,7 @@ def update_standard(room):
     if RECALCULATE:
         room.calculate()
 
+
 def update_standard_results(room):
     """update what standard is used based on results page, recalculate if necessary"""
     # store whether recalculation is necessary
@@ -95,7 +96,7 @@ def update_standard_results(room):
     ss["room_standard"] = room.standard
     # update calc zones
     update_calc_zones(room)
-    # recalculate if necessary eg: if value has changed    
+    # recalculate if necessary eg: if value has changed
     if RECALCULATE:
         room.calculate()
 

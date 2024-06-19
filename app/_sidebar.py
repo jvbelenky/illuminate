@@ -203,7 +203,7 @@ def project_sidebar(room):
 def default_sidebar(room):
     """default display of sidebar showing instructions"""
     cols = st.columns([10, 1])
-    cols[0].title("Welcome to Illuminate-GUV!")
+    cols[0].title("Welcome to Illuminate!")
     cols[1].button(
         "X",
         on_click=close_sidebar,
@@ -248,7 +248,7 @@ def default_sidebar(room):
     st.subheader("Adding and Editing Calculation Zones")  # , divider="grey")
     st.write(
         """
-        Illuminate-GUV comes pre-loaded with three key calculation zones important for 
+        Illuminate comes pre-loaded with three key calculation zones important for 
         assessing the functioning of GUV systems. One is for assessing system efficacy--average 
         fluence in the room. The other two are for assessing photobiological 
         safety - the *spectrally weighted* horizontal irradiance taken at 1.8 or 1.9 meters 
