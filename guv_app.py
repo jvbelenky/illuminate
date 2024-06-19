@@ -73,6 +73,7 @@ if "selected_zone_id" not in ss:
 
 if "uploaded_files" not in ss:
     ss.uploaded_files = {}
+    ss.uploaded_spectras = {}
 
 if "lampfile_options" not in ss:
     ies_files = get_local_ies_files()  # local files for testing
@@ -115,12 +116,11 @@ if "room" not in ss:
 
     preview_lamp = st.query_params.get("preview_lamp")
     if preview_lamp:
-        defaults = [
-            x for x in ss.index_data.values() if x["reporting_name"] == preview_lamp
-        ][0].get("preview_setup", {})
-        lamp_id = add_new_lamp(
-            ss.room, name=preview_lamp, interactive=False, defaults=defaults
-        )
+        vals = ss.index_data.values()
+        default_list = [x for x in vals if x["reporting_name"] == preview_lamp][0]
+        defaults = default_list.get("preview_setup", {})
+        lamp_id = add_new_lamp(name=preview_lamp, interactive=False, defaults=defaults)
+        
         lamp = ss.room.lamps[lamp_id]
         # load ies data
         fdata = requests.get(ss.vendored_lamps[preview_lamp]).content
@@ -128,12 +128,13 @@ if "room" not in ss:
         # load spectra
         spectra_data = requests.get(ss.vendored_spectra[preview_lamp]).content
         lamp.load_spectra(spectra_data)
+
         fig, ax = plt.subplots()
         ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
         # calculate and display results
         calculate()  # normally a callback
         ss.editing = None  # just for aesthetics
-        st.rerun()
+        # st.rerun()
 
 top_ribbon()
 

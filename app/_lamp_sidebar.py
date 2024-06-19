@@ -167,46 +167,38 @@ def lamp_file_options(selected_lamp):
         key=f"file_{selected_lamp.lamp_id}",
     )
     # if anything but select_local has been selected, lamp should have reloaded
-    fname = selected_lamp.filename
+    # fname = selected_lamp.filename
 
     # determine fdata from fname
-    fdata = None
-    spectra_data = None  # TEMP
+    # fdata = None
+    # spectra_data = None  # TEMP
     if selected_lamp.filename == SELECT_LOCAL:
-        uploaded_file = st.file_uploader(
-            "Upload a file", type="ies", key=f"upload_{selected_lamp.lamp_id}"
+        st.file_uploader(
+            "Upload a file",
+            type="ies",
+            on_change=load_uploaded_lamp,
+            args=[selected_lamp],
+            key=f"upload_{selected_lamp.lamp_id}",
         )
-        if uploaded_file is not None:
-            fdata = uploaded_file.read()
-            fname = uploaded_file.name
-            # add the uploaded file to the session state and upload
-            ss.uploaded_files[fname] = fdata
-            make_file_list()
-            # load into lamp object
-            selected_lamp.reload(filename=fname, filedata=fdata)
-            # st.rerun here?
-            st.rerun()
 
-    if selected_lamp.filename in ss.uploaded_files and len(selected_lamp.spectra) == 0:
-
-        st.warning(
-            """In order for GUV photobiological safety calculations to be
-             accurate, a spectra is required. Please upload a .csv file with 
-             exactly 1 header row, where the first column is wavelengths, and the 
-             second column is relative intensities. :red[If a spectra is not provided, 
-             photobiological safety calculations will be inaccurate.]"""
-        )
-        uploaded_spectra = st.file_uploader(
-            "Upload spectra CSV",
-            type="csv",
-            key=f"spectra_upload_{selected_lamp.lamp_id}",
-        )
-        if uploaded_spectra is not None:
-            spectra_data = uploaded_spectra.read()
-            selected_lamp.load_spectra(spectra_data)
-            fig, ax = plt.subplots()
-            ss.spectrafig = selected_lamp.plot_spectra(fig=fig, title="")
-            st.rerun()
+    if selected_lamp.filename in ss.uploaded_files:
+        if selected_lamp.filename in ss.uploaded_spectras:
+            load_uploaded_spectra(selected_lamp)
+        else:
+            st.warning(
+                """In order for GUV photobiological safety calculations to be
+                 accurate, a spectra is required. Please upload a .csv file with 
+                 exactly 1 header row, where the first column is wavelengths, and the 
+                 second column is relative intensities. :red[If a spectra is not provided, 
+                 photobiological safety calculations will be inaccurate.]"""
+            )
+            st.file_uploader(
+                "Upload spectra CSV",
+                type="csv",
+                on_change=load_uploaded_spectra,
+                args=[selected_lamp],
+                key=f"spectra_upload_{selected_lamp.lamp_id}",
+            )
 
     # plot if there is data to plot with
     PLOT_IES, PLOT_SPECTRA = False, False
@@ -243,3 +235,43 @@ def lamp_file_options(selected_lamp):
         ss.spectrafig.set_size_inches(6.4, 4.8, forward=True)
         ss.spectrafig.axes[0].set_yscale(yscale)
         st.pyplot(ss.spectrafig, use_container_width=True)
+
+
+def load_uploaded_lamp(lamp):
+    """load the .ies file of a user-uploaded file"""
+    uploaded_file = ss[f"upload_{lamp.lamp_id}"]
+    if uploaded_file is not None:
+        fname = uploaded_file.name
+        if fname in ss.uploaded_files:
+            fdata = ss.uploaded_files[fname]
+        else:
+            fdata = uploaded_file.read()
+            # add the uploaded file to the session state and upload
+            ss.uploaded_files[fname] = fdata
+            make_file_list()
+        # load into lamp object
+        lamp.reload(filename=fname, filedata=fdata)
+        # load spectra if present
+
+        key = f"spectra_upload_{lamp.lamp_id}"
+        if key is not None and key in ss:
+            load_uploaded_spectra(lamp)
+
+
+def load_uploaded_spectra(lamp):
+    """load the .csv file of a user-uploaded spectra"""
+    spectra_data = None
+    # first check if we've loaded it already
+    if lamp.filename in ss.uploaded_spectras:
+        spectra_data = ss.uploaded_spectras[lamp.filename]
+    else:
+        uploaded_spectra = ss[f"spectra_upload_{lamp.lamp_id}"]
+        if uploaded_spectra is not None:
+            # add to list
+            spectra_data = uploaded_spectra.read()
+            ss.uploaded_spectras[lamp.filename] = spectra_data
+    if spectra_data is not None:
+        lamp.load_spectra(spectra_data)
+        # prep figure
+        fig, ax = plt.subplots()
+        ss.spectrafig = lamp.plot_spectra(fig=fig, title="")

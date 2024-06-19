@@ -16,6 +16,7 @@ from ._widget import (
 
 ss = st.session_state
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
+SELECT_LOCAL = "Select local file..."
 
 
 def add_standard_zones():
@@ -226,7 +227,6 @@ def get_disinfection_table(fluence):
 
 def make_file_list():
     """generate current list of lampfile options, both locally uploaded and from assays.osluv.org"""
-    SELECT_LOCAL = "Select local file..."
     vendorfiles = list(ss.vendored_lamps.keys())
     uploadfiles = list(ss.uploaded_files.keys())
     options = [None] + vendorfiles + uploadfiles + [SELECT_LOCAL]
