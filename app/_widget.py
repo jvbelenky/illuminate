@@ -68,24 +68,51 @@ def update_room(room):
 
 
 def update_standard(room):
+    """update what standard is used, recalculate if necessary"""
+    # store whether recalculation is necessary
+    RECALCULATE = False
+    if ("UL8802" in room.standard) ^ ("UL8802" in ss["room_standard"]):
+        RECALCULATE = True
+    # update room standard
     room.standard = set_val("room_standard", room.standard)
+    # update other widget
     ss["room_standard_results"] = room.standard
+    # update calc zones
     update_calc_zones(room)
-
+    # recalculate if necessary eg: if value has changed
+    if RECALCULATE:
+        room.calculate()
 
 def update_standard_results(room):
+    """update what standard is used based on results page, recalculate if necessary"""
+    # store whether recalculation is necessary
+    RECALCULATE = False
+    if ("UL8802" in room.standard) ^ ("UL8802" in ss["room_standard_results"]):
+        RECALCULATE = True
+    # update room standard
     room.standard = set_val("room_standard_results", room.standard)
+    # update other widget
     ss["room_standard"] = room.standard
+    # update calc zones
     update_calc_zones(room)
+    # recalculate if necessary eg: if value has changed    
+    if RECALCULATE:
+        room.calculate()
 
 
 def update_calc_zones(room):
     if "UL8802" in room.standard:
         room.calc_zones["SkinLimits"].set_height(1.9)
         room.calc_zones["EyeLimits"].set_height(1.9)
+        room.calc_zones["EyeLimits"].fov80 = False
+        room.calc_zones["EyeLimits"].vert = False
+        room.calc_zones["SkinLimits"].horiz = False
     else:
         room.calc_zones["SkinLimits"].set_height(1.8)
         room.calc_zones["EyeLimits"].set_height(1.8)
+        room.calc_zones["EyeLimits"].fov80 = True
+        room.calc_zones["EyeLimits"].vert = True
+        room.calc_zones["SkinLimits"].horiz = True
 
 
 def clear_lamp_cache(room, hard=False):

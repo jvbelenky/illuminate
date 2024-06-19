@@ -112,7 +112,9 @@ if "fig" not in ss:
 fig = ss.fig
 
 if "room" not in ss:
-    ss.room = Room()
+    # ss.room = Room()
+    ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
+
     ss.room = add_standard_zones(ss.room)
 
     preview_lamp = st.query_params.get("preview_lamp")

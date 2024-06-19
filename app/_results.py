@@ -55,8 +55,8 @@ def print_safety(room):
         help="Photobiological safety standards are set in the USA by the American Conference of Governmental Industrial Hygienists (ACGIH) and elsewhere in the world by the  International Commission on Non-Ionizing Radiation Protection (ICNIRP). At 222 nm, the ACGIH limits for skin are 479 mJ/cm2 over 8 hours, and for eyes they are 161 mJ/cm2 over 8 hours. The ICNIRP limits are the same for both eyes and skin; 23 mJ/cm2 over 8 hours. However, though KrCl lamps are approximately monochromatic, this is only an approximation, and individual KrCl lamps may have different threshold limit values (TLVs) depending on their spectral content.",
     )
     standards = [
-        "ANSI IES RP 27.1-22 (America) - UL8802",
         "ANSI IES RP 27.1-22 (America)",
+        "ANSI IES RP 27.1-22 (America) - UL8802",
         "IEC 62471-6:2022 (International)",
     ]
     st.selectbox(
@@ -65,7 +65,7 @@ def print_safety(room):
         on_change=update_standard_results,
         args=[room],
         key="room_standard_results",
-        help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead.",
+        help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
     )
     skin = room.calc_zones["SkinLimits"]
     eye = room.calc_zones["EyeLimits"]

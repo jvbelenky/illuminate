@@ -30,6 +30,7 @@ def add_standard_zones(room):
         y2=room.y,
         z1=0,
         z2=room.z,
+        show_values=False,
     )
 
     height = 1.9 if room.units == "meters" else 6.23
