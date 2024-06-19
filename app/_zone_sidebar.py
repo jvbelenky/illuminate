@@ -35,28 +35,12 @@ def zone_sidebar():
     if ss.editing == "zones":
         cola, colb = st.columns([3, 1])
         calc_types = ["Plane", "Volume"]
-        zone_type = cola.selectbox("Select calculation type", options=calc_types)
+        cola.selectbox(
+            "Select calculation type", options=calc_types, key="select_zone_type"
+        )
         colb.write("")
         colb.write("")
-        if colb.button("Go", use_container_width=True):
-            calc_ids = ss.room.calc_zones.keys()
-            if zone_type == "Plane":
-                idx = len([v for v in calc_ids if "Plane" in v]) + 1
-                new_zone = CalcPlane(
-                    zone_id=ss.selected_zone_id,
-                    name="CalcPlane" + str(idx),
-                )
-                ss.editing = "planes"
-            elif zone_type == "Volume":
-                idx = len([v for v in calc_ids if "Vol" in v]) + 1
-                new_zone = CalcVol(
-                    zone_id=ss.selected_zone_id,
-                    name="CalcVol" + str(idx),
-                )
-                ss.editing = "volumes"
-            ss.room.add_calc_zone(new_zone)
-            st.rerun()
-
+        colb.button("Go", on_click=create_zone, use_container_width=True)
     elif ss.editing in ["planes", "volumes"]:
         selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         initialize_zone(selected_zone)
@@ -69,7 +53,6 @@ def zone_sidebar():
         )
 
     if ss.editing == "planes":
-
         col1, col2 = st.columns([2, 1])
         # xy dimensions and height
         col1.number_input(
@@ -323,3 +306,13 @@ def zone_sidebar():
             disabled=False,
             key="close_zone2",
         )
+
+
+def create_zone():
+    if ss["select_zone_type"] == "Plane":
+        new_zone = CalcPlane(zone_id=ss.selected_zone_id)
+        ss.editing = "planes"
+    elif ss["select_zone_type"] == "Volume":
+        new_zone = CalcVol(zone_id=ss.selected_zone_id)
+        ss.editing = "volumes"
+    ss.room.add_calc_zone(new_zone)
