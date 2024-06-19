@@ -22,7 +22,7 @@ from app._website_helpers import (
 
 # layout / page setup
 st.set_page_config(
-    page_title="Illuminate-GUV",
+    page_title="Illuminate",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -109,13 +109,11 @@ if "fig" not in ss:
     ss.kfig = None
     ss.kdf = None
 
-fig = ss.fig
-
 if "room" not in ss:
     # ss.room = Room()
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
 
-    ss.room = add_standard_zones(ss.room)
+    ss.room = add_standard_zones()
 
     preview_lamp = st.query_params.get("preview_lamp")
     if preview_lamp:
@@ -135,13 +133,11 @@ if "room" not in ss:
         fig, ax = plt.subplots()
         ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
         # calculate and display results
-        calculate(ss.room)  # normally a callback
+        calculate()  # normally a callback
         ss.editing = None  # just for aesthetics
         st.rerun()
 
-room = ss.room
-
-top_ribbon(room)
+top_ribbon()
 
 if ss.show_results or ss.editing is not None:
     left_pane, right_pane = st.columns([2, 3])
@@ -152,15 +148,15 @@ else:
 with left_pane:
     if ss.editing is not None:
         if ss.editing == "lamps" and ss.selected_lamp_id is not None:
-            lamp_sidebar(room)
+            lamp_sidebar()
         elif ss.editing in ["zones", "planes", "volumes"] and ss.selected_zone_id:
-            zone_sidebar(room)
+            zone_sidebar()
         elif ss.editing == "room":
-            room_sidebar(room)
+            room_sidebar()
         elif ss.editing == "about":
-            default_sidebar(room)
+            default_sidebar()
         elif ss.editing == "project":
-            project_sidebar(room)
+            project_sidebar()
         else:
             st.write("")
         if ss.show_results:
@@ -168,14 +164,14 @@ with left_pane:
             st.markdown(CONTACT_STR)
     else:
         if ss.show_results:
-            room_plot(room)
+            room_plot()
             st.markdown(CONTACT_STR)
 
         # if not ss.show_results, then this is an empty panel
 
 with right_pane:
     if ss.show_results:
-        results_page(room)
+        results_page()
     else:
-        room_plot(room)
+        room_plot()
         st.markdown(CONTACT_STR)

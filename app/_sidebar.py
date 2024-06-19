@@ -12,14 +12,13 @@ SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 ss = st.session_state
 
 
-def room_sidebar(room):
+def room_sidebar():
     """display room editing panel in sidebar"""
     cols = st.columns([10, 1])
     cols[0].subheader("Edit Room")
     cols[1].button(
         "X",
         on_click=close_sidebar,
-        args=[room],
         use_container_width=True,
         key="close_room",
     )
@@ -31,19 +30,16 @@ def room_sidebar(room):
         "Room length (x)",
         key="room_x",
         on_change=update_room,
-        args=[room],
     )
     col_b.number_input(
         "Room width (y)",
         key="room_y",
         on_change=update_room,
-        args=[room],
     )
     col_c.number_input(
         "Room height (z)",
         key="room_z",
         on_change=update_room,
-        args=[room],
     )
 
     st.subheader("Standards", divider="grey")
@@ -57,7 +53,6 @@ def room_sidebar(room):
         "Select photobiological safety standard",
         options=standards,
         on_change=update_standard,
-        args=[room],
         key="room_standard",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
     )
@@ -67,7 +62,6 @@ def room_sidebar(room):
     cols[0].number_input(
         "Air changes per hour from ventilation",
         on_change=update_ozone,
-        args=[room],
         min_value=0.0,
         step=0.1,
         key="air_changes",
@@ -76,7 +70,6 @@ def room_sidebar(room):
     cols[1].number_input(
         "Ozone decay constant",
         on_change=update_ozone,
-        args=[room],
         min_value=0.0,
         step=0.1,
         key="ozone_decay_constant",
@@ -86,7 +79,7 @@ def room_sidebar(room):
     st.subheader("Units", divider="grey")
     st.write("Coming soon")
 
-    unitindex = 0 if room.units == "meters" else 1
+    unitindex = 0 if ss.room.units == "meters" else 1
     st.selectbox(
         "Room units",
         ["meters", "feet"],
@@ -105,7 +98,6 @@ def room_sidebar(room):
         max_value=1,
         key="reflectance_ceiling",
         on_change=update_room,
-        args=[room],
         disabled=True,
     )
     col2.number_input(
@@ -114,7 +106,6 @@ def room_sidebar(room):
         max_value=1,
         key="reflectance_north",
         on_change=update_room,
-        args=[room],
         disabled=True,
     )
     col3.number_input(
@@ -123,7 +114,6 @@ def room_sidebar(room):
         max_value=1,
         key="reflectance_east",
         on_change=update_room,
-        args=[room],
         disabled=True,
     )
     col1.number_input(
@@ -132,7 +122,6 @@ def room_sidebar(room):
         max_value=1,
         key="reflectance_south",
         on_change=update_room,
-        args=[room],
         disabled=True,
     )
     col2.number_input(
@@ -141,7 +130,6 @@ def room_sidebar(room):
         max_value=1,
         key="reflectance_west",
         on_change=update_room,
-        args=[room],
         disabled=True,
     )
     col3.number_input(
@@ -150,26 +138,23 @@ def room_sidebar(room):
         max_value=1,
         key="reflectance_floor",
         on_change=update_room,
-        args=[room],
         disabled=True,
     )
 
     st.button(
         "Close",
         on_click=close_sidebar,
-        args=[room],
         use_container_width=True,
     )
 
 
-def project_sidebar(room):
+def project_sidebar():
     """sidebar content for saving and loading files"""
     cols = st.columns([10, 1])
     cols[0].header("Project")
     cols[1].button(
         "X",
         on_click=close_sidebar,
-        args=[room],
         key="close_project",
         use_container_width=True,
     )
@@ -200,14 +185,13 @@ def project_sidebar(room):
         pass
 
 
-def default_sidebar(room):
+def default_sidebar():
     """default display of sidebar showing instructions"""
     cols = st.columns([10, 1])
     cols[0].title("Welcome to Illuminate!")
     cols[1].button(
         "X",
         on_click=close_sidebar,
-        args=[room],
         use_container_width=True,
         key="close_about",
     )

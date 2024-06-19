@@ -18,31 +18,31 @@ ss = st.session_state
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 
 
-def add_standard_zones(room):
+def add_standard_zones():
     """pre-populate the calc zone list"""
 
     fluence = CalcVol(
         zone_id="WholeRoomFluence",
         name="Whole Room Fluence",
         x1=0,
-        x2=room.x,
+        x2=ss.room.x,
         y1=0,
-        y2=room.y,
+        y2=ss.room.y,
         z1=0,
-        z2=room.z,
+        z2=ss.room.z,
         show_values=False,
     )
 
-    height = 1.9 if room.units == "meters" else 6.23
+    height = 1.9 if ss.room.units == "meters" else 6.23
 
     skinzone = CalcPlane(
         zone_id="SkinLimits",
         name="Skin Dose (8 Hours)",
         height=height,
         x1=0,
-        x2=room.x,
+        x2=ss.room.x,
         y1=0,
-        y2=room.y,
+        y2=ss.room.y,
         vert=False,
         horiz=True,
         fov80=False,
@@ -54,9 +54,9 @@ def add_standard_zones(room):
         name="Eye Dose (8 Hours)",
         height=height,
         x1=0,
-        x2=room.x,
+        x2=ss.room.x,
         y1=0,
-        y2=room.y,
+        y2=ss.room.y,
         vert=True,
         horiz=False,
         fov80=True,
@@ -64,44 +64,44 @@ def add_standard_zones(room):
         hours=8,
     )
     for zone in [fluence, skinzone, eyezone]:
-        room.add_calc_zone(zone)
+        ss.room.add_calc_zone(zone)
         initialize_zone(zone)
-    return room
+    return ss.room
 
 
-def add_new_zone(room):
+def add_new_zone():
     """necessary logic for adding new calc zone to room and to state"""
-    clear_zone_cache(room)
+    clear_zone_cache()
     # initialize calculation zone
-    new_zone_idx = len(room.calc_zones) + 1
+    new_zone_idx = len(ss.room.calc_zones) + 1
     new_zone_id = f"CalcZone{new_zone_idx}"
     # this zone object contains nothing but the name and ID and will be
     # replaced by a CalcPlane or CalcVol object
     new_zone = CalcZone(zone_id=new_zone_id, enabled=False)
     # add to room
-    room.add_calc_zone(new_zone)
+    ss.room.add_calc_zone(new_zone)
     # select for editing
     ss.editing = "zones"
     ss.selected_zone_id = new_zone_id
-    clear_lamp_cache(room)
+    clear_lamp_cache()
 
 
-def add_new_lamp(room, name=None, interactive=True, defaults={}):
+def add_new_lamp(name=None, interactive=True, defaults={}):
     """necessary logic for adding new lamp to room and to state"""
-    clear_zone_cache(room)
-    clear_lamp_cache(room)
+    clear_zone_cache()
+    clear_lamp_cache()
     # initialize lamp
-    new_lamp_idx = len(room.lamps) + 1
+    new_lamp_idx = len(ss.room.lamps) + 1
     # set initial position
     new_lamp_id = f"Lamp{new_lamp_idx}"
     name = new_lamp_id if name is None else name
-    x, y = get_lamp_position(lamp_idx=new_lamp_idx, x=room.x, y=room.y)
+    x, y = get_lamp_position(lamp_idx=new_lamp_idx, x=ss.room.x, y=ss.room.y)
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
         name=name,
         x=defaults.get("x", x),
         y=defaults.get("y", y),
-        z=defaults.get("z", room.z - 0.1),
+        z=defaults.get("z", ss.room.z - 0.1),
         spectral_weight_source=WEIGHTS_URL,
     )
     new_lamp.set_tilt(defaults.get("tilt", 0))
@@ -110,7 +110,7 @@ def add_new_lamp(room, name=None, interactive=True, defaults={}):
     update_lamp_aim_point(new_lamp)
     update_lamp_orientation(new_lamp)
     # add to session and to room
-    room.add_lamp(new_lamp)
+    ss.room.add_lamp(new_lamp)
     if interactive:
         # select for editing
         initialize_lamp(new_lamp)
@@ -169,7 +169,7 @@ def _place_points(grid_size, num_points):
     return points
 
 
-def get_disinfection_table(fluence, room):
+def get_disinfection_table(fluence):
     """
     Retrieve and format inactivtion data for this room.
 
@@ -190,9 +190,9 @@ def get_disinfection_table(fluence, room):
     f = df["% resistant"].str.rstrip("%").astype("float").fillna(0) / 100
     eACH = (k1 * (1 - f) + k2 - k2 * (1 - f)) * fluence * 3.6
 
-    volume = room.get_volume()
+    volume = ss.room.get_volume()
     # convert to cubic feet for cfm
-    if room.units == "meters":
+    if ss.room.units == "meters":
         volume = volume / (0.3048 ** 3)
     cadr_uv_cfm = eACH * volume / 60
     cadr_uv_lps = cadr_uv_cfm * 0.47195

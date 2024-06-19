@@ -14,44 +14,44 @@ from app._widget import (
 ss = st.session_state
 
 
-def top_ribbon(room):
+def top_ribbon():
 
     c = st.columns([1, 1, 1, 1, 1.5, 1, 1.5, 1, 1])
 
     # with c[0]:
-    c[0].button("About", on_click=show_about, args=[room], use_container_width=True)
-    c[1].button("Project", on_click=show_project, args=[room], use_container_width=True)
-    c[2].button("Edit Room", on_click=show_room, args=[room], use_container_width=True)
+    c[0].button("About", on_click=show_about, use_container_width=True)
+    c[1].button("Project", on_click=show_project, use_container_width=True)
+    c[2].button("Edit Room", on_click=show_room, use_container_width=True)
     c[3].button(
-        "Add Luminaire", on_click=add_new_lamp, args=[room], use_container_width=True
+        "Add Luminaire", on_click=add_new_lamp, use_container_width=True
     )
     lamp_names = {"Select luminaire to edit": None}
-    for lamp_id, lamp in room.lamps.items():
+    for lamp_id, lamp in ss.room.lamps.items():
         lamp_names[lamp.name] = lamp_id
     lamp_sel_idx = list(lamp_names.values()).index(ss.selected_lamp_id)
     c[4].selectbox(
         "Select luminaire to edit",
         options=list(lamp_names),
         on_change=update_lamp_select,
-        args=[lamp_names, room],
+        args=[lamp_names],
         index=lamp_sel_idx,
         label_visibility="collapsed",
         key="lamp_select",
     )
 
     c[5].button(
-        "Add Calc Zone", on_click=add_new_zone, args=[room], use_container_width=True
+        "Add Calc Zone", on_click=add_new_zone, use_container_width=True
     )
 
     zone_names = {"Select calc zone to edit": None}
-    for zone_id, zone in room.calc_zones.items():
+    for zone_id, zone in ss.room.calc_zones.items():
         zone_names[zone.name] = zone_id
     zone_sel_idx = list(zone_names.values()).index(ss.selected_zone_id)
     c[6].selectbox(
         "Select calculation zone to edit",
         options=list(zone_names),
         on_change=update_zone_select,
-        args=[zone_names, room],
+        args=[zone_names],
         index=zone_sel_idx,
         label_visibility="collapsed",
         key="zone_select",
@@ -60,66 +60,66 @@ def top_ribbon(room):
     c[7].button(
         "Show Results",
         on_click=show_results,
-        args=[room],
+        # args=[room],
         use_container_width=True,
     )
 
     c[8].button(
         "Calculate!",
         on_click=calculate,
-        args=[room],
+        # args=[room],
         type="primary",
         use_container_width=True,
     )
 
 
-def show_about(room):
+def show_about():
     """update sidebar to show about/instructions"""
     ss.editing = "about"
-    clear_lamp_cache(room)
-    clear_zone_cache(room)
+    clear_lamp_cache()
+    clear_zone_cache()
 
 
-def show_project(room):
+def show_project():
     """update sidebar to show save/load options"""
     ss.editing = "project"
-    clear_lamp_cache(room)
-    clear_zone_cache(room)
+    clear_lamp_cache()
+    clear_zone_cache()
 
 
-def show_room(room):
+def show_room():
     """update sidebar to show room editing interface"""
     ss.editing = "room"
-    initialize_room(room)
-    clear_lamp_cache(room)
-    clear_zone_cache(room)
+    initialize_room()
+    clear_lamp_cache()
+    clear_zone_cache()
 
 
-def update_lamp_select(lamp_names, room):
+def update_lamp_select(lamp_names):
     """update logic to display new lamp selection in sidebar"""
-    clear_lamp_cache(room)  # first clear out anything old
+    clear_lamp_cache()  # first clear out anything old
     if ss["lamp_select"] in lamp_names:
         ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
     if ss.selected_lamp_id is not None:
         # if lamp is selected, open editing pane
         ss.editing = "lamps"
-        selected_lamp = room.lamps[ss.selected_lamp_id]
+        selected_lamp = ss.room.lamps[ss.selected_lamp_id]
         # initialize widgets in editing pane
         initialize_lamp(selected_lamp)
         # clear widgets of anything to do with zone editing if it's currently loaded
-        clear_zone_cache(room)
+        clear_zone_cache()
     else:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
 
 
-def update_zone_select(zone_names, room):
+def update_zone_select(zone_names):
     """update logic to display new zone selection in sidebar"""
-    clear_zone_cache(room)
+    clear_zone_cache()
     if ss["zone_select"] in zone_names:
         ss.selected_zone_id = zone_names[ss["zone_select"]]
     if ss.selected_zone_id is not None:
-        selected_zone = room.calc_zones[ss.selected_zone_id]
+        selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         if isinstance(selected_zone, CalcPlane):
             ss.editing = "planes"
             initialize_zone(selected_zone)
@@ -128,24 +128,24 @@ def update_zone_select(zone_names, room):
             initialize_zone(selected_zone)
         else:
             ss.editing = "zones"
-        clear_lamp_cache(room)
+        clear_lamp_cache()
     else:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
 
 
-def show_results(room):
+def show_results():
     ss.show_results = True
 
 
-def calculate(room):
+def calculate():
     """calculate and show results in right pane"""
     ss.show_results = True
-    initialize_results(room)
-    room.calculate()
+    initialize_results()
+    ss.room.calculate()
     # format the figure and disinfection table now so we don't redo it later
-    fluence = room.calc_zones["WholeRoomFluence"]
+    fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         avg_fluence = fluence.values.mean()
-        ss.kdf = get_disinfection_table(avg_fluence, room)
+        ss.kdf = get_disinfection_table(avg_fluence)
         ss.kfig = plot_species(ss.kdf, avg_fluence)

@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 ss = st.session_state
 
 
-def room_plot(room):
+def room_plot():
     if ss.selected_lamp_id:
         select_id = ss.selected_lamp_id
     elif ss.selected_zone_id:
         select_id = ss.selected_zone_id
     else:
         select_id = None
-    ss.fig = room.plotly(fig=ss.fig, select_id=select_id)
+    ss.fig = ss.room.plotly(fig=ss.fig, select_id=select_id)
 
     if ss.show_results:
         if ss.editing is None:

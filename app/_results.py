@@ -7,7 +7,7 @@ WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 
 
-def results_page(room):
+def results_page():
     """display results in the customizable panel"""
     cols = st.columns([15, 1])
     cols[0].header("Results")
@@ -17,25 +17,25 @@ def results_page(room):
 
     # do some checks first. do we actually have any lamps?
     nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, selecting a file from the drop-down list, and then hit `Calculate`"
-    if not room.lamps:
+    if not ss.room.lamps:
         st.warning(nolamps_msg)
-    elif all(lamp.filedata is None for lampid, lamp in room.lamps.items()):
+    elif all(lamp.filedata is None for lampid, lamp in ss.room.lamps.items()):
         st.warning(nolamps_msg)
     else:
         # check that all positions of lamps and calc zones are where they're supposed to be
-        msgs = room.check_positions()
+        msgs = ss.room.check_positions()
         for msg in msgs:
             if msg is not None:
                 st.warning(msg)
         # if we're good print the results
-        print_safety(room)
-        print_efficacy(room)
-        print_airchem(room)
+        print_safety()
+        print_efficacy()
+        print_airchem()
 
     # Display all other results
-    if any(key not in SPECIAL_ZONES for key in room.calc_zones.keys()):
+    if any(key not in SPECIAL_ZONES for key in ss.room.calc_zones.keys()):
         st.subheader("User Defined Calculation Zones", divider="grey")
-        for zone_id, zone in room.calc_zones.items():
+        for zone_id, zone in ss.room.calc_zones.items():
             vals = zone.values
             if vals is not None and zone.zone_id not in SPECIAL_ZONES:
                 st.subheader(zone.name, ":")
@@ -47,7 +47,7 @@ def results_page(room):
                 st.write("Max:", round(vals.max(), 3), unitstr)
 
 
-def print_safety(room):
+def print_safety():
     """print photobiological safety results"""
     st.subheader(
         "Photobiological Safety",
@@ -63,25 +63,25 @@ def print_safety(room):
         "Select photobiological safety standard",
         options=standards,
         on_change=update_standard_results,
-        args=[room],
+        # args=[room],
         key="room_standard_results",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
     )
-    skin = room.calc_zones["SkinLimits"]
-    eye = room.calc_zones["EyeLimits"]
+    skin = ss.room.calc_zones["SkinLimits"]
+    eye = ss.room.calc_zones["EyeLimits"]
     SHOW_SKIN = True if skin.values is not None else False
     SHOW_EYES = True if eye.values is not None else False
     if SHOW_SKIN and SHOW_EYES:
 
-        hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv(room)
+        hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv()
 
         # print the max values
-        skin = room.calc_zones["SkinLimits"]
+        skin = ss.room.calc_zones["SkinLimits"]
         skin_max = round(skin.values.max(), 2)
         color = "red" if hours_skin_uw < 8 else "blue"
         skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
 
-        eye = room.calc_zones["EyeLimits"]
+        eye = ss.room.calc_zones["EyeLimits"]
         eye_max = round(eye.values.max(), 2)
         color = "red" if hours_eye_uw < 8 else "blue"
         eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
@@ -107,7 +107,7 @@ def print_safety(room):
         )
 
         # weighted hours to TLV
-        hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv(room)
+        hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv()
         hours_skin_w_str = make_hour_string(hours_skin_w, "skin")
         hours_eye_w_str = make_hour_string(hours_eye_w, "eye")
 
@@ -149,14 +149,14 @@ def make_hour_string(hours, which):
     return hours_str
 
 
-def print_efficacy(room):
+def print_efficacy():
     """print germicidal efficacy results"""
     st.subheader(
         "Efficacy",
         divider="grey",
         help="Equivalent air changes from UV (eACH-UV) in a *well-mixed room* is determined by the average fluence [mW/cm2] multiplied by the susceptibility value k [cm2/mW] multiplied by the number of seconds in an hour (3600). **Note that values of k are highly uncertain and should be considered preliminary.**",
     )
-    fluence = room.calc_zones["WholeRoomFluence"]
+    fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         fluence.values
         avg_fluence = round(fluence.values.mean(), 3)
@@ -178,7 +178,7 @@ def print_efficacy(room):
             )
 
 
-def print_airchem(room):
+def print_airchem():
     """display indoor air chemistry results"""
     st.subheader(
         "Ozone Generation",
@@ -189,7 +189,7 @@ def print_airchem(room):
     cols[0].number_input(
         "Air changes per hour from ventilation",
         on_change=update_ozone_results,
-        args=[room],
+        # args=[room],
         min_value=0.0,
         step=0.1,
         key="air_changes_results",
@@ -198,15 +198,15 @@ def print_airchem(room):
     cols[1].number_input(
         "Ozone decay constant",
         on_change=update_ozone_results,
-        args=[room],
+        # args=[room],
         min_value=0.0,
         step=0.1,
         key="ozone_decay_constant_results",
         help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
     )
-    fluence = room.calc_zones["WholeRoomFluence"]
+    fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
-        ozone_ppb = calculate_ozone_increase(room)
+        ozone_ppb = calculate_ozone_increase()
         ozone_color = "red" if ozone_ppb > 5 else "blue"
         ozone_str = f":{ozone_color}[**{round(ozone_ppb,2)} ppb**]"
     else:
@@ -214,23 +214,23 @@ def print_airchem(room):
     st.write(f"Estimated increase in indoor ozone from UV: {ozone_str}")
 
 
-def get_unweighted_hours_to_tlv(room):
+def get_unweighted_hours_to_tlv():
     """
     calculate hours to tlv without taking into account lamp spectra
     """
 
-    skin_standard, eye_standard = _get_standards(room.standard)
-    mono_skinmax, mono_eyemax = _get_mono_limits(222, room)
+    skin_standard, eye_standard = _get_standards(ss.room.standard)
+    mono_skinmax, mono_eyemax = _get_mono_limits(222)
 
-    skin_limits = room.calc_zones["SkinLimits"]
-    eye_limits = room.calc_zones["EyeLimits"]
+    skin_limits = ss.room.calc_zones["SkinLimits"]
+    eye_limits = ss.room.calc_zones["EyeLimits"]
 
     skin_hours = mono_skinmax * 8 / skin_limits.values.max()
     eye_hours = mono_eyemax * 8 / eye_limits.values.max()
     return skin_hours, eye_hours
 
 
-def get_weighted_hours_to_tlv(room):
+def get_weighted_hours_to_tlv():
     """
     calculate the hours to tlv in a particular room, given a particular installation of lamps
 
@@ -240,13 +240,13 @@ def get_weighted_hours_to_tlv(room):
     TODO: good lord this function is a nightmare. let's make it less horrible eventually
     """
 
-    skin_standard, eye_standard = _get_standards(room.standard)
-    mono_skinmax, mono_eyemax = _get_mono_limits(222, room)
+    skin_standard, eye_standard = _get_standards(ss.room.standard)
+    mono_skinmax, mono_eyemax = _get_mono_limits(222)
 
-    skin_limits = room.calc_zones["SkinLimits"]
-    eye_limits = room.calc_zones["EyeLimits"]
+    skin_limits = ss.room.calc_zones["SkinLimits"]
+    eye_limits = ss.room.calc_zones["EyeLimits"]
 
-    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps(room)
+    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps()
 
     # now check that overlapping beams in the calc zone aren't pushing you over the edge
     # max irradiance in the wholeplane
@@ -258,7 +258,7 @@ def get_weighted_hours_to_tlv(room):
 
     if global_skin_max > local_skin_max or global_eye_max > local_eye_max:
         # first pick a lamp to use the spectra of. one with a spectra is preferred.
-        chosen_lamp = _select_representative_lamp(room, skin_standard)
+        chosen_lamp = _select_representative_lamp(skin_standard)
         if len(chosen_lamp.spectra) > 0:
             # calculate weighted if possible
             new_skin_hours = _get_weighted_hours(
@@ -291,31 +291,31 @@ def _get_standards(standard):
     return skin_standard, eye_standard
 
 
-def _get_mono_limits(wavelength, room):
+def _get_mono_limits(wavelength):
     """
     load the monochromatic skin and eye limits at a given wavelength
     """
     # just pick the first lamp in the list
-    lamp_id = next(iter(room.lamps))
-    weights = room.lamps[lamp_id].spectral_weightings
+    lamp_id = next(iter(ss.room.lamps))
+    weights = ss.room.lamps[lamp_id].spectral_weightings
 
-    skin_standard, eye_standard = _get_standards(room.standard)
+    skin_standard, eye_standard = _get_standards(ss.room.standard)
     skindata = dict(zip(*weights[skin_standard]))
     eyedata = dict(zip(*weights[eye_standard]))
 
     return 3 / skindata[wavelength], 3 / eyedata[wavelength]
 
 
-def _tlvs_over_lamps(room):
+def _tlvs_over_lamps():
     """calculate the hours to TLV over each lamp in the calc zone"""
 
-    skin_standard, eye_standard = _get_standards(room.standard)
-    mono_skinmax, mono_eyemax = _get_mono_limits(222, room)
+    skin_standard, eye_standard = _get_standards(ss.room.standard)
+    mono_skinmax, mono_eyemax = _get_mono_limits(222)
 
     # iterate over all lamps
     hours_to_tlv_skin, hours_to_tlv_eye = [], []
     skin_maxes, eye_maxes = [], []
-    for lamp_id, lamp in room.lamps.items():
+    for lamp_id, lamp in ss.room.lamps.items():
         if len(lamp.max_irradiances) > 0:
             # get max irradiance shown by this lamp upon both zones
             skin_irradiance = lamp.max_irradiances["SkinLimits"]
@@ -340,7 +340,7 @@ def _tlvs_over_lamps(room):
         else:
             hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
             skin_maxes, eye_maxes = [0], [0]
-    if len(room.lamps.items()) == 0:
+    if len(ss.room.lamps.items()) == 0:
         hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
         skin_maxes, eye_maxes = [0], [0]
 
@@ -386,18 +386,18 @@ def _sum_spectrum(wavelength, intensity):
     return sum(weighted_intensity)
 
 
-def _select_representative_lamp(room, standard):
+def _select_representative_lamp(standard):
     """
     select a lamp to use for calculating the spectral limits in the event
     that no single lamp is contributing exclusively to the TLVs
     """
-    if len(set([lamp.filename for lamp_id, lamp in room.lamps.items()])) <= 1:
+    if len(set([lamp.filename for lamp_id, lamp in ss.room.lamps.items()])) <= 1:
         # if they're all the same just use the first lamp in the list
-        chosen_lamp = room.lamps[next(iter(room.lamps))]
+        chosen_lamp = ss.room.lamps[next(iter(ss.room.lamps))]
     else:
         # otherwise pick the least convenient one
         weighted_sums = {}
-        for lamp_id, lamp in room.lamps.items():
+        for lamp_id, lamp in ss.room.lamps.items():
             # iterate through all lamps and pick the one with the highest value sum
             if len(lamp.spectra) > 0 and lamp.filename is not None:
                 # either eye or skin standard can be used for this purpose
@@ -407,22 +407,22 @@ def _select_representative_lamp(room, standard):
 
         if len(weighted_sums) > 0:
             chosen_id = max(weighted_sums, key=weighted_sums.get)
-            chosen_lamp = room.lamps[chosen_id]
+            chosen_lamp = ss.room.lamps[chosen_id]
         else:
             # if no lamps have a spectra then it doesn't matter. pick any lamp.
-            chosen_lamp = room.lamps[next(iter(room.lamps))]
+            chosen_lamp = ss.room.lamps[next(iter(ss.room.lamps))]
     return chosen_lamp
 
 
-def calculate_ozone_increase(room):
+def calculate_ozone_increase():
     """
     ozone generation constant is currently hardcoded to 10 for GUV222
     this should really be based on spectra instead
     but this is a relatively not very big deal, because
     """
-    avg_fluence = room.calc_zones["WholeRoomFluence"].values.mean()
-    ozone_gen = 10  # hardcoded for now, eventually should be based on spectra bu
-    ach = room.air_changes
-    ozone_decay = room.ozone_decay_constant
+    avg_fluence = ss.room.calc_zones["WholeRoomFluence"].values.mean()
+    ozone_gen = 10  # hardcoded for now, eventually should be based on spectra
+    ach = ss.room.air_changes
+    ozone_decay = ss.room.ozone_decay_constant
     ozone_increase = avg_fluence * ozone_gen / (ach + ozone_decay)
     return ozone_increase

@@ -9,12 +9,12 @@ ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 
 
-def close_sidebar(room, which=None, hard=False):
+def close_sidebar(which=None, hard=False):
     ss.editing = None
     if which == "lamps":
-        clear_lamp_cache(room=room, hard=hard)
+        clear_lamp_cache(hard=hard)
     elif which in ["zones", "planes", "volumes"]:
-        clear_zone_cache(room=room, hard=hard)
+        clear_zone_cache(hard=hard)
 
 
 def close_results():
@@ -44,115 +44,115 @@ def update_lamp_filename(lamp):
         ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
 
 
-def update_room(room):
+def update_room():
     """update the room dimensions and the special calc zones that live in it"""
-    room.x = set_val("room_x", room.x)
-    room.y = set_val("room_y", room.y)
-    room.z = set_val("room_z", room.z)
-    room.set_dimensions()
+    ss.room.x = set_val("room_x", ss.room.x)
+    ss.room.y = set_val("room_y", ss.room.y)
+    ss.room.z = set_val("room_z", ss.room.z)
+    ss.room.set_dimensions()
 
-    room.calc_zones["WholeRoomFluence"].set_dimensions(
-        x2=room.x,
-        y2=room.y,
-        z2=room.z,
+    ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
+        x2=ss.room.x,
+        y2=ss.room.y,
+        z2=ss.room.z,
     )
-    room.calc_zones["SkinLimits"].set_dimensions(
-        x2=room.x,
-        y2=room.y,
+    ss.room.calc_zones["SkinLimits"].set_dimensions(
+        x2=ss.room.x,
+        y2=ss.room.y,
     )
-    room.calc_zones["EyeLimits"].set_dimensions(
-        x2=room.x,
-        y2=room.y,
+    ss.room.calc_zones["EyeLimits"].set_dimensions(
+        x2=ss.room.x,
+        y2=ss.room.y,
     )
-    ss.room = room
+    # ss.room = room
 
 
-def update_standard(room):
+def update_standard():
     """update what standard is used, recalculate if necessary"""
     # store whether recalculation is necessary
     RECALCULATE = False
-    if ("UL8802" in room.standard) ^ ("UL8802" in ss["room_standard"]):
+    if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard"]):
         RECALCULATE = True
     # update room standard
-    room.standard = set_val("room_standard", room.standard)
+    ss.room.standard = set_val("room_standard", ss.room.standard)
     # update other widget
-    ss["room_standard_results"] = room.standard
+    ss["room_standard_results"] = ss.room.standard
     # update calc zones
-    update_calc_zones(room)
+    update_calc_zones()
     # recalculate if necessary eg: if value has changed
     if RECALCULATE:
-        room.calculate()
+        ss.room.calculate()
 
 
-def update_standard_results(room):
+def update_standard_results():
     """update what standard is used based on results page, recalculate if necessary"""
     # store whether recalculation is necessary
     RECALCULATE = False
-    if ("UL8802" in room.standard) ^ ("UL8802" in ss["room_standard_results"]):
+    if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard_results"]):
         RECALCULATE = True
     # update room standard
-    room.standard = set_val("room_standard_results", room.standard)
+    ss.room.standard = set_val("room_standard_results", ss.room.standard)
     # update other widget
-    ss["room_standard"] = room.standard
+    ss["room_standard"] = ss.room.standard
     # update calc zones
-    update_calc_zones(room)
+    update_calc_zones()
     # recalculate if necessary eg: if value has changed
     if RECALCULATE:
-        room.calculate()
+        ss.room.calculate()
 
 
-def update_calc_zones(room):
-    if "UL8802" in room.standard:
-        room.calc_zones["SkinLimits"].set_height(1.9)
-        room.calc_zones["EyeLimits"].set_height(1.9)
-        room.calc_zones["EyeLimits"].fov80 = False
-        room.calc_zones["EyeLimits"].vert = False
-        room.calc_zones["SkinLimits"].horiz = False
+def update_calc_zones():
+    if "UL8802" in ss.room.standard:
+        ss.room.calc_zones["SkinLimits"].set_height(1.9)
+        ss.room.calc_zones["EyeLimits"].set_height(1.9)
+        ss.room.calc_zones["EyeLimits"].fov80 = False
+        ss.room.calc_zones["EyeLimits"].vert = False
+        ss.room.calc_zones["SkinLimits"].horiz = False
     else:
-        room.calc_zones["SkinLimits"].set_height(1.8)
-        room.calc_zones["EyeLimits"].set_height(1.8)
-        room.calc_zones["EyeLimits"].fov80 = True
-        room.calc_zones["EyeLimits"].vert = True
-        room.calc_zones["SkinLimits"].horiz = True
+        ss.room.calc_zones["SkinLimits"].set_height(1.8)
+        ss.room.calc_zones["EyeLimits"].set_height(1.8)
+        ss.room.calc_zones["EyeLimits"].fov80 = True
+        ss.room.calc_zones["EyeLimits"].vert = True
+        ss.room.calc_zones["SkinLimits"].horiz = True
 
 
-def clear_lamp_cache(room, hard=False):
+def clear_lamp_cache(hard=False):
     """
     remove any lamps from the room and the widgets that don't have an
     associated filename, and deselect the lamp.
     """
     if ss.selected_lamp_id:
-        selected_lamp = room.lamps[ss.selected_lamp_id]
+        selected_lamp = ss.room.lamps[ss.selected_lamp_id]
         if selected_lamp.filename is None or hard:
             remove_lamp(selected_lamp)
-            room.remove_lamp(ss.selected_lamp_id)
+            ss.room.remove_lamp(ss.selected_lamp_id)
     ss.selected_lamp_id = None
 
 
-def clear_zone_cache(room, hard=False):
+def clear_zone_cache(hard=False):
     """
     remove any calc zones from the room and the widgets that don't have an
     associated zone type, and deselect the zone
     """
     if ss.selected_zone_id:
-        selected_zone = room.calc_zones[ss.selected_zone_id]
+        selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         if not isinstance(selected_zone, (CalcPlane, CalcVol)) or hard:
             remove_zone(selected_zone)
-            room.remove_calc_zone(ss.selected_zone_id)
+            ss.room.remove_calc_zone(ss.selected_zone_id)
     ss.selected_zone_id = None
 
 
-def initialize_results(room):
+def initialize_results():
     keys = [
         "air_changes_results",
         "ozone_decay_constant_results",
         "room_standard_results",
     ]
-    vals = [room.air_changes, room.ozone_decay_constant, room.standard]
+    vals = [ss.room.air_changes, ss.room.ozone_decay_constant, ss.room.standard]
     add_keys(keys, vals)
 
 
-def initialize_room(room):
+def initialize_room():
     keys = [
         "room_x",
         "room_y",
@@ -171,21 +171,21 @@ def initialize_room(room):
         "room_standard_results",
     ]
     vals = [
-        room.x,
-        room.y,
-        room.z,
-        room.standard,
-        room.reflectance_ceiling,
-        room.reflectance_north,
-        room.reflectance_east,
-        room.reflectance_south,
-        room.reflectance_west,
-        room.reflectance_floor,
-        room.air_changes,
-        room.ozone_decay_constant,
-        room.air_changes,
-        room.ozone_decay_constant,
-        room.standard,
+        ss.room.x,
+        ss.room.y,
+        ss.room.z,
+        ss.room.standard,
+        ss.room.reflectance_ceiling,
+        ss.room.reflectance_north,
+        ss.room.reflectance_east,
+        ss.room.reflectance_south,
+        ss.room.reflectance_west,
+        ss.room.reflectance_floor,
+        ss.room.air_changes,
+        ss.room.ozone_decay_constant,
+        ss.room.air_changes,
+        ss.room.ozone_decay_constant,
+        ss.room.standard,
     ]
     add_keys(keys, vals)
 
@@ -266,27 +266,27 @@ def initialize_zone(zone):
     add_keys(keys, vals)
 
 
-def update_ozone_results(room):
-    room.air_changes = set_val("air_changes_results", room.air_changes)
-    room.ozone_decay_constant = set_val(
-        "ozone_decay_constant_results", room.ozone_decay_constant
+def update_ozone_results():
+    ss.room.air_changes = set_val("air_changes_results", ss.room.air_changes)
+    ss.room.ozone_decay_constant = set_val(
+        "ozone_decay_constant_results", ss.room.ozone_decay_constant
     )
-    ss["air_changes"] = set_val("air_changes_results", room.air_changes)
+    ss["air_changes"] = set_val("air_changes_results", ss.room.air_changes)
     ss["ozone_decay_constant"] = set_val(
-        "ozone_decay_constant_results", room.ozone_decay_constant
+        "ozone_decay_constant_results", ss.room.ozone_decay_constant
     )
 
 
-def update_ozone(room):
+def update_ozone():
 
-    room.air_changes = set_val("air_changes", room.air_changes)
-    room.ozone_decay_constant = set_val(
-        "ozone_decay_constant", room.ozone_decay_constant
+    ss.room.air_changes = set_val("air_changes", ss.room.air_changes)
+    ss.room.ozone_decay_constant = set_val(
+        "ozone_decay_constant", ss.room.ozone_decay_constant
     )
 
-    ss["air_changes_results"] = set_val("air_changes", room.air_changes)
+    ss["air_changes_results"] = set_val("air_changes", ss.room.air_changes)
     ss["ozone_decay_constant_results"] = set_val(
-        "ozone_decay_constant", room.ozone_decay_constant
+        "ozone_decay_constant", ss.room.ozone_decay_constant
     )
 
 
@@ -364,17 +364,17 @@ def update_lamp_orientation(lamp):
     ss[f"tilt_{lamp.lamp_id}"] = lamp.bank
 
 
-def update_from_tilt(lamp, room):
+def update_from_tilt(lamp):
     """update tilt+aim point in lamp, and aim point widget"""
     tilt = set_val(f"tilt_{lamp.lamp_id}", lamp.bank)
-    lamp.set_tilt(tilt, dimensions=room.dimensions)
+    lamp.set_tilt(tilt, dimensions=ss.room.dimensions)
     update_lamp_aim_point(lamp)
 
 
-def update_from_orientation(lamp, room):
+def update_from_orientation(lamp):
     """update orientation+aim point in lamp, and aim point widget"""
     orientation = set_val(f"orientation_{lamp.lamp_id}", lamp.heading)
-    lamp.set_orientation(orientation, room.dimensions)
+    lamp.set_orientation(orientation, ss.room.dimensions)
     update_lamp_aim_point(lamp)
 
 

@@ -18,19 +18,19 @@ WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 ss = st.session_state
 
 
-def lamp_sidebar(room):
+def lamp_sidebar():
     """all sidebar content for editing luminaires"""
     cols = st.columns([10, 1])
     cols[0].header("Edit Luminaire")
     cols[1].button(
         "X",
         on_click=close_sidebar,
-        args=[room, "lamps", False],
+        args=["lamps", False],
         use_container_width=True,
         key="close_lamp",
     )
 
-    selected_lamp = room.lamps[ss.selected_lamp_id]
+    selected_lamp = ss.room.lamps[ss.selected_lamp_id]
     # do this before initializing
     initialize_lamp(selected_lamp)
     # name
@@ -118,7 +118,7 @@ def lamp_sidebar(room):
             step=1.0,
             key=f"tilt_{selected_lamp.lamp_id}",
             on_change=update_from_tilt,
-            args=[selected_lamp, room],
+            args=[selected_lamp],
         )
     with col8:
         st.number_input(
@@ -127,7 +127,7 @@ def lamp_sidebar(room):
             step=1.0,
             key=f"orientation_{selected_lamp.lamp_id}",
             on_change=update_from_orientation,
-            args=[selected_lamp, room],
+            args=[selected_lamp],
         )
 
     selected_lamp.enabled = st.checkbox(
@@ -140,7 +140,7 @@ def lamp_sidebar(room):
     col7.button(
         "Delete Lamp",
         on_click=close_sidebar,
-        args=[room, "lamps", True],
+        args=["lamps", True],
         type="primary",
         use_container_width=True,
         key="delete_lamp",
@@ -148,7 +148,7 @@ def lamp_sidebar(room):
     col8.button(
         "Close",
         on_click=close_sidebar,
-        args=[room, "lamps", False],
+        args=["lamps", False],
         use_container_width=True,
         key="close_lamp2",
     )

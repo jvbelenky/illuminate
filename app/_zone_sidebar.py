@@ -15,13 +15,13 @@ SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 ss = st.session_state
 
 
-def zone_sidebar(room):
+def zone_sidebar():
     cols = st.columns([10, 1])
     cols[0].header("Edit Calculation Zone")
     cols[1].button(
         "X",
         on_click=close_sidebar,
-        args=[room, "zones", False],
+        args=["zones", False],
         use_container_width=True,
         key="close_zone",
     )
@@ -30,7 +30,7 @@ def zone_sidebar(room):
         DISABLED = True
     else:
         DISABLED = False
-    selected_zone = room.calc_zones[ss.selected_zone_id]
+    selected_zone = ss.room.calc_zones[ss.selected_zone_id]
 
     if ss.editing == "zones":
         cola, colb = st.columns([3, 1])
@@ -39,7 +39,7 @@ def zone_sidebar(room):
         colb.write("")
         colb.write("")
         if colb.button("Go", use_container_width=True):
-            calc_ids = room.calc_zones.keys()
+            calc_ids = ss.room.calc_zones.keys()
             if zone_type == "Plane":
                 idx = len([v for v in calc_ids if "Plane" in v]) + 1
                 new_zone = CalcPlane(
@@ -54,11 +54,11 @@ def zone_sidebar(room):
                     name="CalcVol" + str(idx),
                 )
                 ss.editing = "volumes"
-            room.add_calc_zone(new_zone)
+            ss.room.add_calc_zone(new_zone)
             st.rerun()
 
     elif ss.editing in ["planes", "volumes"]:
-        selected_zone = room.calc_zones[ss.selected_zone_id]
+        selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         initialize_zone(selected_zone)
         st.text_input(
             "Name",
@@ -82,7 +82,7 @@ def zone_sidebar(room):
         )
         col2.write("")
         col2.write("")
-        col2.write(room.units)
+        col2.write(ss.room.units)
         col2, col3 = st.columns(2)
         with col2:
             st.number_input(
@@ -291,7 +291,7 @@ def zone_sidebar(room):
         st.button(
             "Cancel",
             on_click=close_sidebar,
-            args=[room, "zones", True],
+            args=["zones", True],
             use_container_width=True,
             disabled=False,
             key="cancel_zone",
@@ -309,7 +309,7 @@ def zone_sidebar(room):
         col7.button(
             "Delete",
             on_click=close_sidebar,
-            args=[room, "zones", True],
+            args=["zones", True],
             type="primary",
             use_container_width=True,
             disabled=DISABLED,
@@ -318,7 +318,7 @@ def zone_sidebar(room):
         col8.button(
             "Close",
             on_click=close_sidebar,
-            args=[room, "zones", False],
+            args=["zones", False],
             use_container_width=True,
             disabled=False,
             key="close_zone2",
