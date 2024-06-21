@@ -1,13 +1,9 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import plotly.graph_objs as go
-from guv_calcs.room import Room
-from app._top_ribbon import top_ribbon, calculate
+from app._init_app import initialize
+from app._top_ribbon import top_ribbon
 from app._plot import room_plot
 from app._results import results_page
-from app._lamp_utils import add_new_lamp, get_ies_files
 from app._lamp_sidebar import lamp_sidebar
-from app._zone_utils import add_standard_zones
 from app._zone_sidebar import zone_sidebar
 from app._sidebar import (
     room_sidebar,
@@ -47,67 +43,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-ss = st.session_state
-
-SELECT_LOCAL = "Select local file..."
 CONTACT_STR = "Questions? Comments? Found a bug? Want a feature? E-mail contact-assay@osluv.org, or stay anonymous by using [this form](https://docs.google.com/forms/d/e/1FAIpQLSdDzLD3bJVmFvW_M3Pj9H5_91GL1RbTey_eXRSXO-ZBMyLJ-w/viewform)"
 
 # Check and initialize session state variables
-if "editing" not in ss:
-    ss.editing = "about"  # determines what displays in the sidebar
-
-if "show_results" not in ss:
-    ss.show_results = False
-
-if "selected_lamp_id" not in ss:
-    ss.selected_lamp_id = None  # use None when no lamp is selected
-
-if "selected_zone_id" not in ss:
-    ss.selected_zone_id = None  # use None when no lamp is selected
-
-if "uploaded_files" not in ss:
-    ss.uploaded_files = {}
-    ss.uploaded_spectras = {}
-
-if "lampfile_options" not in ss:
-    # ies_files = get_local_ies_files()  # local files for testing
-    idx, lamps, spectras = get_ies_files()  # files from assays.osluv.org
-    ss.index_data, ss.vendored_lamps, ss.vendored_spectra = get_ies_files()
-    ss.lamp_options = [None] + list(ss.vendored_lamps.keys()) + [SELECT_LOCAL]
-    ss.spectra_options = []
-
-if "fig" not in ss:
-    ss.fig = go.Figure()
-    # Adding an empty scatter3d trace to make the plot appear correctly
-    ss.fig.add_trace(
-        go.Scatter3d(
-            x=[0],  # No data points yet
-            y=[0],
-            z=[0],
-            opacity=0,
-            showlegend=False,
-            customdata=["placeholder"],
-        )
-    )
-    ss.eyefig = plt.figure()
-    ss.skinfig = plt.figure()
-    ss.spectrafig, _ = plt.subplots()
-    ss.kfig = None
-    ss.kdf = None
-
-if "room" not in ss:
-    ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
-    add_standard_zones()
-
-    preview_lamp_name = st.query_params.get("preview_lamp")
-    if preview_lamp_name:
-        vals = ss.index_data.values()
-        default_list = [x for x in vals if x["reporting_name"] == preview_lamp_name][0]
-        defaults = default_list.get("preview_setup", {})
-        add_new_lamp(name=preview_lamp_name, interactive=False, defaults=defaults)
-        # calculate and display results
-        calculate()  # normally a callback
-        ss.editing = None  # just for aesthetics
+ss = st.session_state
+if "init" not in ss:
+    ss.init = True
+    initialize()
 
 top_ribbon()
 
