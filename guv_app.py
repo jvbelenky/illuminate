@@ -1,23 +1,18 @@
 import streamlit as st
-import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from guv_calcs.room import Room
 from app._top_ribbon import top_ribbon, calculate
 from app._plot import room_plot
 from app._results import results_page
+from app._lamp_utils import add_new_lamp, get_ies_files
 from app._lamp_sidebar import lamp_sidebar
+from app._zone_utils import add_standard_zones
 from app._zone_sidebar import zone_sidebar
 from app._sidebar import (
     room_sidebar,
     default_sidebar,
     project_sidebar,
-)
-from app._website_helpers import (
-    get_local_ies_files,
-    get_ies_files,
-    add_standard_zones,
-    add_new_lamp,
 )
 
 # layout / page setup
@@ -30,7 +25,6 @@ st.set_option("deprecation.showPyplotGlobalUse", False)  # silence this warning
 st.markdown(
     "<style>div.block-container{padding-top:2rem;}</style>", unsafe_allow_html=True
 )
-
 
 # Remove whitespace from the top of the page and sidebar
 st.markdown(
@@ -76,19 +70,10 @@ if "uploaded_files" not in ss:
     ss.uploaded_spectras = {}
 
 if "lampfile_options" not in ss:
-    ies_files = get_local_ies_files()  # local files for testing
-    (
-        index_data,
-        vendored_lamps,
-        vendored_spectra,
-    ) = get_ies_files()  # files from assays.osluv.org
-    ss.index_data, ss.vendored_lamps, ss.vendored_spectra = (
-        index_data,
-        vendored_lamps,
-        vendored_spectra,
-    )
-    options = [None] + list(vendored_lamps.keys()) + [SELECT_LOCAL]
-    ss.lampfile_options = options
+    # ies_files = get_local_ies_files()  # local files for testing
+    idx, lamps, spectras = get_ies_files()  # files from assays.osluv.org
+    ss.index_data, ss.vendored_lamps, ss.vendored_spectra = get_ies_files()
+    ss.lamp_options = [None] + list(ss.vendored_lamps.keys()) + [SELECT_LOCAL]
     ss.spectra_options = []
 
 if "fig" not in ss:
@@ -114,27 +99,15 @@ if "room" not in ss:
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
     add_standard_zones()
 
-    preview_lamp = st.query_params.get("preview_lamp")
-    if preview_lamp:
+    preview_lamp_name = st.query_params.get("preview_lamp")
+    if preview_lamp_name:
         vals = ss.index_data.values()
-        default_list = [x for x in vals if x["reporting_name"] == preview_lamp][0]
+        default_list = [x for x in vals if x["reporting_name"] == preview_lamp_name][0]
         defaults = default_list.get("preview_setup", {})
-        lamp_id = add_new_lamp(name=preview_lamp, interactive=False, defaults=defaults)
-        
-        lamp = ss.room.lamps[lamp_id]
-        # load ies data
-        fdata = requests.get(ss.vendored_lamps[preview_lamp]).content
-        lamp.reload(filename=preview_lamp, filedata=fdata)
-        # load spectra
-        spectra_data = requests.get(ss.vendored_spectra[preview_lamp]).content
-        lamp.load_spectra(spectra_data)
-
-        fig, ax = plt.subplots()
-        ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
+        add_new_lamp(name=preview_lamp_name, interactive=False, defaults=defaults)
         # calculate and display results
         calculate()  # normally a callback
         ss.editing = None  # just for aesthetics
-        # st.rerun()
 
 top_ribbon()
 
@@ -165,7 +138,6 @@ with left_pane:
         if ss.show_results:
             room_plot()
             st.markdown(CONTACT_STR)
-
         # if not ss.show_results, then this is an empty panel
 
 with right_pane:

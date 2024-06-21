@@ -1,5 +1,5 @@
 import streamlit as st
-from app._widget import (
+from app._widget_utils import (
     update_room,
     update_standard,
     update_ozone,
@@ -57,24 +57,25 @@ def room_sidebar():
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
     )
     st.subheader("Indoor Chemistry", divider="grey")
-    # st.write("Coming soon")
     cols = st.columns(2)
-    cols[0].number_input(
-        "Air changes per hour from ventilation",
-        on_change=update_ozone,
-        min_value=0.0,
-        step=0.1,
-        key="air_changes",
-        help="Note that outdoor ozone is almost always at a higher concentration than indoor ozone. Increasing the air changes from ventilation will reduce the increase in ozone due to GUV, but may increase the total indoor ozone concentration. However, increasing ventilation will also increase the rate of removal of any secondary products that may form from the ozone.",
-    )
-    cols[1].number_input(
-        "Ozone decay constant",
-        on_change=update_ozone,
-        min_value=0.0,
-        step=0.1,
-        key="ozone_decay_constant",
-        help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
-    )
+    with cols[0]:
+        st.number_input(
+            "Air changes per hour from ventilation",
+            on_change=update_ozone,
+            min_value=0.0,
+            step=0.1,
+            key="air_changes",
+            help="Note that outdoor ozone is almost always at a higher concentration than indoor ozone. Increasing the air changes from ventilation will reduce the increase in ozone due to GUV, but may increase the total indoor ozone concentration. However, increasing ventilation will also increase the rate of removal of any secondary products that may form from the ozone.",
+        )
+    with cols[1]:
+        st.number_input(
+            "Ozone decay constant",
+            on_change=update_ozone,
+            min_value=0.0,
+            step=0.1,
+            key="ozone_decay_constant",
+            help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
+        )
 
     st.subheader("Units", divider="grey")
     st.write("Coming soon")

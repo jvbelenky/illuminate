@@ -2,9 +2,6 @@ import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# import plotly.graph_objs as go
-# import numpy as np
-
 ss = st.session_state
 
 

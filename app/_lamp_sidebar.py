@@ -1,211 +1,107 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-from app._website_helpers import make_file_list
-from app._widget import (
-    initialize_lamp,
-    update_lamp_filename,
-    update_lamp_name,
-    update_lamp_position,
-    update_lamp_orientation,
-    update_from_tilt,
-    update_from_orientation,
-    update_lamp_visibility,
-    close_sidebar,
+from ._lamp_utils import load_uploaded_spectra
+from ._widget_utils import initialize_lamp, close_sidebar
+from ._widget import (
+    lamp_name_widget,
+    lamp_select_widget,
+    lamp_upload_widget,
+    spectra_upload_widget,
+    lamp_x_widget,
+    lamp_y_widget,
+    lamp_z_widget,
+    lamp_angle_widget,
+    lamp_aimx_widget,
+    lamp_aimy_widget,
+    lamp_aimz_widget,
+    lamp_tilt_widget,
+    lamp_orientation_widget,
+    lamp_enabled_widget,
 )
 
 SELECT_LOCAL = "Select local file..."
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
+CHINESE_STD = "placeholder"
 ss = st.session_state
 
 
 def lamp_sidebar():
     """all sidebar content for editing luminaires"""
-    cols = st.columns([10, 1])
-    cols[0].header("Edit Luminaire")
-    cols[1].button(
-        "X",
-        on_click=close_sidebar,
-        args=["lamps", False],
-        use_container_width=True,
-        key="close_lamp",
-    )
-
-    selected_lamp = ss.room.lamps[ss.selected_lamp_id]
-    # do this before initializing
-    initialize_lamp(selected_lamp)
-    # name
-    st.text_input(
-        "Name",
-        key=f"name_{selected_lamp.lamp_id}",
-        on_change=update_lamp_name,
-        args=[selected_lamp],
-    )
-
-    # file input
-    lamp_file_options(selected_lamp)
-
-    # Position inputs
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns([10, 1])
     with col1:
-        st.number_input(
-            "Position X",
-            min_value=0.0,
-            step=0.1,
-            key=f"pos_x_{selected_lamp.lamp_id}",
-            on_change=update_lamp_position,
-            args=[selected_lamp],
-        )
+        st.header("Edit Luminaire")
     with col2:
-        st.number_input(
-            "Position Y",
-            min_value=0.0,
-            step=0.1,
-            key=f"pos_y_{selected_lamp.lamp_id}",
-            on_change=update_lamp_position,
-            args=[selected_lamp],
+        st.button(
+            "X",
+            on_click=close_sidebar,
+            args=["lamps", False],
+            use_container_width=True,
+            key="close_lamp_sidebar1",
         )
+
+    ss.selected_lamp = ss.room.lamps[ss.selected_lamp_id]
+    initialize_lamp(ss.selected_lamp)  # initialize widgets
+    lamp_name_widget(ss.selected_lamp)  # name
+    lamp_file_options()  # file input
+    lamp_plots()  # plot if file has been selected
+    lamp_position_options()  # position, orientation, etc
+
+    col3, col4 = st.columns(2)
     with col3:
-        st.number_input(
-            "Position Z",
-            min_value=0.0,
-            step=0.1,
-            key=f"pos_z_{selected_lamp.lamp_id}",
-            on_change=update_lamp_position,
-            args=[selected_lamp],
+        # delete button
+        st.button(
+            "Delete",
+            on_click=close_sidebar,
+            args=["lamps", True],
+            type="primary",
+            use_container_width=True,
+            key="delete_lamp",
         )
-
-    # Rotation input
-    angle = st.number_input(
-        "Rotation",
-        min_value=0.0,
-        max_value=360.0,
-        step=1.0,
-        key=f"rotation_{selected_lamp.lamp_id}",
-    )
-    selected_lamp.rotate(angle)
-    st.write("Set aim point")
-
-    # Aim point inputs
-    col4, col5, col6 = st.columns(3)
     with col4:
-        st.number_input(
-            "Aim X",
-            key=f"aim_x_{selected_lamp.lamp_id}",
-            on_change=update_lamp_orientation,
-            args=[selected_lamp],
-        )
-    with col5:
-        st.number_input(
-            "Aim Y",
-            key=f"aim_y_{selected_lamp.lamp_id}",
-            on_change=update_lamp_orientation,
-            args=[selected_lamp],
-        )
-    with col6:
-        st.number_input(
-            "Aim Z",
-            key=f"aim_z_{selected_lamp.lamp_id}",
-            on_change=update_lamp_orientation,
-            args=[selected_lamp],
+        # close without deleting
+        st.button(
+            "Close",
+            on_click=close_sidebar,
+            args=["lamps", False],
+            use_container_width=True,
+            key="close_lamp_sidebar2",
         )
 
-    st.write("Set tilt and orientation")
-    col7, col8 = st.columns(2)
-    with col7:
-        st.number_input(
-            "Tilt",
-            format="%.1f",
-            step=1.0,
-            key=f"tilt_{selected_lamp.lamp_id}",
-            on_change=update_from_tilt,
-            args=[selected_lamp],
-        )
-    with col8:
-        st.number_input(
-            "Orientation",
-            format="%.1f",
-            step=1.0,
-            key=f"orientation_{selected_lamp.lamp_id}",
-            on_change=update_from_orientation,
-            args=[selected_lamp],
-        )
-
-    selected_lamp.enabled = st.checkbox(
-        "Enabled",
-        on_change=update_lamp_visibility,
-        args=[selected_lamp],
-        key=f"enabled_{selected_lamp.lamp_id}",
-    )
-
-    col7.button(
-        "Delete Lamp",
-        on_click=close_sidebar,
-        args=["lamps", True],
-        type="primary",
-        use_container_width=True,
-        key="delete_lamp",
-    )
-    col8.button(
-        "Close",
-        on_click=close_sidebar,
-        args=["lamps", False],
-        use_container_width=True,
-        key="close_lamp2",
-    )
+    # prevent lamp from participating in calculations
+    ss.selected_lamp.enabled = lamp_enabled_widget(ss.selected_lamp)
 
 
-def lamp_file_options(selected_lamp):
+def lamp_file_options():
     """widgets and plots to do with lamp file sources"""
-    # File input
-    fname_idx = ss.lampfile_options.index(selected_lamp.filename)
-    st.selectbox(
-        "Select lamp",
-        ss.lampfile_options,
-        index=fname_idx,
-        on_change=update_lamp_filename,
-        args=[selected_lamp],
-        key=f"file_{selected_lamp.lamp_id}",
-    )
-    # if anything but select_local has been selected, lamp should have reloaded
-    # fname = selected_lamp.filename
 
+    lamp_select_widget(ss.selected_lamp)
     # determine fdata from fname
-    # fdata = None
-    # spectra_data = None  # TEMP
-    if selected_lamp.filename == SELECT_LOCAL:
-        st.file_uploader(
-            "Upload a file",
-            type="ies",
-            on_change=load_uploaded_lamp,
-            args=[selected_lamp],
-            key=f"upload_{selected_lamp.lamp_id}",
-        )
+    if ss.selected_lamp.filename == SELECT_LOCAL:
+        lamp_upload_widget(ss.selected_lamp)
+        spectra_upload_widget(ss.selected_lamp)
 
-    if selected_lamp.filename in ss.uploaded_files:
-        if selected_lamp.filename in ss.uploaded_spectras:
-            load_uploaded_spectra(selected_lamp)
+    if ss.selected_lamp.filename in ss.uploaded_files:
+        if ss.selected_lamp.filename in ss.uploaded_spectras:
+            load_uploaded_spectra(ss.selected_lamp)
         else:
-            st.warning(
-                """In order for GUV photobiological safety calculations to be
-                 accurate, a spectra is required. Please upload a .csv file with 
-                 exactly 1 header row, where the first column is wavelengths, and the 
-                 second column is relative intensities. :red[If a spectra is not provided, 
-                 photobiological safety calculations will be inaccurate.]"""
-            )
-            st.file_uploader(
-                "Upload spectra CSV",
-                type="csv",
-                on_change=load_uploaded_spectra,
-                args=[selected_lamp],
-                key=f"spectra_upload_{selected_lamp.lamp_id}",
-            )
+            if ss.room.standard is not CHINESE_STD:
+                st.warning(
+                    """
+                    In order for GUV photobiological safety calculations to be
+                    accurate, a spectra is required. :red[If a spectra is not provided,
+                    photobiological safety calculations will be inaccurate.]
+                    """
+                )
+            spectra_upload_widget(ss.selected_lamp)
 
-    # plot if there is data to plot with
+
+def lamp_plots():
+    """plot if there is data to plot with"""
     PLOT_IES, PLOT_SPECTRA = False, False
     cols = st.columns(3)
-    if selected_lamp.filedata is not None:
+    if ss.selected_lamp.filedata is not None:
         PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=True)
-    if len(selected_lamp.spectra) > 0:
+
+    if len(ss.selected_lamp.spectra) > 0:
         PLOT_SPECTRA = cols[1].checkbox(
             "Show spectra plot", key="show_spectra", value=True
         )
@@ -220,7 +116,7 @@ def lamp_file_options(selected_lamp):
 
     if PLOT_IES and PLOT_SPECTRA:
         # plot both charts side by side
-        iesfig, iesax = selected_lamp.plot_ies()
+        iesfig, iesax = ss.selected_lamp.plot_ies()
         ss.spectrafig.set_size_inches(5, 6, forward=True)
         ss.spectrafig.axes[0].set_yscale(yscale)
         cols = st.columns(2)
@@ -228,7 +124,7 @@ def lamp_file_options(selected_lamp):
         cols[0].pyplot(iesfig, use_container_width=True)
     elif PLOT_IES and not PLOT_SPECTRA:
         # just display the ies file plot
-        iesfig, iesax = selected_lamp.plot_ies()
+        iesfig, iesax = ss.selected_lamp.plot_ies()
         st.pyplot(iesfig, use_container_width=True)
     elif PLOT_SPECTRA and not PLOT_IES:
         # display just the spectra
@@ -237,41 +133,39 @@ def lamp_file_options(selected_lamp):
         st.pyplot(ss.spectrafig, use_container_width=True)
 
 
-def load_uploaded_lamp(lamp):
-    """load the .ies file of a user-uploaded file"""
-    uploaded_file = ss[f"upload_{lamp.lamp_id}"]
-    if uploaded_file is not None:
-        fname = uploaded_file.name
-        if fname in ss.uploaded_files:
-            fdata = ss.uploaded_files[fname]
-        else:
-            fdata = uploaded_file.read()
-            # add the uploaded file to the session state and upload
-            ss.uploaded_files[fname] = fdata
-            make_file_list()
-        # load into lamp object
-        lamp.reload(filename=fname, filedata=fdata)
-        # load spectra if present
+def lamp_position_options():
 
-        key = f"spectra_upload_{lamp.lamp_id}"
-        if key is not None and key in ss:
-            load_uploaded_spectra(lamp)
+    # Position inputs
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        lamp_x_widget(ss.selected_lamp)
+    with col2:
+        lamp_y_widget(ss.selected_lamp)
+    with col3:
+        lamp_z_widget(ss.selected_lamp)
 
+    # Rotation input
+    angle = lamp_angle_widget(ss.selected_lamp)
+    ss.selected_lamp.rotate(angle)
+    st.markdown(
+        "Set aim point", help="Setting aim point will update the tilt and orientation"
+    )
 
-def load_uploaded_spectra(lamp):
-    """load the .csv file of a user-uploaded spectra"""
-    spectra_data = None
-    # first check if we've loaded it already
-    if lamp.filename in ss.uploaded_spectras:
-        spectra_data = ss.uploaded_spectras[lamp.filename]
-    else:
-        uploaded_spectra = ss[f"spectra_upload_{lamp.lamp_id}"]
-        if uploaded_spectra is not None:
-            # add to list
-            spectra_data = uploaded_spectra.read()
-            ss.uploaded_spectras[lamp.filename] = spectra_data
-    if spectra_data is not None:
-        lamp.load_spectra(spectra_data)
-        # prep figure
-        fig, ax = plt.subplots()
-        ss.spectrafig = lamp.plot_spectra(fig=fig, title="")
+    # Aim point inputs
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        lamp_aimx_widget(ss.selected_lamp)
+    with col5:
+        lamp_aimy_widget(ss.selected_lamp)
+    with col6:
+        lamp_aimz_widget(ss.selected_lamp)
+
+    st.markdown(
+        "Set tilt and orientation",
+        help="Setting tilt and orientation will also update the aim point",
+    )
+    col7, col8 = st.columns(2)
+    with col7:
+        lamp_tilt_widget(ss.selected_lamp)
+    with col8:
+        lamp_orientation_widget(ss.selected_lamp)

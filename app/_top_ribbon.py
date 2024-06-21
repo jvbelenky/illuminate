@@ -1,8 +1,10 @@
 import streamlit as st
 from guv_calcs.calc_zone import CalcPlane, CalcVol
-from app._website_helpers import add_new_lamp, add_new_zone, get_disinfection_table
-from app._plot import plot_species
-from app._widget import (
+from ._results import get_disinfection_table
+from ._zone_utils import add_new_zone
+from ._plot import plot_species
+from ._lamp_utils import add_new_lamp
+from ._widget_utils import (
     initialize_lamp,
     initialize_zone,
     initialize_room,
@@ -141,6 +143,7 @@ def update_zone_select(zone_names):
 
 
 def show_results():
+    """show results in right panel"""
     ss.show_results = True
 
 

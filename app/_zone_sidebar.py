@@ -1,6 +1,6 @@
 import streamlit as st
 from guv_calcs.calc_zone import CalcPlane, CalcVol
-from app._widget import (
+from app._widget_utils import (
     initialize_zone,
     update_zone_name,
     update_plane_dimensions,
