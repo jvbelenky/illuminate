@@ -149,6 +149,7 @@ def get_ies_files():
 
     ies_files = {}
     spectra = {}
+    reports = {}
 
     for guid, data in index_data.items():
         filename = data["slug"]
@@ -157,8 +158,9 @@ def get_ies_files():
             name += " (PRERELEASE DATA)"
         ies_files[name] = f"{BASE_URL}/{filename}.ies"
         spectra[name] = f"{BASE_URL}/{filename}-spectrum.csv"
+        reports[name] = f"{BASE_URL}/{filename}.html"
 
-    return index_data, ies_files, spectra
+    return index_data, ies_files, spectra, reports
 
 
 def get_lamp_position(lamp_idx, x, y, num_divisions=100):

@@ -20,7 +20,7 @@ def initialize():
     ss.uploaded_spectras = {}
 
     # load lamp list
-    ss.index_data, ss.vendored_lamps, ss.vendored_spectra = get_ies_files()
+    ss.index_data, ss.vendored_lamps, ss.vendored_spectra, ss.reports = get_ies_files()
     ss.lamp_options = [None] + list(ss.vendored_lamps.keys()) + [SELECT_LOCAL]
 
     # initialize figures
@@ -46,7 +46,7 @@ def initialize():
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
     add_standard_zones()
 
-    # populate with lamp from url if there
+    # populate with lamp from url if available
     preview_lamp_name = st.query_params.get("preview_lamp")
     if preview_lamp_name is not None:
         vals = ss.index_data.values()
