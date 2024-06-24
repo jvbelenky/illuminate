@@ -46,6 +46,8 @@ def initialize():
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
     add_standard_zones()
 
+    ss.calcstate = ss.room.to_json()
+
     # populate with lamp from url if available
     preview_lamp_name = st.query_params.get("preview_lamp")
     if preview_lamp_name is not None:

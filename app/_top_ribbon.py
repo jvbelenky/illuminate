@@ -142,16 +142,16 @@ def update_zone_select(zone_names):
         clear_lamp_cache()
 
 
-def show_results():
-    """show results in right panel"""
-    ss.show_results = True
-
-
 def calculate():
     """calculate and show results in right pane"""
-    ss.show_results = True
-    initialize_results()
     ss.room.calculate()
+    show_results()
+
+
+def show_results():
+    """show results in right panel"""
+    initialize_results()
+    ss.show_results = True
     # format the figure and disinfection table now so we don't redo it later
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:

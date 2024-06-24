@@ -212,8 +212,8 @@ def print_airchem():
 def calculate_ozone_increase():
     """
     ozone generation constant is currently hardcoded to 10 for GUV222
-    this should really be based on spectra instead
-    but this is a relatively not very big deal, because
+    this should really be based on spectra instead, but the dependence is not very strong
+    at least for GUV222 sources
     """
     avg_fluence = ss.room.calc_zones["WholeRoomFluence"].values.mean()
     ozone_gen = 10  # hardcoded for now, eventually should be based on spectra

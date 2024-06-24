@@ -62,7 +62,8 @@ def load_lamp(lamp):
         # previously uploaded files
         fdata = ss.uploaded_files[fname]
         _load_lamp(lamp, fname, fdata, spectra_data)
-    elif fname == SELECT_LOCAL:
+    # elif fname == SELECT_LOCAL:
+    else:
         _load_lamp(lamp, fname, fdata, spectra_data)
 
 

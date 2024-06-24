@@ -36,6 +36,7 @@ def lamp_select_widget(lamp):
         on_change=load_lamp,
         args=[lamp],
         key=f"file_{lamp.lamp_id}",
+        help="This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files.",
     )
 
 

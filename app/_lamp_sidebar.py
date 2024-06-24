@@ -43,8 +43,9 @@ def lamp_sidebar():
     lamp_name_widget(ss.selected_lamp)  # name
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
-        link = ss.reports[ss.selected_lamp.name].replace(" ", "%20")
-        st.markdown(f"[View Full Report]({link})")
+        if "PRERELEASE" not in ss.selected_lamp.filename:
+            link = ss.reports[ss.selected_lamp.filename].replace(" ", "%20")
+            st.markdown(f"[View Full Report]({link})")
     lamp_plots()  # plot if file has been selected
     lamp_position_options()  # position, orientation, etc
 

@@ -1,10 +1,12 @@
 import streamlit as st
+from guv_calcs import Room
 from app._widget_utils import (
     update_room,
     update_standard,
     update_ozone,
     close_sidebar,
 )
+from ._top_ribbon import show_results
 
 SELECT_LOCAL = "Select local file..."
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
@@ -151,6 +153,8 @@ def room_sidebar():
 
 def project_sidebar():
     """sidebar content for saving and loading files"""
+    
+    
     cols = st.columns([10, 1])
     cols[0].header("Project")
     cols[1].button(
@@ -159,31 +163,39 @@ def project_sidebar():
         key="close_project",
         use_container_width=True,
     )
+    
+    cols = st.columns(2)
+    with cols[0]:
+        st.download_button(
+            label="Save Project",
+            data=ss.room.to_json(),
+            file_name="illuminate.json",
+            use_container_width=True,
+            key="download_project",
+        )
+    with cols[1]:
+        load = st.button(
+            "Load Project",
+            use_container_width=True,
+            )
+    
+    if load:
+        st.file_uploader(
+            "Load Project",
+            type="json",
+            on_change=upload,
+            key="upload_project",
+            label_visibility="collapsed",
+        )
 
-    st.write("*Coming soon...*")
 
-    st.subheader("Save Project", divider="grey")
-
-    st.download_button(
-        label="Save",
-        data="{some_dummy_data}",
-        file_name="illuminate.json",
-        use_container_width=True,
-        key="download_project",
-        disabled=True,
-    )
-
-    st.subheader("Load Project", divider="grey")
-    uploaded_file = st.file_uploader(
-        "Load Project",
-        type="json",
-        on_change=None,
-        key="upload_project",
-        label_visibility="collapsed",
-        disabled=True,
-    )
-    if uploaded_file is not None:
-        pass
+def upload():
+    file = ss["upload_project"]
+    if file is not None:
+        string = file.read().decode("utf-8")
+        ss.room = Room.from_json(string)
+        if ss.show_results:
+            show_results()
 
 
 def default_sidebar():
@@ -215,7 +227,7 @@ def default_sidebar():
         """
         In the `Edit Room` menu, you can change the size of the room, the air changes from ventilation and ozone decay
         rate, as well as the photobiological safety standard to calculate for. Updating these options will update the 
-        calculation zones, so be sure to hit `Calculate` again afterdoing so.
+        calculation zones, so be sure to hit `Calculate` again after doing so.
         """
     )
 
