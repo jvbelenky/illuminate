@@ -24,7 +24,7 @@ def top_ribbon():
 
     # with c[0]:
     c[0].button("About", on_click=show_about, use_container_width=True)
-    c[1].button("Project", on_click=show_project, use_container_width=True)
+    c[1].button("Project", disabled=True, on_click=show_project, use_container_width=True)
     c[2].button("Edit Room", on_click=show_room, use_container_width=True)
     # c[3].button(
     # "Add Luminaire", on_click=add_new_lamp, use_container_width=True
