@@ -36,6 +36,6 @@ clean:
 
 ## Try the example usage
 run: 
-	streamlit run guv_app.py --server.headless true
+	streamlit run guv_app.py --server.headless true 
 	
 all: build lint run
