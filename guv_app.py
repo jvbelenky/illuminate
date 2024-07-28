@@ -17,7 +17,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-st.set_option("deprecation.showPyplotGlobalUse", False)  # silence this warning
+# st.set_option("deprecation.showPyplotGlobalUse", False)  # silence this warning
 st.markdown(
     "<style>div.block-container{padding-top:2rem;}</style>", unsafe_allow_html=True
 )
