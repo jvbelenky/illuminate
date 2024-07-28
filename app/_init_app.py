@@ -1,7 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
-from guv_calcs.room import Room
+from guv_calcs import Room
 from ._zone_utils import add_standard_zones
 from ._lamp_utils import add_new_lamp, get_ies_files
 from ._top_ribbon import calculate
@@ -44,6 +44,7 @@ def initialize():
 
     # initialize room object and add zones to it
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
+
     add_standard_zones()
 
     ss.calcstate = ss.room.to_json()

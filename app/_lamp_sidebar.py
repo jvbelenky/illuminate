@@ -40,7 +40,7 @@ def lamp_sidebar():
 
     ss.selected_lamp = ss.room.lamps[ss.selected_lamp_id]
     initialize_lamp(ss.selected_lamp)  # initialize widgets
-    lamp_name_widget(ss.selected_lamp)  # name
+    lamp_name_widget(ss.selected_lamp)  # name input
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
         if "PRERELEASE" not in ss.selected_lamp.filename:

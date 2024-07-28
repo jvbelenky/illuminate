@@ -153,6 +153,7 @@ def get_ies_files():
     reports = {}
 
     for guid, data in index_data.items():
+
         filename = data["slug"]
         name = data["reporting_name"]
         if data.get("sketch", False):

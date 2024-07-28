@@ -153,8 +153,7 @@ def room_sidebar():
 
 def project_sidebar():
     """sidebar content for saving and loading files"""
-    
-    
+
     cols = st.columns([10, 1])
     cols[0].header("Project")
     cols[1].button(
@@ -163,7 +162,7 @@ def project_sidebar():
         key="close_project",
         use_container_width=True,
     )
-    
+
     cols = st.columns(2)
     with cols[0]:
         st.download_button(
@@ -177,8 +176,8 @@ def project_sidebar():
         load = st.button(
             "Load Project",
             use_container_width=True,
-            )
-    
+        )
+
     if load:
         st.file_uploader(
             "Load Project",
