@@ -266,7 +266,7 @@ def update_ozone():
 
 def update_lamp_name(lamp):
     """update lamp name from widget"""
-    lamp.name = set_val(f"enabled_{lamp.lamp_id}", lamp.name)
+    lamp.name = set_val(f"name_{lamp.lamp_id}", lamp.name)
 
 
 def update_zone_name(zone):
