@@ -1,6 +1,6 @@
 import streamlit as st
-from ._lamp_utils import load_uploaded_spectra
 from ._widget_utils import initialize_lamp, close_sidebar
+from ._lamp_utils import load_uploaded_spectra
 from ._widget import (
     lamp_name_widget,
     lamp_select_widget,
@@ -40,7 +40,7 @@ def lamp_sidebar():
 
     ss.selected_lamp = ss.room.lamps[ss.selected_lamp_id]
     initialize_lamp(ss.selected_lamp)  # initialize widgets
-    lamp_name_widget(ss.selected_lamp)  # name input
+    lamp_name_widget(ss.selected_lamp)  # name
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
         if "PRERELEASE" not in ss.selected_lamp.filename:
@@ -149,8 +149,7 @@ def lamp_position_options():
         lamp_z_widget(ss.selected_lamp)
 
     # Rotation input
-    angle = lamp_angle_widget(ss.selected_lamp)
-    ss.selected_lamp.rotate(angle)
+    lamp_angle_widget(ss.selected_lamp)
     st.markdown(
         "Set aim point", help="Setting aim point will update the tilt and orientation"
     )

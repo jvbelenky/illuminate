@@ -328,6 +328,11 @@ def update_lamp_position(lamp):
     update_lamp_aim_point(lamp)
 
 
+def update_lamp_rotation(lamp):
+    angle = set_val(f"rotation_{lamp.lamp_id}", lamp.angle)
+    lamp.rotate(angle)
+
+
 def update_lamp_orientation(lamp):
     """update lamp object aim point, and tilt/orientation widgets"""
     aimx = set_val(f"aim_x_{lamp.lamp_id}", lamp.aimx)

@@ -8,6 +8,7 @@ from ._lamp_utils import (
 from ._widget_utils import (
     update_lamp_name,
     update_lamp_position,
+    update_lamp_rotation,
     update_lamp_orientation,
     update_from_tilt,
     update_from_orientation,
@@ -101,6 +102,8 @@ def lamp_angle_widget(lamp):
         max_value=360.0,
         step=1.0,
         key=f"rotation_{lamp.lamp_id}",
+        on_change=update_lamp_rotation,
+        args=[lamp],
     )
 
 
