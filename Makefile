@@ -34,8 +34,7 @@ clean:
 	@find . -type f -name "*.kate-swp" -delete
 	@echo "Done"
 
-## Try the example usage
 run: 
-	streamlit run guv_app.py --server.headless true 
+	$(PYTHON_INTERPRETER) -m streamlit run guv_app.py --server.headless true 
 	
 all: build lint run
