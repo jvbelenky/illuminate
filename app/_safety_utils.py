@@ -183,8 +183,8 @@ def _select_representative_lamp(standard):
             # iterate through all lamps and pick the one with the highest value sum
             if len(lamp.spectra) > 0 and lamp.filename is not None:
                 # either eye or skin standard can be used for this purpose
-                wavelength = lamp.spectra[standard][0]
-                intensities = lamp.spectra[standard][1]
+                wavelength = lamp.spectra["Wavelength"]
+                intensities = lamp.spectra[standard]
                 weighted_sums[lamp_id] = sum_spectrum(wavelength, intensities)
 
         if len(weighted_sums) > 0:

@@ -98,7 +98,7 @@ def clear_lamp_cache(hard=False):
     """
     if ss.selected_lamp_id in ss.room.lamps:
         selected_lamp = ss.room.lamps[ss.selected_lamp_id]
-        if selected_lamp.filename is None or hard:
+        if hard:
             remove_lamp(selected_lamp)
             ss.room.remove_lamp(ss.selected_lamp_id)
     ss.selected_lamp_id = None
