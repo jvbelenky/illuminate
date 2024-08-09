@@ -103,11 +103,11 @@ def lamp_plots():
     PLOT_IES, PLOT_SPECTRA = False, False
     cols = st.columns(3)
     if ss.selected_lamp.filedata is not None:
-        PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=True)
+        PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=False)
 
     if len(ss.selected_lamp.spectra) > 0:
         PLOT_SPECTRA = cols[1].checkbox(
-            "Show spectra plot", key="show_spectra", value=True
+            "Show spectra plot", key="show_spectra", value=False
         )
         yscale = cols[2].selectbox(
             "Spectra y-scale",

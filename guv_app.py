@@ -87,15 +87,8 @@ with right_pane:
     if ss.show_results:
         results_page()
     else:
-        # show_room = st.checkbox("Show room plot",value=True,help="Hiding the room plot while adding luminaires may speed up the application.")
-
-        if "room_init" not in ss:
-            # show the initial room just once, before users have interacted with anything
-            ss.room_init = True
+        show_room = st.button("Show Updated Room")
+        if show_room or ss.show_room:
             room_plot()
-        else:
-            # after that show room only if button is pressed
-            show_room = st.button("Show Updated Room")
-            if show_room:
-                room_plot()
+            ss.show_room = False
         st.markdown(CONTACT_STR)

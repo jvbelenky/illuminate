@@ -14,6 +14,7 @@ def initialize():
 
     ss.editing = "about"  # determines what displays in the sidebar
     ss.show_results = False
+    ss.show_room = True  # show the room plot once on load
     ss.selected_lamp_id = None  # no lamp initially selected
     ss.selected_zone_id = None  # no zone initially selected
     ss.uploaded_files = {}
@@ -46,8 +47,6 @@ def initialize():
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
 
     add_standard_zones()
-
-    ss.calcstate = ss.room.to_json()
 
     # populate with lamp from url if available
     preview_lamp_name = st.query_params.get("preview_lamp")
