@@ -190,6 +190,8 @@ def project_sidebar():
             key="upload_project",
             label_visibility="collapsed",
         )
+    if ss.error_message is not None:
+        st.error(ss.error_message)
 
 
 def upload():
@@ -202,8 +204,8 @@ def upload():
             json.loads(string)
             file_ok = True
         except ValueError:
-            st.error(
-                "Something is wrong with your .guv file. Are you sure it is valid json?"
+            ss.error_message = (
+                "Something is wrong with your .guv file. Please verify that it is valid json."
             )
             file_ok = False
     if file_ok:

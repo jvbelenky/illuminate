@@ -79,7 +79,6 @@ def _get_standards(standard):
 
     return skin_standard, eye_standard
 
-import sys
 def _get_mono_limits(wavelength):
     """
     load the monochromatic skin and eye limits at a given wavelength
@@ -89,9 +88,9 @@ def _get_mono_limits(wavelength):
     weights = ss.room.lamps[lamp_id].spectral_weightings
 
     skin_standard, eye_standard = _get_standards(ss.room.standard)
-        
+
     wavelengths = weights["Wavelength"].tolist()
-    
+
     skindata = dict(zip(wavelengths, weights[skin_standard].tolist()))
     eyedata = dict(zip(wavelengths, weights[eye_standard].tolist()))
 

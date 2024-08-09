@@ -15,6 +15,8 @@ def initialize():
     ss.editing = "about"  # determines what displays in the sidebar
     ss.show_results = False
     ss.show_room = True  # show the room plot once on load
+    ss.error_message = None  # dynamic holder
+
     ss.selected_lamp_id = None  # no lamp initially selected
     ss.selected_zone_id = None  # no zone initially selected
     ss.uploaded_files = {}
