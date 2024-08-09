@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import guv_calcs
 from guv_calcs import Room
 from app._widget_utils import (
     initialize_room,
@@ -13,7 +14,6 @@ from ._top_ribbon import show_results
 from ._zone_utils import add_standard_zones
 
 SELECT_LOCAL = "Select local file..."
-# WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 ss = st.session_state
 
@@ -192,6 +192,8 @@ def project_sidebar():
         )
     if ss.error_message is not None:
         st.error(ss.error_message)
+    if ss.warning_message is not None:
+        st.warning(ss.warning_message)
 
 
 def upload():
@@ -201,12 +203,15 @@ def upload():
         try:
             string = file.read().decode("utf-8")
             # this just checks that the json is valid
-            json.loads(string)
+            dct = json.loads(string)
+            saved_version = dct["guv-calcs_version"]
+            current_version = guv_calcs.__version__
+            if saved_version != current_version:
+                ss.warning_message = f"This file was saved with guv-calcs {saved_version}; the current Illuminate version of guv-calcs is {current_version}."
+
             file_ok = True
         except ValueError:
-            ss.error_message = (
-                "Something is wrong with your .guv file. Please verify that it is valid json."
-            )
+            ss.error_message = "Something is wrong with your .guv file. Please verify that it is valid json."
             file_ok = False
     if file_ok:
         ss.room = Room.load(string)
