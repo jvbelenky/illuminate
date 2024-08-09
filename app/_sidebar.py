@@ -1,15 +1,19 @@
 import streamlit as st
+import json
 from guv_calcs import Room
 from app._widget_utils import (
+    initialize_room,
+    update_calc_zones,
     update_room,
     update_standard,
     update_ozone,
     close_sidebar,
 )
 from ._top_ribbon import show_results
+from ._zone_utils import add_standard_zones
 
 SELECT_LOCAL = "Select local file..."
-WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
+# WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 ss = st.session_state
 
@@ -167,8 +171,8 @@ def project_sidebar():
     with cols[0]:
         st.download_button(
             label="Save Project",
-            data=ss.room.to_json(),
-            file_name="illuminate.json",
+            data=ss.room.save(),
+            file_name="illuminate.guv",
             use_container_width=True,
             key="download_project",
         )
@@ -181,7 +185,7 @@ def project_sidebar():
     if load:
         st.file_uploader(
             "Load Project",
-            type="json",
+            type="guv",
             on_change=upload,
             key="upload_project",
             label_visibility="collapsed",
@@ -189,12 +193,28 @@ def project_sidebar():
 
 
 def upload():
+    file_ok = False
     file = ss["upload_project"]
     if file is not None:
-        string = file.read().decode("utf-8")
-        ss.room = Room.from_json(string)
+        try:
+            string = file.read().decode("utf-8")
+            # this just checks that the json is valid
+            json.loads(string)
+            file_ok = True
+        except ValueError:
+            st.error(
+                "Something is wrong with your .guv file. Are you sure it is valid json?"
+            )
+            file_ok = False
+    if file_ok:
+        ss.room = Room.load(string)
+        initialize_room()
+        add_standard_zones()
+        update_calc_zones()
         if ss.show_results:
             show_results()
+
+        ss.show_room = True  # show the uploaded file
 
 
 def default_sidebar():

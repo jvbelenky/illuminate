@@ -8,7 +8,18 @@ ss = st.session_state
 def add_standard_zones():
     """pre-populate the calc zone list"""
 
-    fluence = CalcVol(
+    standard_zones = get_standard_zones()
+    for zone_id, zone in standard_zones.items():
+        if zone_id not in ss.room.calc_zones.keys():
+            ss.room.add_calc_zone(zone)
+            initialize_zone(zone)
+
+
+def get_standard_zones():
+
+    standard_zones = {}
+
+    standard_zones["WholeRoomFluence"] = CalcVol(
         zone_id="WholeRoomFluence",
         name="Whole Room Fluence",
         x1=0,
@@ -20,9 +31,9 @@ def add_standard_zones():
         show_values=False,
     )
 
-    height = 1.9 if ss.room.units == "meters" else 6.23
+    height = 1.9 if "UL8802" in ss.room.standard else 1.8
 
-    skinzone = CalcPlane(
+    standard_zones["SkinLimits"] = CalcPlane(
         zone_id="SkinLimits",
         name="Skin Dose (8 Hours)",
         height=height,
@@ -36,7 +47,8 @@ def add_standard_zones():
         dose=True,
         hours=8,
     )
-    eyezone = CalcPlane(
+
+    standard_zones["EyeLimits"] = CalcPlane(
         zone_id="EyeLimits",
         name="Eye Dose (8 Hours)",
         height=height,
@@ -50,9 +62,7 @@ def add_standard_zones():
         dose=True,
         hours=8,
     )
-    for zone in [fluence, skinzone, eyezone]:
-        ss.room.add_calc_zone(zone)
-        initialize_zone(zone)
+    return standard_zones
 
 
 def add_new_zone():
