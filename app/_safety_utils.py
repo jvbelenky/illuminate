@@ -79,7 +79,7 @@ def _get_standards(standard):
 
     return skin_standard, eye_standard
 
-
+import sys
 def _get_mono_limits(wavelength):
     """
     load the monochromatic skin and eye limits at a given wavelength
@@ -89,8 +89,11 @@ def _get_mono_limits(wavelength):
     weights = ss.room.lamps[lamp_id].spectral_weightings
 
     skin_standard, eye_standard = _get_standards(ss.room.standard)
-    skindata = dict(zip(*weights[skin_standard]))
-    eyedata = dict(zip(*weights[eye_standard]))
+        
+    wavelengths = weights["Wavelength"].tolist()
+    
+    skindata = dict(zip(wavelengths, weights[skin_standard].tolist()))
+    eyedata = dict(zip(wavelengths, weights[eye_standard].tolist()))
 
     return 3 / skindata[wavelength], 3 / eyedata[wavelength]
 
@@ -142,8 +145,8 @@ def _get_weighted_hours(lamp, irradiance, standard):
     """
 
     # get spectral data for this lamp
-    wavelength = lamp.spectra["Unweighted"][0]
-    rel_intensities = lamp.spectra["Unweighted"][1]
+    wavelength = lamp.spectra["Wavelength"]
+    rel_intensities = lamp.spectra["Unweighted"]
     # determine total power in the spectra as it corresponds to total power
     idx = np.intersect1d(np.argwhere(wavelength >= 200), np.argwhere(wavelength <= 280))
     spectral_power = sum_spectrum(wavelength[idx], rel_intensities[idx])
@@ -151,8 +154,9 @@ def _get_weighted_hours(lamp, irradiance, standard):
     power_distribution = rel_intensities[idx] * ratio  # true spectra at calc plane
     # load weights according to the standard
     weights_list = lamp.spectral_weightings[standard]
+    weights_wavelength = lamp.spectral_weightings["Wavelength"]
     # interpolate to match the spectra
-    weighting = np.interp(wavelength, weights_list[0], weights_list[1])
+    weighting = np.interp(wavelength, weights_wavelength, weights_list)
 
     # weight the normalized spectra
     weighted_spectra = power_distribution * weighting[idx]
