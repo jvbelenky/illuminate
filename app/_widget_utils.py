@@ -55,7 +55,8 @@ def update_standard():
     update_calc_zones()
     # recalculate if necessary eg: if value has changed
     if RECALCULATE:
-        ss.room.calculate()
+        ss.room.calculate_by_id("EyeLimits")
+        ss.room.calculate_by_id("SkinLimits")
 
 
 def update_standard_results():
