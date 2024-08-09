@@ -212,6 +212,7 @@ def upload():
         add_standard_zones()
         update_calc_zones()
         if ss.show_results:
+            ss.room.calculate()
             show_results()
 
         ss.show_room = True  # show the uploaded file
