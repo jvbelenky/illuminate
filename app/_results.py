@@ -44,13 +44,38 @@ def results_page():
         for zone_id, zone in ss.room.calc_zones.items():
             vals = zone.values
             if vals is not None and zone.zone_id not in SPECIAL_ZONES:
-                st.subheader(zone.name, ":")
+                st.write("**", zone.name, ":**")
                 unitstr = zone.units
                 if zone.dose:
                     unitstr += "/" + str(zone.hours) + " hours"
                 st.write("Average:", round(vals.mean(), 3), unitstr)
                 st.write("Min:", round(vals.min(), 3), unitstr)
                 st.write("Max:", round(vals.max(), 3), unitstr)
+
+    st.subheader("Export Results", divider="grey")
+    col, col2 = st.columns(2)
+    include_plots = col2.checkbox("Include result plots")
+    col.download_button(
+        "Export All Results",
+        data=ss.room.export_zip(include_plots=include_plots),
+        file_name="illuminate.zip",
+        use_container_width=True,
+        type="primary",
+        key="export_all_results",
+    )
+    
+
+    for zone_id, zone in ss.room.calc_zones.items():
+        try:
+            col.download_button(
+                zone.name,
+                data=zone.export(),
+                file_name=zone.name + ".csv",
+                use_container_width=True,
+                disabled=True if zone.values is None else False,
+            )
+        except NotImplementedError:
+            pass
 
 
 def print_safety():

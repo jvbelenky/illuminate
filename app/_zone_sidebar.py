@@ -288,6 +288,15 @@ def zone_sidebar():
             key=f"enabled_{selected_zone.zone_id}",
         )
 
+        disable_download = True if selected_zone.values is None else False
+        st.download_button(
+            "Export Solution",
+            data=selected_zone.export(),
+            file_name=selected_zone.name + ".csv",
+            use_container_width=True,
+            disabled=disable_download,
+        )
+
         col7, col8 = st.columns(2)
         col7.button(
             "Delete",

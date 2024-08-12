@@ -159,7 +159,7 @@ def project_sidebar():
     """sidebar content for saving and loading files"""
 
     cols = st.columns([10, 1])
-    cols[0].header("Project")
+    cols[0].header("Project", divider="grey")
     cols[1].button(
         "X",
         on_click=close_sidebar,
@@ -167,20 +167,20 @@ def project_sidebar():
         use_container_width=True,
     )
 
-    cols = st.columns(2)
-    with cols[0]:
-        st.download_button(
-            label="Save Project",
-            data=ss.room.save(),
-            file_name="illuminate.guv",
-            use_container_width=True,
-            key="download_project",
-        )
-    with cols[1]:
-        load = st.button(
-            "Load Project",
-            use_container_width=True,
-        )
+    st.subheader
+    col1, col2 = st.columns(2)
+
+    col1.download_button(
+        label="Save Project",
+        data=ss.room.save(),
+        file_name="illuminate.guv",
+        use_container_width=True,
+        key="download_project",
+    )
+    load = col2.button(
+        "Load Project",
+        use_container_width=True,
+    )
 
     if load:
         st.file_uploader(
@@ -194,6 +194,20 @@ def project_sidebar():
         st.error(ss.error_message)
     if ss.warning_message is not None:
         st.warning(ss.warning_message)
+
+    st.header("Export", divider="grey")
+    col3, col4 = st.columns(2)
+    plots = st.checkbox("Include plots")
+    ies = st.checkbox("Include luminaire .ies files")
+    spectra = st.checkbox("Include luminaire spectra files")
+    col3.download_button(
+        "Export All",
+        data=ss.room.export_zip(include_plots=plots,include_lamp_plots=plots,include_ies=ies,include_spectra=spectra),
+        file_name="illuminate.zip",
+        use_container_width=True,
+        key="export_all_project",
+    )
+    
 
 
 def upload():
