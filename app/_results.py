@@ -9,7 +9,6 @@ from ._safety_utils import (
 from ._widget_utils import close_results, update_ozone_results, update_standard_results
 
 ss = st.session_state
-WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 
 
@@ -63,7 +62,6 @@ def results_page():
         type="primary",
         key="export_all_results",
     )
-    
 
     for zone_id, zone in ss.room.calc_zones.items():
         try:

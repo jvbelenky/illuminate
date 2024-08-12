@@ -202,12 +202,16 @@ def project_sidebar():
     spectra = st.checkbox("Include luminaire spectra files")
     col3.download_button(
         "Export All",
-        data=ss.room.export_zip(include_plots=plots,include_lamp_plots=plots,include_ies=ies,include_spectra=spectra),
+        data=ss.room.export_zip(
+            include_plots=plots,
+            include_lamp_plots=plots,
+            include_ies=ies,
+            include_spectra=spectra,
+        ),
         file_name="illuminate.zip",
         use_container_width=True,
         key="export_all_project",
     )
-    
 
 
 def upload():

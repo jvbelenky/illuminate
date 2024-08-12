@@ -13,7 +13,6 @@ from app._widget_utils import (
 )
 
 ss = st.session_state
-WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 SELECT_LOCAL = "Select local file..."
 
 
@@ -31,7 +30,6 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
         x=defaults.get("x", x),
         y=defaults.get("y", y),
         z=defaults.get("z", ss.room.z - 0.1),
-        spectral_weight_source=WEIGHTS_URL,
     )
     new_lamp.set_tilt(defaults.get("tilt", 0))
     new_lamp.set_orientation(defaults.get("orientation", 0))
