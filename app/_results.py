@@ -147,7 +147,7 @@ def print_safety():
 def print_efficacy():
     """print germicidal efficacy results"""
     st.subheader(
-        "Efficacy",
+        "Pathogen Reduction in Air",
         divider="grey",
         help="Equivalent air changes from UV (eACH-UV) in a *well-mixed room* is determined by the average fluence [mW/cm2] multiplied by the susceptibility value k [cm2/mW] multiplied by the number of seconds in an hour (3600). **Note that values of k are highly uncertain and should be considered preliminary.**",
     )
