@@ -146,7 +146,7 @@ def _get_weighted_hours(lamp, irradiance, standard):
 
     # get spectral data for this lamp
     wavelength = lamp.spectra["Wavelength"]
-    rel_intensities = lamp.spectra["Unweighted"]
+    rel_intensities = lamp.spectra["Unweighted Relative Intensity"]
     # determine total power in the spectra as it corresponds to total power
     idx = np.intersect1d(np.argwhere(wavelength >= 200), np.argwhere(wavelength <= 280))
     spectral_power = sum_spectrum(wavelength[idx], rel_intensities[idx])
