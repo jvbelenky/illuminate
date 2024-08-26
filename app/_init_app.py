@@ -55,8 +55,13 @@ def initialize():
     preview_lamp_name = st.query_params.get("preview_lamp")
     if preview_lamp_name is not None:
         vals = ss.index_data.values()
-        default_list = [x for x in vals if x["reporting_name"] == preview_lamp_name][0]
-        defaults = default_list.get("preview_setup", {})
-        add_new_lamp(name=preview_lamp_name, interactive=False, defaults=defaults)
-        calculate()  # normally a callback
-        ss.editing = None  # just for aesthetics
+        # clean up the preview lamp name, not all browsers do by default_list
+        name = preview_lamp_name.replace("%20"," ").lower()        
+        default_list = [x for x in vals if x["reporting_name"].lower() == name]
+        if len(default_list)>0:
+            defaults = default_list[0].get("preview_setup", {})
+            add_new_lamp(name=preview_lamp_name, interactive=False, defaults=defaults)
+            calculate()  # normally a callback
+            ss.editing = None  # just for aesthetics
+        else:
+            st.warning(f"{preview_lamp_name} was not found in the index.")
