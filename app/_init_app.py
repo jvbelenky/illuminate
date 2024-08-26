@@ -56,8 +56,8 @@ def initialize():
     if preview_lamp_name is not None:
         vals = ss.index_data.values()
         # clean up the preview lamp name, not all browsers do by default_list
-        name = preview_lamp_name.replace("%20"," ").lower()        
-        default_list = [x for x in vals if x["reporting_name"].lower() == name]
+        name = preview_lamp_name.replace("%20"," ")      
+        default_list = [x for x in vals if x["reporting_name"] == name]
         if len(default_list)>0:
             defaults = default_list[0].get("preview_setup", {})
             add_new_lamp(name=preview_lamp_name, interactive=False, defaults=defaults)
