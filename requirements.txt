@@ -1,8 +1,8 @@
-matplotlib>=3.8.4
-numpy>=1.26.4
-pandas>=2.2.2
-plotly>=5.22.0
-Requests>=2.32.3
-streamlit>=1.34.0
-seaborn>=0.13.2
-guv-calcs==0.1.0
+matplotlib==3.8.4
+numpy==1.26.4
+pandas==2.2.2
+plotly==5.22.0
+Requests==2.32.3
+streamlit==1.34.0
+seaborn==0.13.2
+guv-calcs==0.1.1
