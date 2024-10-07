@@ -109,12 +109,12 @@ def load_uploaded_spectra(lamp):
                 # add to list if it can load successfully
                 ss.uploaded_spectras[lamp.filename] = spectra_data
                 ss.warning_message = None
-            except ValueError: # if spectra cannot correctly load, set to zero
+            except ValueError:  # if spectra cannot correctly load, set to zero
                 ss.warning_message = "Spectra file is not valid. Double check that it is a .csv with the first column corresponding to wavelengths, and the second column corresponding to relative intensities."
                 spectra_data = None
         else:
             spectra_data = None
-    
+
     _load_spectra(lamp, spectra_data)
 
 
@@ -122,12 +122,15 @@ def _load_lamp(lamp, fname=None, fdata=None, spectra_data=None):
     lamp.reload(filename=fname, filedata=fdata)
     _load_spectra(lamp, spectra_data)
 
+
 def _load_spectra(lamp, data=None):
     lamp.load_spectra(data)
     # prep figure
     if lamp.spectra is not None:
         fig, ax = plt.subplots()
-        ss.spectrafig, _ = lamp.spectra.plot(fig=fig, ax=ax, title="", weights=True, label=True)
+        ss.spectrafig, _ = lamp.spectra.plot(
+            fig=fig, ax=ax, title="", weights=True, label=True
+        )
 
 
 def make_file_list():

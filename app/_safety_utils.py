@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from guv_calcs import get_tlv, sum_spectrum
+from guv_calcs import get_tlv
 
 ss = st.session_state
 

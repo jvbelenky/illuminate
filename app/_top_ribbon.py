@@ -1,6 +1,6 @@
 import streamlit as st
 from guv_calcs.calc_zone import CalcPlane, CalcVol
-from ._results import get_disinfection_table
+from guv_calcs import get_disinfection_table
 from ._zone_utils import add_new_zone
 from ._plot import plot_species
 from ._lamp_utils import add_new_lamp
@@ -158,13 +158,10 @@ def show_results():
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         avg_fluence = fluence.values.mean()
-        df = get_disinfection_table(
-            fluence=avg_fluence,
-            wavelength=222,
-            room=ss.room)
+        df = get_disinfection_table(fluence=avg_fluence, wavelength=222, room=ss.room)
         # move some keys around
-        url_key = [key for key in df.keys() if 'URL' in key]
-        new_keys = url_key + [key for key in df.keys() if 'URL' not in key]
-        df = df[new_keys]      
-        ss.kdf = df.rename(columns={"URL":"Link"})
+        url_key = [key for key in df.keys() if "URL" in key]
+        new_keys = url_key + [key for key in df.keys() if "URL" not in key]
+        df = df[new_keys]
+        ss.kdf = df.rename(columns={"URL": "Link"})
         ss.kfig = plot_species(ss.kdf, avg_fluence)

@@ -78,7 +78,7 @@ def lamp_file_options():
     """widgets and plots to do with lamp file sources"""
 
     lamp_select_widget(ss.selected_lamp)
-    
+
     if ss.selected_lamp.filename == SELECT_LOCAL:
         lamp_upload_widget(ss.selected_lamp)
         # spectra_upload_widget(ss.selected_lamp)
@@ -98,6 +98,7 @@ def lamp_file_options():
             spectra_upload_widget(ss.selected_lamp)
         if ss.warning_message is not None:
             st.warning(ss.warning_message)
+
 
 def lamp_plots():
     """plot if there is data to plot with"""

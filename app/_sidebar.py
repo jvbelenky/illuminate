@@ -198,15 +198,13 @@ def project_sidebar():
     st.header("Export", divider="grey")
     col3, col4 = st.columns(2)
     plots = st.checkbox("Include plots")
-    ies = st.checkbox("Include luminaire .ies files")
-    spectra = st.checkbox("Include luminaire spectra files")
+    lampfiles = st.checkbox("Include lamp .ies and spectrum files")
     col3.download_button(
         "Export All",
         data=ss.room.export_zip(
             include_plots=plots,
             include_lamp_plots=plots,
-            include_ies=ies,
-            include_spectra=spectra,
+            include_lamp_files=lampfiles,
         ),
         file_name="illuminate.zip",
         use_container_width=True,
