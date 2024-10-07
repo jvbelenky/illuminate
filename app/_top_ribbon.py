@@ -158,5 +158,13 @@ def show_results():
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         avg_fluence = fluence.values.mean()
-        ss.kdf = get_disinfection_table(avg_fluence)
+        df = get_disinfection_table(
+            fluence=avg_fluence,
+            wavelength=222,
+            room=ss.room)
+        # move some keys around
+        url_key = [key for key in df.keys() if 'URL' in key]
+        new_keys = url_key + [key for key in df.keys() if 'URL' not in key]
+        df = df[new_keys]      
+        ss.kdf = df.rename(columns={"URL":"Link"})
         ss.kfig = plot_species(ss.kdf, avg_fluence)

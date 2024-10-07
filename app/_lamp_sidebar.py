@@ -20,7 +20,7 @@ from ._widget import (
 
 SELECT_LOCAL = "Select local file..."
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
-CHINESE_STD = "placeholder"
+CHINESE_STD = "PLACEHOLDER"
 ss = st.session_state
 
 
@@ -78,10 +78,10 @@ def lamp_file_options():
     """widgets and plots to do with lamp file sources"""
 
     lamp_select_widget(ss.selected_lamp)
-    # determine fdata from fname
+    
     if ss.selected_lamp.filename == SELECT_LOCAL:
         lamp_upload_widget(ss.selected_lamp)
-        spectra_upload_widget(ss.selected_lamp)
+        # spectra_upload_widget(ss.selected_lamp)
 
     if ss.selected_lamp.filename in ss.uploaded_files:
         if ss.selected_lamp.filename in ss.uploaded_spectras:
@@ -96,7 +96,8 @@ def lamp_file_options():
                     """
                 )
             spectra_upload_widget(ss.selected_lamp)
-
+        if ss.warning_message is not None:
+            st.warning(ss.warning_message)
 
 def lamp_plots():
     """plot if there is data to plot with"""
@@ -105,7 +106,7 @@ def lamp_plots():
     if ss.selected_lamp.filedata is not None:
         PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=False)
 
-    if len(ss.selected_lamp.spectra) > 0:
+    if ss.selected_lamp.spectra is not None:
         PLOT_SPECTRA = cols[1].checkbox(
             "Show spectra plot", key="show_spectra", value=False
         )

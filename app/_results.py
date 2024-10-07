@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+from guv_calcs import get_disinfection_table
 from ._safety_utils import (
     get_unweighted_hours_to_tlv,
     get_weighted_hours_to_tlv,
@@ -101,7 +102,10 @@ def print_safety():
     SHOW_SKIN = True if skin.values is not None else False
     SHOW_EYES = True if eye.values is not None else False
     if SHOW_SKIN and SHOW_EYES:
-
+        # for lampid,lamp in ss.room.lamps.items():
+        # print('bork')
+        # print(lamp.name)
+        # print(lamp.spectra)
         hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv()
 
         # print the max values
@@ -158,11 +162,11 @@ def print_safety():
             eyetitle = "8-Hour Eye Dose (Max: " + str(eye_max) + " " + eye.units + ")"
 
             cols[0].pyplot(
-                skin.plot_plane(title=skintitle),
+                skin.plot_plane(title=skintitle)[0],
                 **{"transparent": "True"},
             )
             cols[1].pyplot(
-                eye.plot_plane(title=eyetitle),
+                eye.plot_plane(title=eyetitle)[0],
                 **{"transparent": "True"},
             )
 
@@ -189,7 +193,16 @@ def print_efficacy():
             st.pyplot(ss.kfig)
         SHOW_KDATA = st.checkbox("Show Data", value=True)
         if SHOW_KDATA:
-            st.dataframe(ss.kdf, hide_index=True)
+            # st.dataframe(ss.kdf)#, hide_index=True)
+            # st.markdown(ss.kdf.to_html(render_links=True),unsafe_allow_html=True)
+            st.data_editor(
+                ss.kdf,
+                disabled=True,
+                column_config={
+                    "Link":st.column_config.LinkColumn(display_text="[X]")
+                },
+                hide_index=True
+            )
         if SHOW_KPLOT or SHOW_KDATA:
             st.markdown(
                 "See any missing data? Let us know [here](https://docs.google.com/forms/d/e/1FAIpQLSdpHgV3I0vYE1i8wsImyepMDumuuEfF9nY6BVtNhErMSW9iPg/viewform)"
@@ -246,57 +259,57 @@ def calculate_ozone_increase():
     return ozone_increase
 
 
-def get_disinfection_table(fluence):
-    """
-    Retrieve and format inactivtion data for this room.
+# def get_disinfection_table(fluence):
+    # """
+    # Retrieve and format inactivtion data for this room.
 
-    Currently assumes all lamps are GUV222. in the future will need something
-    cleverer than this
-    """
+    # Currently assumes all lamps are GUV222. in the future will need something
+    # cleverer than this
+    # """
 
-    wavelength = 222
+    # wavelength = 222
 
-    fname = Path("data/disinfection_table.csv")
-    df = pd.read_csv(fname)
-    df = df[df["Medium"] == "Aerosol"]
-    df = df[df["wavelength [nm]"] == wavelength]
+    # fname = Path("data/disinfection_table.csv")
+    # df = pd.read_csv(fname)
+    # df = df[df["Medium"] == "Aerosol"]
+    # df = df[df["wavelength [nm]"] == wavelength]
 
-    # calculate eACH before filling nans
-    k1 = df["k1 [cm2/mJ]"].fillna(0).astype(float)
-    k2 = df["k2 [cm2/mJ]"].fillna(0).astype(float)
-    f = df["% resistant"].str.rstrip("%").astype("float").fillna(0) / 100
-    eACH = (k1 * (1 - f) + k2 - k2 * (1 - f)) * fluence * 3.6
+    # # calculate eACH before filling nans
+    # k1 = df["k1 [cm2/mJ]"].fillna(0).astype(float)
+    # k2 = df["k2 [cm2/mJ]"].fillna(0).astype(float)
+    # f = df["% resistant"].str.rstrip("%").astype("float").fillna(0) / 100
+    # eACH = (k1 * (1 - f) + k2 - k2 * (1 - f)) * fluence * 3.6
 
-    volume = ss.room.get_volume()
-    # convert to cubic feet for cfm
-    if ss.room.units == "meters":
-        volume = volume / (0.3048 ** 3)
-    cadr_uv_cfm = eACH * volume / 60
-    cadr_uv_lps = cadr_uv_cfm * 0.47195
+    # volume = ss.room.get_volume()
+    # # convert to cubic feet for cfm
+    # if ss.room.units == "meters":
+        # volume = volume / (0.3048 ** 3)
+    # cadr_uv_cfm = eACH * volume / 60
+    # cadr_uv_lps = cadr_uv_cfm * 0.47195
 
-    df["eACH-UV"] = eACH.round(2)
-    df["CADR-UV [cfm]"] = cadr_uv_cfm.round(2)
-    df["CADR-UV [lps]"] = cadr_uv_lps.round(2)
+    # df["eACH-UV"] = eACH.round(2)
+    # df["CADR-UV [cfm]"] = cadr_uv_cfm.round(2)
+    # df["CADR-UV [lps]"] = cadr_uv_lps.round(2)
 
-    newkeys = [
-        "eACH-UV",
-        "CADR-UV [cfm]",
-        "CADR-UV [lps]",
-        "Organism",
-        "Species",
-        "Strain",
-        "Type (Viral)",
-        "Enveloped (Viral)",
-        "k1 [cm2/mJ]",
-        "k2 [cm2/mJ]",
-        "% resistant",
-        "Medium (specific)",
-        "Full Citation",
-    ]
-    df = df[newkeys].fillna(" ")
-    df = df.rename(
-        columns={"Medium (specific)": "Medium", "Full Citation": "Reference"}
-    )
-    df = df.sort_values("Species")
+    # newkeys = [
+        # "eACH-UV",
+        # "CADR-UV [cfm]",
+        # "CADR-UV [lps]",
+        # "Organism",
+        # "Species",
+        # "Strain",
+        # "Type (Viral)",
+        # "Enveloped (Viral)",
+        # "k1 [cm2/mJ]",
+        # "k2 [cm2/mJ]",
+        # "% resistant",
+        # "Medium (specific)",
+        # "Full Citation",
+    # ]
+    # df = df[newkeys].fillna(" ")
+    # df = df.rename(
+        # columns={"Medium (specific)": "Medium", "Full Citation": "Reference"}
+    # )
+    # df = df.sort_values("Species")
 
-    return df
+    # return df
