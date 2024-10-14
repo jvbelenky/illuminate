@@ -2,8 +2,10 @@ import streamlit as st
 import json
 import guv_calcs
 from guv_calcs import Room
-from app._widget_utils import (
+from ._widget import (
     initialize_room,
+    initialize_zone,
+    initialize_lamp,
     update_calc_zones,
     update_room,
     update_standard,
@@ -11,7 +13,6 @@ from app._widget_utils import (
     close_sidebar,
 )
 from ._top_ribbon import show_results
-from ._zone_utils import add_standard_zones
 
 SELECT_LOCAL = "Select local file..."
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
@@ -224,15 +225,19 @@ def upload():
             current_version = guv_calcs.__version__
             if saved_version != current_version:
                 ss.warning_message = f"This file was saved with guv-calcs {saved_version}; the current Illuminate version of guv-calcs is {current_version}."
-
+                st.warning(ss.warning_message)
             file_ok = True
         except ValueError:
             ss.error_message = "Something is wrong with your .guv file. Please verify that it is valid json."
             file_ok = False
+            st.error(ss.error_message)
     if file_ok:
         ss.room = Room.load(string)
         initialize_room()
-        add_standard_zones()
+        for zone_id, zone in ss.room.calc_zones.items():
+            initialize_zone(zone)
+        for lamp_id, lamp in ss.room.lamps.items():
+            initialize_lamp(lamp)
         update_calc_zones()
         if ss.show_results:
             ss.room.calculate()

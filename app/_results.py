@@ -4,7 +4,7 @@ from ._safety_utils import (
     get_weighted_hours_to_tlv,
     make_hour_string,
 )
-from ._widget_utils import close_results, update_ozone_results, update_standard_results
+from ._widget import close_results, update_ozone_results, update_standard_results
 
 ss = st.session_state
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]

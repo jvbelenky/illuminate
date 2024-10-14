@@ -2,9 +2,9 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from guv_calcs import Room
-from ._zone_utils import add_standard_zones
 from ._lamp_utils import add_new_lamp, get_ies_files
 from ._top_ribbon import calculate
+from ._widget import initialize_zone
 
 SELECT_LOCAL = "Select local file..."
 ss = st.session_state
@@ -48,8 +48,9 @@ def initialize():
 
     # initialize room object and add zones to it
     ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
-
-    add_standard_zones()
+    ss.room.add_standard_zones()
+    for zone_id, zone in ss.room.calc_zones.items():
+        initialize_zone(zone)
 
     # populate with lamp from url if available
     preview_lamp_name = st.query_params.get("preview_lamp")

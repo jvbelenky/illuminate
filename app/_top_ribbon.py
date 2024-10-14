@@ -1,10 +1,9 @@
 import streamlit as st
-from guv_calcs.calc_zone import CalcPlane, CalcVol
+from guv_calcs.calc_zone import CalcPlane, CalcVol, CalcZone
 from guv_calcs import get_disinfection_table
-from ._zone_utils import add_new_zone
 from ._plot import plot_species
 from ._lamp_utils import add_new_lamp
-from ._widget_utils import (
+from ._widget import (
     initialize_lamp,
     initialize_zone,
     initialize_room,
@@ -165,3 +164,20 @@ def show_results():
         df = df[new_keys]
         ss.kdf = df.rename(columns={"URL": "Link"})
         ss.kfig = plot_species(ss.kdf, avg_fluence)
+
+
+def add_new_zone():
+    """necessary logic for adding new calc zone to room and to state"""
+    # clear_zone_cache()
+    # initialize calculation zone
+    new_zone_idx = len(ss.room.calc_zones) + 1
+    new_zone_id = f"CalcZone{new_zone_idx}"
+    # this zone object contains nothing but the name and ID and will be
+    # replaced by a CalcPlane or CalcVol object
+    new_zone = CalcZone(zone_id=new_zone_id, enabled=False)
+    # add to room
+    ss.room.add_calc_zone(new_zone)
+    # select for editing
+    ss.editing = "zones"
+    ss.selected_zone_id = new_zone_id
+    clear_lamp_cache()

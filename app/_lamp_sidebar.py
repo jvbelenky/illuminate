@@ -1,11 +1,11 @@
 import streamlit as st
-from ._widget_utils import initialize_lamp, close_sidebar
-from ._lamp_utils import load_uploaded_spectra
-from ._widget import (
-    lamp_name_widget,
+from ._widget import initialize_lamp, close_sidebar
+from ._lamp_utils import (
+    load_uploaded_spectra,
     lamp_select_widget,
     lamp_upload_widget,
     spectra_upload_widget,
+    lamp_name_widget,
     lamp_x_widget,
     lamp_y_widget,
     lamp_z_widget,
@@ -43,6 +43,7 @@ def lamp_sidebar():
     lamp_name_widget(ss.selected_lamp)  # name
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
+
         if "PRERELEASE" not in ss.selected_lamp.filename:
             link = ss.reports[ss.selected_lamp.filename].replace(" ", "%20")
             st.markdown(f"[View Full Report]({link})")
@@ -123,10 +124,17 @@ def lamp_plots():
     if PLOT_IES and PLOT_SPECTRA:
         # plot both charts side by side
         iesfig, iesax = ss.selected_lamp.plot_ies()
-        ss.spectrafig.set_size_inches(5, 6, forward=True)
-        ss.spectrafig.axes[0].set_yscale(yscale)
+        # fig, ax = plt.subplots()
+        spectrafig, _ = ss.selected_lamp.spectra.plot(
+            # fig=fig, ax=ax,
+            title="",
+            weights=True,
+            label=True,
+        )
+        spectrafig.set_size_inches(5, 6, forward=True)
+        spectrafig.axes[0].set_yscale(yscale)
         cols = st.columns(2)
-        cols[1].pyplot(ss.spectrafig, use_container_width=True)
+        cols[1].pyplot(spectrafig, use_container_width=True)
         cols[0].pyplot(iesfig, use_container_width=True)
     elif PLOT_IES and not PLOT_SPECTRA:
         # just display the ies file plot
@@ -134,9 +142,15 @@ def lamp_plots():
         st.pyplot(iesfig, use_container_width=True)
     elif PLOT_SPECTRA and not PLOT_IES:
         # display just the spectra
-        ss.spectrafig.set_size_inches(6.4, 4.8, forward=True)
-        ss.spectrafig.axes[0].set_yscale(yscale)
-        st.pyplot(ss.spectrafig, use_container_width=True)
+        spectrafig, _ = ss.selected_lamp.spectra.plot(
+            # fig=fig, ax=ax,
+            title="",
+            weights=True,
+            label=True,
+        )
+        spectrafig.set_size_inches(5, 6, forward=True)
+        spectrafig.axes[0].set_yscale(yscale)
+        st.pyplot(spectrafig, use_container_width=True)
 
 
 def lamp_position_options():
