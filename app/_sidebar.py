@@ -214,6 +214,9 @@ def project_sidebar():
 
 
 def upload():
+    """
+    callback for uploading a .guv file
+    """
     file_ok = False
     file = ss["upload_project"]
     if file is not None:
@@ -225,7 +228,7 @@ def upload():
             current_version = guv_calcs.__version__
             if saved_version != current_version:
                 ss.warning_message = f"This file was saved with guv-calcs {saved_version}; the current Illuminate version of guv-calcs is {current_version}."
-                st.warning(ss.warning_message)
+
             file_ok = True
         except ValueError:
             ss.error_message = "Something is wrong with your .guv file. Please verify that it is valid json."

@@ -81,7 +81,7 @@ def load_prepopulated_lamp(lamp, fname):
     fdata = requests.get(ss.vendored_lamps[fname]).content
     lamp.reload(filename=fname, filedata=fdata)
     # load spectra data
-    spectra_data = requests.get(ss.vendored_spectra[fname]).content   
+    spectra_data = requests.get(ss.vendored_spectra[fname]).content
     _load_spectra(lamp, spectra_data)
 
 
@@ -91,7 +91,7 @@ def load_uploaded_lamp(lamp):
 
     if uploaded_file is not None:
         fname = uploaded_file.name
-        lamp.name = fname.split('.')[0]
+        lamp.name = fname.split(".")[0]
         ss[f"name_{lamp.lamp_id}"] = lamp.name
         if fname in ss.uploaded_files:
             fdata = ss.uploaded_files[fname]
