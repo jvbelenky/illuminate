@@ -29,6 +29,7 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
     # set initial position
     new_lamp_id = f"Lamp{new_lamp_idx}"
     name = new_lamp_id if name is None else name
+
     x, y = get_lamp_position(lamp_idx=new_lamp_idx, x=ss.room.x, y=ss.room.y)
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
@@ -58,6 +59,10 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
 def load_lamp(lamp):
     """update lamp filename from widget"""
     fname = set_val(f"file_{lamp.lamp_id}", lamp.filename)
+    
+    lamp.name = make_lamp_name(fname)
+    ss[f"name_{lamp.lamp_id}"] = lamp.name
+
     fdata = None
     spectra_data = None
     if fname in ss.vendored_spectra.keys():
@@ -74,9 +79,7 @@ def load_lamp(lamp):
 def load_prepopulated_lamp(lamp, fname):
     """load prepopulated lamp from osluv server"""
     # files from osluv server
-    # set name
-    ss[f"name_{lamp.lamp_id}"] = fname
-    lamp.name = fname
+    # set name    
     # load ies data
     fdata = requests.get(ss.vendored_lamps[fname]).content
     lamp.reload(filename=fname, filedata=fdata)
@@ -91,8 +94,8 @@ def load_uploaded_lamp(lamp):
 
     if uploaded_file is not None:
         fname = uploaded_file.name
-        lamp.name = fname.split(".")[0]
-        ss[f"name_{lamp.lamp_id}"] = lamp.name
+        lamp.name = fname
+        ss[f"name_{lamp.lamp_id}"] = fname
         if fname in ss.uploaded_files:
             fdata = ss.uploaded_files[fname]
         else:
@@ -105,6 +108,24 @@ def load_uploaded_lamp(lamp):
         # load spectra if present
         load_uploaded_spectra(lamp)
 
+def make_lamp_name(fname):
+    """Generate a unique name """
+    current_lamp_names = [lamp.name for lamp in ss.room.lamps.values()]
+    if fname in current_lamp_names:
+        matching_names = [n for n in current_lamp_names if fname in n]
+        try:
+            idexs = []
+            for n in matching_names:
+                try:
+                    idexs.append(int(n[-1]))
+                except:
+                     continue
+            name = fname+ ' - '+str(max(idexs)+1)
+        except ValueError:
+            name = fname+ ' - 2'
+    else:
+        name = fname
+    return name
 
 def load_uploaded_spectra(lamp):
     """load the .csv file of a user-uploaded spectra"""
