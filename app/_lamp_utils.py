@@ -59,9 +59,9 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
 def load_lamp(lamp):
     """update lamp filename from widget"""
     fname = set_val(f"file_{lamp.lamp_id}", lamp.filename)
-    
-    lamp.name = make_lamp_name(fname)
-    ss[f"name_{lamp.lamp_id}"] = lamp.name
+    if fname is not SELECT_LOCAL:
+        lamp.name = make_lamp_name(fname)
+        ss[f"name_{lamp.lamp_id}"] = lamp.name
 
     fdata = None
     spectra_data = None

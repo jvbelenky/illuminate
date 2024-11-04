@@ -13,6 +13,7 @@ from ._widget import (
     close_sidebar,
 )
 from ._top_ribbon import show_results
+from ._lamp_utils import make_file_list
 
 SELECT_LOCAL = "Select local file..."
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
@@ -239,8 +240,15 @@ def upload():
         initialize_room()
         for zone_id, zone in ss.room.calc_zones.items():
             initialize_zone(zone)
+            
         for lamp_id, lamp in ss.room.lamps.items():
-            initialize_lamp(lamp)
+            initialize_lamp(lamp)            
+            # make lampfile options
+            if ".ies" in lamp.name:
+                name = lamp.name.split(" - ")[0]
+                ss.uploaded_files[name] = lamp.filedata
+        make_file_list()
+                
         update_calc_zones()
         if ss.show_results:
             ss.room.calculate()
