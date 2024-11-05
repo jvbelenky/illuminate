@@ -244,9 +244,8 @@ def upload():
         for lamp_id, lamp in ss.room.lamps.items():
             initialize_lamp(lamp)            
             # make lampfile options
-            if ".ies" in lamp.name:
-                name = lamp.name.split(" - ")[0]
-                ss.uploaded_files[name] = lamp.filedata
+            if lamp.filename not in ss.vendored_lamps.keys():
+                ss.uploaded_files[lamp.filename] = lamp.filedata
         make_file_list()
                 
         update_calc_zones()
