@@ -240,14 +240,14 @@ def upload():
         initialize_room()
         for zone_id, zone in ss.room.calc_zones.items():
             initialize_zone(zone)
-            
+
         for lamp_id, lamp in ss.room.lamps.items():
-            initialize_lamp(lamp)            
+            initialize_lamp(lamp)
             # make lampfile options
             if lamp.filename not in ss.vendored_lamps.keys():
                 ss.uploaded_files[lamp.filename] = lamp.filedata
         make_file_list()
-                
+
         update_calc_zones()
         if ss.show_results:
             ss.room.calculate()

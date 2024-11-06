@@ -103,6 +103,8 @@ def initialize_zone(zone):
         f"y2_{zone.zone_id}",
         f"x_spacing_{zone.zone_id}",
         f"y_spacing_{zone.zone_id}",
+        f"x_num_points_{zone.zone_id}",
+        f"y_num_points_{zone.zone_id}",
         f"offset_{zone.zone_id}",
         f"enabled_{zone.zone_id}",
         f"show_values_{zone.zone_id}",
@@ -114,6 +116,7 @@ def initialize_zone(zone):
         keys.append(f"z1_{zone.zone_id}")
         keys.append(f"z2_{zone.zone_id}")
         keys.append(f"z_spacing_{zone.zone_id}")
+        keys.append(f"z_num_points_{zone.zone_id}")
 
     vals = [
         zone.name,
@@ -123,6 +126,8 @@ def initialize_zone(zone):
         zone.y2,
         zone.x_spacing,
         zone.y_spacing,
+        zone.num_x,
+        zone.num_y,
         zone.offset,
         zone.enabled,
         zone.show_values,
@@ -134,6 +139,7 @@ def initialize_zone(zone):
         vals.append(zone.z1)
         vals.append(zone.z2)
         vals.append(zone.z_spacing)
+        vals.append(zone.num_z)
 
     add_keys(keys, vals)
 
@@ -279,36 +285,60 @@ def update_zone_visibility(zone):
     zone.show_values = set_val(f"show_values_{zone.zone_id}", zone.show_values)
 
 
-def update_plane_dimensions(zone):
-    """update dimensions and spacing of calculation volume from widgets"""
-
-    zone.x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
-    zone.x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
-    zone.y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
-    zone.y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
-    zone.height = set_val(f"height_{zone.zone_id}", zone.height)
-
-    zone.x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
-    zone.y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
-
+def update_offset(zone):
     zone.offset = set_val(f"offset_{zone.zone_id}", zone.offset)
-
     zone._update()
+
+
+def update_plane_dimensions(zone):
+    """update dimensions of calculation plane from widgets"""
+    x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
+    x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
+    y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
+    y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
+    zone.height = set_val(f"height_{zone.zone_id}", zone.height)
+    zone.set_dimensions(x1, x2, y1, y2)
+
+
+def update_plane_spacing(zone):
+    """update spacing of calculation plane from widgets"""
+    x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
+    y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
+    zone.set_spacing(x_spacing, y_spacing)
+
+
+def update_plane_points(zone):
+    """update number of points in the calculation plane from widgets"""
+    num_x = set_val(f"x_num_points_{zone.zone_id}", zone.num_x)
+    num_y = set_val(f"y_num_points_{zone.zone_id}", zone.num_y)
+    zone.set_num_points(num_x, num_y)
 
 
 def update_vol_dimensions(zone):
-    """update dimensions and spacing of calculation volume from widgets"""
-    zone.x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
-    zone.x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
-    zone.y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
-    zone.y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
-    zone.z1 = set_val(f"z1_{zone.zone_id}", zone.z1)
-    zone.z2 = set_val(f"z2_{zone.zone_id}", zone.z2)
-    zone.x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
-    zone.y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
-    zone.z_spacing = set_val(f"z_spacing_{zone.zone_id}", zone.z_spacing)
-    zone.offset = set_val(f"offset_{zone.zone_id}", zone.offset)
-    zone._update()
+    """update dimensions of calculation volume from widgets"""
+    x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
+    x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
+    y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
+    y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
+    z1 = set_val(f"z1_{zone.zone_id}", zone.z1)
+    z2 = set_val(f"z2_{zone.zone_id}", zone.z2)
+    zone.set_dimensions(x1, x2, y1, y2, z1, z2)
+
+
+def update_vol_spacing(zone):
+    """update spacing of calculation volumr from widgets"""
+    x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
+    y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
+    z_spacing = set_val(f"z_spacing_{zone.zone_id}", zone.z_spacing)
+    zone.set_spacing(x_spacing, y_spacing, z_spacing)
+
+
+def update_vol_points(zone):
+    """update number of points in the calculation volume from widgets"""
+    numx = set_val(f"x_num_points_{zone.zone_id}", zone.num_x)
+    numy = set_val(f"y_num_points_{zone.zone_id}", zone.num_y)
+    numz = set_val(f"z_num_points_{zone.zone_id}", zone.num_z)
+    zone.set_num_points(numx, numy, numz)
 
 
 def update_lamp_position(lamp):

@@ -79,7 +79,7 @@ def load_lamp(lamp):
 def load_prepopulated_lamp(lamp, fname):
     """load prepopulated lamp from osluv server"""
     # files from osluv server
-    # set name    
+    # set name
     # load ies data
     fdata = requests.get(ss.vendored_lamps[fname]).content
     lamp.reload(filename=fname, filedata=fdata)
@@ -108,8 +108,9 @@ def load_uploaded_lamp(lamp):
         # load spectra if present
         load_uploaded_spectra(lamp)
 
+
 def make_lamp_name(fname):
-    """Generate a unique name """
+    """Generate a unique name"""
     current_lamp_names = [lamp.name for lamp in ss.room.lamps.values()]
     if fname in current_lamp_names:
         matching_names = [n for n in current_lamp_names if fname in n]
@@ -119,13 +120,14 @@ def make_lamp_name(fname):
                 try:
                     idexs.append(int(n[-1]))
                 except:
-                     continue
-            name = fname+ ' - '+str(max(idexs)+1)
+                    continue
+            name = fname + " - " + str(max(idexs) + 1)
         except ValueError:
-            name = fname+ ' - 2'
+            name = fname + " - 2"
     else:
         name = fname
     return name
+
 
 def load_uploaded_spectra(lamp):
     """load the .csv file of a user-uploaded spectra"""

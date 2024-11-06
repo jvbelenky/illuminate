@@ -31,24 +31,13 @@ def results_page():
             if msg is not None:
                 st.warning(msg)
         # if we're good print the results
+        print_summary()
+        if any(key not in SPECIAL_ZONES for key in ss.room.calc_zones.keys()):
+            print_user_defined_zones()
         print_safety()
         print_efficacy()
-        print_airchem()
-
-    # Display all other results
-    if any(key not in SPECIAL_ZONES for key in ss.room.calc_zones.keys()):
-        st.subheader("User Defined Calculation Zones", divider="grey")
-        for zone_id, zone in ss.room.calc_zones.items():
-            vals = zone.values
-            if vals is not None and zone.zone_id not in SPECIAL_ZONES:
-                st.write("**", zone.name, ":**")
-                unitstr = zone.units
-                if zone.dose:
-                    unitstr += "/" + str(zone.hours) + " hours"
-                st.write("Average:", round(vals.mean(), 3), unitstr)
-                st.write("Min:", round(vals.min(), 3), unitstr)
-                st.write("Max:", round(vals.max(), 3), unitstr)
-
+        print_airchem()  
+    
     st.subheader("Export Results", divider="grey")
     col, col2 = st.columns(2)
     include_plots = col2.checkbox("Include result plots")
@@ -73,6 +62,76 @@ def results_page():
         except NotImplementedError:
             pass
 
+def print_summary():
+    st.subheader("Summary", divider="grey")
+    fluence = ss.room.calc_zones["WholeRoomFluence"]
+    skin = ss.room.calc_zones["SkinLimits"]
+    eye = ss.room.calc_zones["EyeLimits"]
+    
+    # avg fluence
+    if fluence.values is not None:
+        fluence.values
+        avg_fluence = round(fluence.values.mean(), 3)
+        fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm2"
+        st.write("**Average fluence:** "+fluence_str)  
+    
+    
+    if skin.values is not None and eye.values is not None:
+        hours_skin, hours_eye = get_weighted_hours_to_tlv()
+        skin_max = round(skin.values.max(), 2)
+        color = "red" if hours_skin < 8 else "blue"
+        skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
+        if hours_skin<8:
+            dim = round((hours_skin / 8) * 100, 1)
+            skin_str += f" *(To be compliant with skin TLVs, this lamp must be dimmed to {dim}% of its present power)*"
+        st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
+
+        eye_max = round(eye.values.max(), 2)
+        color = "red" if hours_eye < 8 else "blue"
+        eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
+        if hours_eye<8:
+            dim = round((hours_eye / 8) * 100, 1)
+            eye_str += f" *(To be compliant with eye TLVs, this lamp must be dimmed to {dim}% of its present power)*"
+        
+        st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+    
+def print_user_defined_zones():
+    
+    """all user-defined calc zones, basic stats and """
+    st.subheader("User Defined Calculation Zones", divider="grey")
+    for zone_id, zone in ss.room.calc_zones.items():
+        vals = zone.values
+        if vals is not None and zone.zone_id not in SPECIAL_ZONES:
+            cols = st.columns(2)
+            if zone.calctype=="Plane":
+                cols[0].pyplot(
+                    zone.plot_plane(title=zone.name)[0],
+                    **{"transparent": "True"},
+                )
+            else:   
+                cols[0].write("**"+zone.name+"**")
+            cols[1].write("")
+            cols[1].write("")
+            unitstr = zone.units
+            if zone.dose:
+                unitstr += "/" + str(zone.hours) + " hours"
+            cols[1].write("**Average:** "+str(round(vals.mean(), 3))+" "+unitstr)
+            cols[1].write("**Min:** "+str(round(vals.min(), 3))+" "+unitstr)
+            cols[1].write("**Max:** "+str(round(vals.max(), 3))+" "+unitstr)
+            cols[1].write("")
+            cols[1].write("")
+            try:
+                cols[1].download_button(
+                    "Export Values",
+                    data=zone.export(),
+                    file_name=zone.name + ".csv",
+                    use_container_width=True,
+                    disabled=True if zone.values is None else False,
+                )
+            except NotImplementedError:
+                pass
+    
+        
 
 def print_safety():
     """print photobiological safety results"""
@@ -90,7 +149,6 @@ def print_safety():
         "Select photobiological safety standard",
         options=standards,
         on_change=update_standard_results,
-        # args=[room],
         key="room_standard_results",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH), the relevant standard in the US. The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP), which apply most places outside of the US. Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
     )
@@ -99,28 +157,17 @@ def print_safety():
     SHOW_SKIN = True if skin.values is not None else False
     SHOW_EYES = True if eye.values is not None else False
     if SHOW_SKIN and SHOW_EYES:
-        # for lampid,lamp in ss.room.lamps.items():
-        # print('bork')
-        # print(lamp.name)
-        # print(lamp.spectra)
         hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv()
 
         # print the max values
-        skin = ss.room.calc_zones["SkinLimits"]
         skin_max = round(skin.values.max(), 2)
         color = "red" if hours_skin_uw < 8 else "blue"
         skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
 
-        eye = ss.room.calc_zones["EyeLimits"]
         eye_max = round(eye.values.max(), 2)
         color = "red" if hours_eye_uw < 8 else "blue"
         eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
         cols = st.columns(2)
-        with cols[0]:
-            st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
-        with cols[1]:
-            st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
-
         cols[0].markdown("**Hours before skin TLV is reached:**")
         cols[1].markdown("**Hours before eye TLV is reached:**")
         hours_skin_uw_str = make_hour_string(hours_skin_uw, "skin")
@@ -150,6 +197,11 @@ def print_safety():
             help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
         )
 
+        # cols = st.columns(2)
+        # with cols[0]:
+            # st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
+        # with cols[1]:
+            # st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
@@ -179,10 +231,10 @@ def print_efficacy():
     if fluence.values is not None:
         fluence.values
         avg_fluence = round(fluence.values.mean(), 3)
-        fluence_str = ":blue[" + str(avg_fluence) + "] μW/cm2"
+        fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm2"
     else:
         fluence_str = None
-    st.write("Average fluence: ", fluence_str)
+    st.write("**Average fluence:** ", fluence_str)
 
     if fluence.values is not None:
         SHOW_KPLOT = st.checkbox("Show Plot", value=True)
@@ -252,59 +304,3 @@ def calculate_ozone_increase():
     ozone_decay = ss.room.ozone_decay_constant
     ozone_increase = avg_fluence * ozone_gen / (ach + ozone_decay)
     return ozone_increase
-
-
-# def get_disinfection_table(fluence):
-# """
-# Retrieve and format inactivtion data for this room.
-
-# Currently assumes all lamps are GUV222. in the future will need something
-# cleverer than this
-# """
-
-# wavelength = 222
-
-# fname = Path("data/disinfection_table.csv")
-# df = pd.read_csv(fname)
-# df = df[df["Medium"] == "Aerosol"]
-# df = df[df["wavelength [nm]"] == wavelength]
-
-# # calculate eACH before filling nans
-# k1 = df["k1 [cm2/mJ]"].fillna(0).astype(float)
-# k2 = df["k2 [cm2/mJ]"].fillna(0).astype(float)
-# f = df["% resistant"].str.rstrip("%").astype("float").fillna(0) / 100
-# eACH = (k1 * (1 - f) + k2 - k2 * (1 - f)) * fluence * 3.6
-
-# volume = ss.room.get_volume()
-# # convert to cubic feet for cfm
-# if ss.room.units == "meters":
-# volume = volume / (0.3048 ** 3)
-# cadr_uv_cfm = eACH * volume / 60
-# cadr_uv_lps = cadr_uv_cfm * 0.47195
-
-# df["eACH-UV"] = eACH.round(2)
-# df["CADR-UV [cfm]"] = cadr_uv_cfm.round(2)
-# df["CADR-UV [lps]"] = cadr_uv_lps.round(2)
-
-# newkeys = [
-# "eACH-UV",
-# "CADR-UV [cfm]",
-# "CADR-UV [lps]",
-# "Organism",
-# "Species",
-# "Strain",
-# "Type (Viral)",
-# "Enveloped (Viral)",
-# "k1 [cm2/mJ]",
-# "k2 [cm2/mJ]",
-# "% resistant",
-# "Medium (specific)",
-# "Full Citation",
-# ]
-# df = df[newkeys].fillna(" ")
-# df = df.rename(
-# columns={"Medium (specific)": "Medium", "Full Citation": "Reference"}
-# )
-# df = df.sort_values("Species")
-
-# return df
