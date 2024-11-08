@@ -30,16 +30,17 @@ def top_ribbon():
     # c[3].button(
     # "Add Luminaire", on_click=add_new_lamp, use_container_width=True
     # )
-    lamp_names = {"Select luminaire ... ": None}
-    for lamp_id, lamp in ss.room.lamps.items():
-        lamp_names[lamp.name] = lamp_id
-    lamp_names[ADD_LAMP] = ADD_LAMP
-    lamp_sel_idx = list(lamp_names.values()).index(ss.selected_lamp_id)
+    lamp_names = ["Select luminaire ... "]
+    lamp_names += [lamp.name for lamp in ss.room.lamps.values()]
+    lamp_names += [ADD_LAMP]
+    lamp_ids = [None]+[lamp_id for lamp_id in ss.room.lamps.keys()]+[ADD_LAMP]
+    lamp_sel_idx = lamp_ids.index(ss.selected_lamp_id)
     c[3].selectbox(
         "Select luminaire to edit",
-        options=list(lamp_names),
+        options=range(len(lamp_names)),
+        format_func=lambda x: lamp_names[x],
         on_change=update_lamp_select,
-        args=[lamp_names],
+        args=[lamp_ids],
         index=lamp_sel_idx,
         label_visibility="collapsed",
         key="lamp_select",
@@ -48,17 +49,18 @@ def top_ribbon():
     # c[4].button(
     # "Add Calc Zone", on_click=add_new_zone, use_container_width=True
     # )
-
-    zone_names = {"Select calculation zone...": None}
-    for zone_id, zone in ss.room.calc_zones.items():
-        zone_names[zone.name] = zone_id
-    zone_names[ADD_ZONE] = ADD_ZONE
-    zone_sel_idx = list(zone_names.values()).index(ss.selected_zone_id)
+    
+    zone_names = ["Select calculation zone ... "]
+    zone_names += [zone.name for zone in ss.room.calc_zones.values()]
+    zone_names += [ADD_ZONE]
+    zone_ids = [None]+[zone_id for zone_id in ss.room.calc_zones.keys()]+[ADD_ZONE]
+    zone_sel_idx = zone_ids.index(ss.selected_zone_id)
     c[4].selectbox(
         "Select calculation zone to edit",
-        options=list(zone_names),
+        options=range(len(zone_names)),
+        format_func=lambda x: zone_names[x],
         on_change=update_zone_select,
-        args=[zone_names],
+        args=[zone_ids],
         index=zone_sel_idx,
         label_visibility="collapsed",
         key="zone_select",
@@ -100,11 +102,14 @@ def show_room():
     clear_zone_cache()
 
 
-def update_lamp_select(lamp_names):
+def update_lamp_select(lamp_ids):
     """update logic to display new lamp selection in sidebar"""
+
     clear_lamp_cache()  # first clear out anything old
-    if ss["lamp_select"] in lamp_names:
-        ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
+    ss.selected_lamp_id = lamp_ids[ss["lamp_select"]]
+    # print(ss["lamp_select"])
+    # if ss["lamp_select"] in lamp_names:
+        # ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
     if ss.selected_lamp_id is None:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
@@ -120,11 +125,12 @@ def update_lamp_select(lamp_names):
         clear_zone_cache()
 
 
-def update_zone_select(zone_names):
+def update_zone_select(zone_ids):
     """update logic to display new zone selection in sidebar"""
     clear_zone_cache()
-    if ss["zone_select"] in zone_names:
-        ss.selected_zone_id = zone_names[ss["zone_select"]]
+    ss.selected_zone_id = zone_ids[ss["zone_select"]]
+    # if ss["zone_select"] in zone_names:
+        # ss.selected_zone_id = zone_names[ss["zone_select"]]
     if ss.selected_zone_id is None:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
