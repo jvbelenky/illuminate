@@ -1,6 +1,7 @@
 import streamlit as st
 import warnings
-from guv_calcs import CalcPlane, CalcVol
+from guv_calcs import CalcPlane, CalcVol, get_disinfection_table
+from ._plot import plot_species
 
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
@@ -262,6 +263,25 @@ def update_room():
         x2=ss.room.x,
         y2=ss.room.y,
     )
+
+
+def show_results():
+    """show results in right panel"""
+    initialize_results()
+    ss.show_results = True
+    # format the figure and disinfection table now so we don't redo it later
+    fluence = ss.room.calc_zones["WholeRoomFluence"]
+    if fluence.values is not None:
+        avg_fluence = fluence.values.mean()
+        df = get_disinfection_table(
+            fluence=avg_fluence, wavelength=ss.wavelength, room=ss.room
+        )
+        # move some keys around
+        url_key = [key for key in df.keys() if "URL" in key]
+        new_keys = url_key + [key for key in df.keys() if "URL" not in key]
+        df = df[new_keys]
+        ss.kdf = df.rename(columns={"URL": "Link"})
+        ss.kfig = plot_species(ss.kdf, avg_fluence)
 
 
 def update_lamp_name(lamp):

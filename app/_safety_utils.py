@@ -36,7 +36,7 @@ def get_weighted_hours_to_tlv(wavelength=222):
     skin_limits = ss.room.calc_zones["SkinLimits"]
     eye_limits = ss.room.calc_zones["EyeLimits"]
 
-    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps()
+    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps(wavelength)
 
     # now check that overlapping beams in the calc zone aren't pushing you over the edge
     # max irradiance in the wholeplane
@@ -98,7 +98,6 @@ def _tlvs_over_lamps(wavelength=222):
 
     skin_standard, eye_standard = _get_standards(ss.room.standard)
     mono_skinmax, mono_eyemax = _get_mono_limits(wavelength)
-
     # iterate over all lamps
     hours_to_tlv_skin, hours_to_tlv_eye = [], []
     skin_maxes, eye_maxes = [], []
@@ -119,12 +118,14 @@ def _tlvs_over_lamps(wavelength=222):
                 )
             else:
                 # if it doesn't, first, yell.
-                st.warning(
-                    f"{lamp.name} does not have an associated spectra. Photobiological safety calculations will be inaccurate."
-                )
+                if ss.wavelength == 222:
+                    st.warning(
+                        f"{lamp.name} does not have an associated spectra. Photobiological safety calculations may be inaccurate."
+                    )
+
                 # then just use the monochromatic approximation
-                skin_hours = mono_skinmax * 8 / skin_irradiance
-                eye_hours = mono_eyemax * 8 / eye_irradiance
+                skin_hours = mono_skinmax / (skin_irradiance * 3.6)
+                eye_hours = mono_eyemax / (eye_irradiance * 3.6)
             hours_to_tlv_skin.append(skin_hours)
             hours_to_tlv_eye.append(eye_hours)
             skin_maxes.append(skin_irradiance)

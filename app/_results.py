@@ -36,8 +36,9 @@ def results_page():
             print_user_defined_zones()
         print_safety()
         print_efficacy()
-        print_airchem()  
-    
+        if ss.wavelength == 222:
+            print_airchem()
+
     st.subheader("Export Results", divider="grey")
     col, col2 = st.columns(2)
     include_plots = col2.checkbox("Include result plots")
@@ -62,62 +63,62 @@ def results_page():
         except NotImplementedError:
             pass
 
+
 def print_summary():
     st.subheader("Summary", divider="grey")
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     skin = ss.room.calc_zones["SkinLimits"]
     eye = ss.room.calc_zones["EyeLimits"]
-    
+
     # avg fluence
     if fluence.values is not None:
-        fluence.values
         avg_fluence = round(fluence.values.mean(), 3)
         fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm2"
-        st.write("**Average fluence:** "+fluence_str)  
-    
-    
+        st.write("**Average fluence:** " + fluence_str)
+
     if skin.values is not None and eye.values is not None:
-        hours_skin, hours_eye = get_weighted_hours_to_tlv()
+        hours_skin, hours_eye = get_weighted_hours_to_tlv(ss.wavelength)
         skin_max = round(skin.values.max(), 2)
         color = "red" if hours_skin < 8 else "blue"
         skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
-        if hours_skin<8:
+        if hours_skin < 8:
             dim = round((hours_skin / 8) * 100, 1)
-            skin_str += f" *(To be compliant with skin TLVs, this lamp must be dimmed to {dim}% of its present power)*"
+            skin_str += f" *(To be compliant with skin TLVs, lamp must be dimmed to {dim}% of its present power)*"
         st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
 
         eye_max = round(eye.values.max(), 2)
         color = "red" if hours_eye < 8 else "blue"
         eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
-        if hours_eye<8:
+        if hours_eye < 8:
             dim = round((hours_eye / 8) * 100, 1)
-            eye_str += f" *(To be compliant with eye TLVs, this lamp must be dimmed to {dim}% of its present power)*"
-        
+            eye_str += f" *(To be compliant with eye TLVs, lamp must be dimmed to {dim}% of its present power)*"
+
         st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
-    
+
+
 def print_user_defined_zones():
-    
-    """all user-defined calc zones, basic stats and """
+
+    """all user-defined calc zones, basic stats and"""
     st.subheader("User Defined Calculation Zones", divider="grey")
     for zone_id, zone in ss.room.calc_zones.items():
         vals = zone.values
         if vals is not None and zone.zone_id not in SPECIAL_ZONES:
             cols = st.columns(2)
-            if zone.calctype=="Plane":
+            if zone.calctype == "Plane":
                 cols[0].pyplot(
                     zone.plot_plane(title=zone.name)[0],
                     **{"transparent": "True"},
                 )
-            else:   
-                cols[0].write("**"+zone.name+"**")
+            else:
+                cols[0].write("**" + zone.name + "**")
             cols[1].write("")
             cols[1].write("")
             unitstr = zone.units
             if zone.dose:
                 unitstr += "/" + str(zone.hours) + " hours"
-            cols[1].write("**Average:** "+str(round(vals.mean(), 3))+" "+unitstr)
-            cols[1].write("**Min:** "+str(round(vals.min(), 3))+" "+unitstr)
-            cols[1].write("**Max:** "+str(round(vals.max(), 3))+" "+unitstr)
+            cols[1].write("**Average:** " + str(round(vals.mean(), 3)) + " " + unitstr)
+            cols[1].write("**Min:** " + str(round(vals.min(), 3)) + " " + unitstr)
+            cols[1].write("**Max:** " + str(round(vals.max(), 3)) + " " + unitstr)
             cols[1].write("")
             cols[1].write("")
             try:
@@ -130,8 +131,7 @@ def print_user_defined_zones():
                 )
             except NotImplementedError:
                 pass
-    
-        
+
 
 def print_safety():
     """print photobiological safety results"""
@@ -157,7 +157,7 @@ def print_safety():
     SHOW_SKIN = True if skin.values is not None else False
     SHOW_EYES = True if eye.values is not None else False
     if SHOW_SKIN and SHOW_EYES:
-        hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv()
+        hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv(ss.wavelength)
 
         # print the max values
         skin_max = round(skin.values.max(), 2)
@@ -184,24 +184,25 @@ def print_safety():
         )
 
         # weighted hours to TLV
-        hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv()
+        hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv(ss.wavelength)
         hours_skin_w_str = make_hour_string(hours_skin_w, "skin")
         hours_eye_w_str = make_hour_string(hours_eye_w, "eye")
 
-        writecols[1].markdown(
-            f"With spectral weighting: {hours_skin_w_str}",
-            help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
-        )
-        writecols[3].markdown(
-            f"With spectral weighting: {hours_eye_w_str}",
-            help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
-        )
+        if ss.wavelength == 222:
+            writecols[1].markdown(
+                f"With spectral weighting: {hours_skin_w_str}",
+                help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
+            )
+            writecols[3].markdown(
+                f"With spectral weighting: {hours_eye_w_str}",
+                help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
+            )
 
         # cols = st.columns(2)
         # with cols[0]:
-            # st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
+        # st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
         # with cols[1]:
-            # st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+        # st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
@@ -218,6 +219,9 @@ def print_safety():
                 eye.plot_plane(title=eyetitle)[0],
                 **{"transparent": "True"},
             )
+            
+        if len(ss.room.lamps)>1:
+            st.write("*Note: Estimates of eye-level dose may be overestimated for multiple fixtures pointed in opposite directions.*")
 
 
 def print_efficacy():

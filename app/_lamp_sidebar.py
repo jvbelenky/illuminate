@@ -1,11 +1,14 @@
 import streamlit as st
+from guv_calcs import get_tlv
 from ._widget import initialize_lamp, close_sidebar
+from ._safety_utils import _get_standards
 from ._lamp_utils import (
     load_uploaded_spectra,
     lamp_select_widget,
     lamp_upload_widget,
     spectra_upload_widget,
     lamp_name_widget,
+    lamp_type_widget,
     lamp_x_widget,
     lamp_y_widget,
     lamp_z_widget,
@@ -41,12 +44,28 @@ def lamp_sidebar():
     ss.selected_lamp = ss.room.lamps[ss.selected_lamp_id]
     initialize_lamp(ss.selected_lamp)  # initialize widgets
     lamp_name_widget(ss.selected_lamp)  # name
+
+    lamp_type_widget()
+
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
 
         if "PRERELEASE" not in ss.selected_lamp.filename:
             link = ss.reports[ss.selected_lamp.filename].replace(" ", "%20")
             st.markdown(f"[View Full Report]({link})")
+
+    if ss.selected_lamp.filedata is not None:
+        cola, colb = st.columns(2)
+        skin_standard, eye_standard = _get_standards(ss.room.standard)
+        if ss.selected_lamp.spectra is not None:
+            max_skin_dose = ss.selected_lamp.spectra.get_tlv(skin_standard)
+            max_eye_dose = ss.selected_lamp.spectra.get_tlv(eye_standard)
+        else:
+            max_skin_dose = get_tlv(ss.wavelength, skin_standard)
+            max_eye_dose = get_tlv(ss.wavelength, eye_standard)
+        cola.write("Max 8-hour skin dose: **:violet[" + str(round(max_skin_dose,1)) + "] mJ/cm2**")
+        colb.write("Max 8-hour eye dose: **:violet[" + str(round(max_eye_dose,1)) + "] mJ/cm2**")
+
     lamp_plots()  # plot if file has been selected
     lamp_position_options()  # position, orientation, etc
 
@@ -88,12 +107,12 @@ def lamp_file_options():
         if ss.selected_lamp.filename in ss.uploaded_spectras:
             load_uploaded_spectra(ss.selected_lamp)
         else:
-            if ss.room.standard is not CHINESE_STD:
+            if ss.wavelength == 222 and ss.room.standard is not CHINESE_STD:
                 st.warning(
                     """
                     In order for GUV photobiological safety calculations to be
                     accurate, a spectra is required. :red[If a spectra is not provided,
-                    photobiological safety calculations will be inaccurate.]
+                    photobiological safety calculations may be inaccurate.]
                     """
                 )
             spectra_upload_widget(ss.selected_lamp)
@@ -148,7 +167,7 @@ def lamp_plots():
             weights=True,
             label=True,
         )
-        spectrafig.set_size_inches(5, 6, forward=True)
+        spectrafig.set_size_inches(6, 4, forward=True)
         spectrafig.axes[0].set_yscale(yscale)
         st.pyplot(spectrafig, use_container_width=True)
 

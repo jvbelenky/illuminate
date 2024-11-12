@@ -80,6 +80,6 @@ def plot_species(df, fluence):
     )
     ax2.set_ylabel("CADR-UV [cfm]")
     ax2.set_ylim(bottom=0)
-    title = f"eACH/CADR from GUV-222 with average fluence {round(fluence,3)} uW/cm2"
+    title = f"eACH/CADR from GUV-{ss.wavelength} with average fluence {round(fluence,3)} uW/cm2"
     fig.suptitle(title)
     return fig

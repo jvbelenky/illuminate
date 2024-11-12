@@ -23,6 +23,12 @@ def initialize():
     ss.uploaded_files = {}
     ss.uploaded_spectras = {}
 
+    ss.guv_dict = {}
+    ss.guv_dict["Krypton chloride (222 nm)"] = 222
+    ss.guv_dict["Low-pressure mercury (254 nm)"] = 254
+    ss.guv_type = "Krypton chloride (222 nm)"
+    ss.wavelength = 222
+
     # load lamp list
     ss.index_data, ss.vendored_lamps, ss.vendored_spectra, ss.reports = get_ies_files()
     ss.lamp_options = [None] + list(ss.vendored_lamps.keys()) + [SELECT_LOCAL]

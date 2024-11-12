@@ -1,15 +1,14 @@
 import streamlit as st
 from guv_calcs.calc_zone import CalcPlane, CalcVol, CalcZone
-from guv_calcs import get_disinfection_table
-from ._plot import plot_species
 from ._lamp_utils import add_new_lamp
 from ._widget import (
     initialize_lamp,
     initialize_zone,
     initialize_room,
-    initialize_results,
+    # initialize_results,
     clear_lamp_cache,
     clear_zone_cache,
+    show_results,
 )
 
 ss = st.session_state
@@ -33,7 +32,7 @@ def top_ribbon():
     lamp_names = ["Select luminaire ... "]
     lamp_names += [lamp.name for lamp in ss.room.lamps.values()]
     lamp_names += [ADD_LAMP]
-    lamp_ids = [None]+[lamp_id for lamp_id in ss.room.lamps.keys()]+[ADD_LAMP]
+    lamp_ids = [None] + [lamp_id for lamp_id in ss.room.lamps.keys()] + [ADD_LAMP]
     lamp_sel_idx = lamp_ids.index(ss.selected_lamp_id)
     c[3].selectbox(
         "Select luminaire to edit",
@@ -49,11 +48,11 @@ def top_ribbon():
     # c[4].button(
     # "Add Calc Zone", on_click=add_new_zone, use_container_width=True
     # )
-    
+
     zone_names = ["Select calculation zone ... "]
     zone_names += [zone.name for zone in ss.room.calc_zones.values()]
     zone_names += [ADD_ZONE]
-    zone_ids = [None]+[zone_id for zone_id in ss.room.calc_zones.keys()]+[ADD_ZONE]
+    zone_ids = [None] + [zone_id for zone_id in ss.room.calc_zones.keys()] + [ADD_ZONE]
     zone_sel_idx = zone_ids.index(ss.selected_zone_id)
     c[4].selectbox(
         "Select calculation zone to edit",
@@ -109,7 +108,7 @@ def update_lamp_select(lamp_ids):
     ss.selected_lamp_id = lamp_ids[ss["lamp_select"]]
     # print(ss["lamp_select"])
     # if ss["lamp_select"] in lamp_names:
-        # ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
+    # ss.selected_lamp_id = lamp_names[ss["lamp_select"]]
     if ss.selected_lamp_id is None:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
@@ -130,7 +129,7 @@ def update_zone_select(zone_ids):
     clear_zone_cache()
     ss.selected_zone_id = zone_ids[ss["zone_select"]]
     # if ss["zone_select"] in zone_names:
-        # ss.selected_zone_id = zone_names[ss["zone_select"]]
+    # ss.selected_zone_id = zone_names[ss["zone_select"]]
     if ss.selected_zone_id is None:
         # this will only happen if users have selected the 'none' option in the dropdown menu
         ss.editing = None
@@ -153,23 +152,6 @@ def calculate():
     """calculate and show results in right pane"""
     ss.room.calculate()
     show_results()
-
-
-def show_results():
-    """show results in right panel"""
-    initialize_results()
-    ss.show_results = True
-    # format the figure and disinfection table now so we don't redo it later
-    fluence = ss.room.calc_zones["WholeRoomFluence"]
-    if fluence.values is not None:
-        avg_fluence = fluence.values.mean()
-        df = get_disinfection_table(fluence=avg_fluence, wavelength=222, room=ss.room)
-        # move some keys around
-        url_key = [key for key in df.keys() if "URL" in key]
-        new_keys = url_key + [key for key in df.keys() if "URL" not in key]
-        df = df[new_keys]
-        ss.kdf = df.rename(columns={"URL": "Link"})
-        ss.kfig = plot_species(ss.kdf, avg_fluence)
 
 
 def add_new_zone():

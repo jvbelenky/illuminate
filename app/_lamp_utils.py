@@ -16,6 +16,7 @@ from ._widget import (
     update_from_orientation,
     update_lamp_visibility,
     clear_zone_cache,
+    show_results
 )
 
 ss = st.session_state
@@ -171,7 +172,10 @@ def make_file_list():
     """generate current list of lampfile options, both locally uploaded and from assays.osluv.org"""
     vendorfiles = list(ss.vendored_lamps.keys())
     uploadfiles = list(ss.uploaded_files.keys())
-    ss.lamp_options = [None] + vendorfiles + uploadfiles + [SELECT_LOCAL]
+    if ss.wavelength == 222:
+        ss.lamp_options = [None] + vendorfiles + uploadfiles + [SELECT_LOCAL]
+    else:
+        ss.lamp_options = [None] + uploadfiles + [SELECT_LOCAL]
     return ss.lamp_options
 
 
@@ -254,7 +258,6 @@ def _place_points(grid_size, num_points):
             grid[best_point] = 1  # Marking the grid cell as occupied
     return points
 
-
 # widgets
 def lamp_name_widget(lamp):
     return st.text_input(
@@ -265,9 +268,35 @@ def lamp_name_widget(lamp):
     )
 
 
+def lamp_type_widget():
+    options = list(ss.guv_dict.keys())
+    return st.selectbox(
+        "Lamp type",
+        options=options,
+        index=options.index(ss.guv_type),
+        key="lamp_type",
+        on_change=update_wavelength,
+    )
+
+def update_wavelength():
+    ss.guv_type = set_val("lamp_type", ss.guv_type)
+    ss.wavelength = ss.guv_dict[ss.guv_type]
+    if ss.show_results:
+        show_results()
+
+
 def lamp_select_widget(lamp):
     ss.lamp_options = make_file_list()
-    fname_idx = ss.lamp_options.index(lamp.filename)
+    if lamp.filename in ss.lamp_options:
+        fname_idx = ss.lamp_options.index(lamp.filename)
+    else:
+        fname_idx = 0
+        lamp.reload(filename=None,filedata=None) # unload 
+        lamp.load_spectra(spectra_source=None) # unload spectra if any
+    if ss.wavelength == 222:
+        helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files."  
+    else:
+        helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."
     return st.selectbox(
         "Select lamp",
         ss.lamp_options,
@@ -275,7 +304,7 @@ def lamp_select_widget(lamp):
         on_change=load_lamp,
         args=[lamp],
         key=f"file_{lamp.lamp_id}",
-        help="This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files.",
+        help=helptext,
     )
 
 
