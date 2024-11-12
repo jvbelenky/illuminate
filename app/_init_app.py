@@ -1,7 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
-from guv_calcs import Room
+from guv_calcs import Room, get_full_disinfection_table
 from ._lamp_utils import add_new_lamp, get_ies_files
 from ._top_ribbon import calculate
 from ._widget import initialize_zone
@@ -26,8 +26,17 @@ def initialize():
     ss.guv_dict = {}
     ss.guv_dict["Krypton chloride (222 nm)"] = 222
     ss.guv_dict["Low-pressure mercury (254 nm)"] = 254
+    # ss.guv_dict["Other"] = 268 # to be added later
     ss.guv_type = "Krypton chloride (222 nm)"
     ss.wavelength = 222
+
+    df = get_full_disinfection_table()
+
+    wavelengths = df[df["Medium"] == "Aerosol"]["wavelength [nm]"]
+    ss.wavelength_options = list(wavelengths.sort_values().unique())
+    ss.wavelength_options.remove(222)
+    ss.wavelength_options.remove(254)
+    ss.custom_wavelength = False
 
     # load lamp list
     ss.index_data, ss.vendored_lamps, ss.vendored_spectra, ss.reports = get_ies_files()

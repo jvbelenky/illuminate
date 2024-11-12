@@ -19,7 +19,13 @@ def results_page():
     )
 
     # do some checks first. do we actually have any lamps?
-    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button, selecting a file from the drop-down list, and then hit `Calculate`"
+    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button"
+    if ss.guv_type == "Krypton chloride (222 nm)":
+        nolamps_msg += "and selecting a file from the `Lamp file` drop-down list in the left-hand panel."
+    else:
+        nolamps_msg += "and uploading a file in the left-hand panel."        
+    nolamps_msg += "Then hit `Calculate`"
+    
     if not ss.room.lamps:
         st.warning(nolamps_msg)
     elif all(lamp.filedata is None for lampid, lamp in ss.room.lamps.items()):
@@ -219,9 +225,11 @@ def print_safety():
                 eye.plot_plane(title=eyetitle)[0],
                 **{"transparent": "True"},
             )
-            
-        if len(ss.room.lamps)>1:
-            st.write("*Note: Estimates of eye-level dose may be overestimated for multiple fixtures pointed in opposite directions.*")
+
+        if len(ss.room.lamps) > 1:
+            st.write(
+                "*Note: Estimates of eye-level dose may be overestimated for multiple fixtures pointed in opposite directions.*"
+            )
 
 
 def print_efficacy():

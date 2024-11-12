@@ -16,7 +16,7 @@ from ._widget import (
     update_from_orientation,
     update_lamp_visibility,
     clear_zone_cache,
-    show_results
+    show_results,
 )
 
 ss = st.session_state
@@ -258,6 +258,7 @@ def _place_points(grid_size, num_points):
             grid[best_point] = 1  # Marking the grid cell as occupied
     return points
 
+
 # widgets
 def lamp_name_widget(lamp):
     return st.text_input(
@@ -278,11 +279,28 @@ def lamp_type_widget():
         on_change=update_wavelength,
     )
 
+
 def update_wavelength():
     ss.guv_type = set_val("lamp_type", ss.guv_type)
     ss.wavelength = ss.guv_dict[ss.guv_type]
     if ss.show_results:
         show_results()
+
+
+def update_wavelength_select():
+    ss.wavelength = set_val("wavelength_select", ss.wavelength)
+    if ss.show_results:
+        show_results()
+
+
+def update_custom_wavelength():
+    ss.wavelength = set_val("custom_wavelength_input", ss.wavelength)
+    if ss.show_results:
+        show_results()
+
+
+def update_custom_wavelength_check():
+    ss.custom_wavelength = set_val("custom_wavelength_check", ss.custom_wavelength)
 
 
 def lamp_select_widget(lamp):
@@ -291,10 +309,10 @@ def lamp_select_widget(lamp):
         fname_idx = ss.lamp_options.index(lamp.filename)
     else:
         fname_idx = 0
-        lamp.reload(filename=None,filedata=None) # unload 
-        lamp.load_spectra(spectra_source=None) # unload spectra if any
+        lamp.reload(filename=None, filedata=None)  # unload
+        lamp.load_spectra(spectra_source=None)  # unload spectra if any
     if ss.wavelength == 222:
-        helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files."  
+        helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files."
     else:
         helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."
     return st.selectbox(

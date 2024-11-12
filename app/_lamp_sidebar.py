@@ -5,6 +5,9 @@ from ._safety_utils import _get_standards
 from ._lamp_utils import (
     load_uploaded_spectra,
     lamp_select_widget,
+    update_wavelength_select,
+    update_custom_wavelength,
+    update_custom_wavelength_check,
     lamp_upload_widget,
     spectra_upload_widget,
     lamp_name_widget,
@@ -46,6 +49,8 @@ def lamp_sidebar():
     lamp_name_widget(ss.selected_lamp)  # name
 
     lamp_type_widget()
+    if ss.lamp_type == "Other":
+        lamp_wavelength_options()
 
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
@@ -63,8 +68,16 @@ def lamp_sidebar():
         else:
             max_skin_dose = get_tlv(ss.wavelength, skin_standard)
             max_eye_dose = get_tlv(ss.wavelength, eye_standard)
-        cola.write("Max 8-hour skin dose: **:violet[" + str(round(max_skin_dose,1)) + "] mJ/cm2**")
-        colb.write("Max 8-hour eye dose: **:violet[" + str(round(max_eye_dose,1)) + "] mJ/cm2**")
+        cola.write(
+            "Max 8-hour skin dose: **:violet["
+            + str(round(max_skin_dose, 1))
+            + "] mJ/cm2**"
+        )
+        colb.write(
+            "Max 8-hour eye dose: **:violet["
+            + str(round(max_eye_dose, 1))
+            + "] mJ/cm2**"
+        )
 
     lamp_plots()  # plot if file has been selected
     lamp_position_options()  # position, orientation, etc
@@ -92,22 +105,51 @@ def lamp_sidebar():
 
     # prevent lamp from participating in calculations
     ss.selected_lamp.enabled = lamp_enabled_widget(ss.selected_lamp)
+    
+def lamp_wavelength_options():
+    if ss.wavelength in ss.wavelength_options:
+        wv_idx = ss.wavelength_options.index(ss.wavelength)
+    else:
+        wv_idx = 0
+    st.selectbox(
+        "Select wavelength [nm]",
+        options=ss.wavelength_options,
+        index=wv_idx,
+        on_change=update_wavelength_select,
+        key="wavelength_select",
+        disabled=ss.custom_wavelength,
+    )
+    st.number_input(
+        "Enter wavelength [nm]",
+        value=ss.wavelength,
+        on_change=update_custom_wavelength,
+        disabled=not ss.custom_wavelength,
+        key="custom_wavelength_input",
+    )
 
+    st.checkbox(
+        "Enter custom wavelength",
+        value=False,
+        on_change=update_custom_wavelength_check,
+        key="custom_wavelength_check",
+        help="Estimates for k may not be available",
+    )
 
 def lamp_file_options():
     """widgets and plots to do with lamp file sources"""
 
-    lamp_select_widget(ss.selected_lamp)
+    if ss.wavelength == 222:
 
-    if ss.selected_lamp.filename == SELECT_LOCAL:
-        lamp_upload_widget(ss.selected_lamp)
-        # spectra_upload_widget(ss.selected_lamp)
+        lamp_select_widget(ss.selected_lamp)
 
-    if ss.selected_lamp.filename in ss.uploaded_files:
-        if ss.selected_lamp.filename in ss.uploaded_spectras:
-            load_uploaded_spectra(ss.selected_lamp)
-        else:
-            if ss.wavelength == 222 and ss.room.standard is not CHINESE_STD:
+        if ss.selected_lamp.filename == SELECT_LOCAL:
+            lamp_upload_widget(ss.selected_lamp)
+            # spectra_upload_widget(ss.selected_lamp)
+
+        if ss.selected_lamp.filename in ss.uploaded_files:
+            if ss.selected_lamp.filename in ss.uploaded_spectras:
+                load_uploaded_spectra(ss.selected_lamp)
+            else:
                 st.warning(
                     """
                     In order for GUV photobiological safety calculations to be
@@ -115,9 +157,18 @@ def lamp_file_options():
                     photobiological safety calculations may be inaccurate.]
                     """
                 )
-            spectra_upload_widget(ss.selected_lamp)
-        if ss.warning_message is not None:
-            st.warning(ss.warning_message)
+                spectra_upload_widget(ss.selected_lamp)
+            if ss.warning_message is not None:
+                st.warning(ss.warning_message)
+                
+    else:
+        lamp_upload_widget(ss.selected_lamp)
+        if ss.guv_type == "Other":
+            if ss.selected_lamp.filename in ss.uploaded_files:
+                if ss.selected_lamp.filename in ss.uploaded_spectras:
+                    load_uploaded_spectra(ss.selected_lamp)
+                else:
+                    spectra_upload_widget(ss.selected_lamp)
 
 
 def lamp_plots():
