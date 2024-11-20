@@ -1,7 +1,7 @@
 import streamlit as st
 import warnings
-from guv_calcs import CalcPlane, CalcVol, get_disinfection_table
-from ._plot import plot_species
+import numpy as np
+from guv_calcs import CalcPlane, CalcVol, get_disinfection_table, plot_disinfection_data
 
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
@@ -77,6 +77,8 @@ def initialize_lamp(lamp):
         f"orientation_{lamp.lamp_id}",
         f"tilt_{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
+        f"guv_type_{lamp.lamp_id}",
+        f"wavelength_{lamp.lamp_id}",
     ]
     vals = [
         lamp.name,
@@ -90,6 +92,8 @@ def initialize_lamp(lamp):
         lamp.heading,
         lamp.bank,
         lamp.enabled,
+        lamp.guv_type,
+        lamp.wavelength,
     ]
     add_keys(keys, vals)
 
@@ -168,6 +172,9 @@ def remove_lamp(lamp):
         f"rotation_{lamp.lamp_id}",
         f"orientation_{lamp.lamp_id}",
         f"tilt_{lamp.lamp_id}",
+        f"enabled_{lamp.lamp_id}",
+        f"guv_type_{lamp.lamp_id}",
+        f"wavelength_{lamp.lamp_id}",
     ]
     remove_keys(keys)
 
@@ -272,16 +279,65 @@ def show_results():
     # format the figure and disinfection table now so we don't redo it later
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
-        avg_fluence = fluence.values.mean()
-        df = get_disinfection_table(
-            fluence=avg_fluence, wavelength=ss.wavelength, room=ss.room
+        fluence_dict = get_fluence_dict(ss.room)
+        df = get_disinfection_table(fluence_dict, room=ss.room)
+        if len(fluence_dict) == 1:
+            df = df.drop(columns="wavelength [nm]")
+        # move some keys arounds
+        new_keys = ["Link"] + [key for key in df.keys() if "Link" not in key]
+        ss.kdf = df[new_keys]
+        ss.kfig = plot_disinfection_data(
+            ss.kdf, fluence_dict=fluence_dict, room=ss.room
         )
-        # move some keys around
-        url_key = [key for key in df.keys() if "URL" in key]
-        new_keys = url_key + [key for key in df.keys() if "URL" not in key]
-        df = df[new_keys]
-        ss.kdf = df.rename(columns={"URL": "Link"})
-        ss.kfig = plot_species(ss.kdf, avg_fluence)
+
+
+def get_fluence_dict(room):
+    """get a dict of all the wavelengths"""
+
+    lamp_types = np.unique([(lamp.wavelength) for lamp in room.lamps.values()], axis=0)
+    zone = room.calc_zones["WholeRoomFluence"]
+    lamp_wavelengths = {}
+    for wavelength in lamp_types:
+        val = [
+            lamp.lamp_id
+            for lamp in room.lamps.values()
+            if lamp.wavelength == float(wavelength)
+        ]
+        lamp_wavelengths[wavelength] = val
+    fluence_dict = {}
+    for label, lamp_ids in lamp_wavelengths.items():
+        vals = np.zeros(zone.values.shape)
+        for lamp_id in lamp_ids:
+            if lamp_id in zone.lamp_values.keys():
+                vals += zone.lamp_values[lamp_id].mean()
+        fluence_dict[label] = vals.mean()
+    return fluence_dict
+
+
+def get_lamp_types():
+    """
+    retrive a dict of all lamp types currently present in the room and the lamp_ids
+    for those lamp types
+    """
+    all_lamp_types = [
+        (lamp.guv_type, lamp.wavelength) for lamp in ss.room.lamps.values()
+    ]
+    lamp_types = np.unique(all_lamp_types, axis=0)
+    lamp_labels = {}
+    lamps = ss.room.lamps.values()
+    for guv_type, wavelength in lamp_types:
+        if guv_type in ss.guv_types:
+            key = guv_type
+            val = [lamp.lamp_id for lamp in lamps if lamp.guv_type == guv_type]
+        else:
+            key = guv_type + " (" + str(wavelength) + " nm)"
+            val = [
+                lamp.lamp_id
+                for lamp in lamps
+                if (lamp.guv_type == guv_type and lamp.wavelength == float(wavelength))
+            ]
+        lamp_labels[key] = val
+    return lamp_labels
 
 
 def update_lamp_name(lamp):

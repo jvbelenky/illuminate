@@ -1,9 +1,5 @@
 import streamlit as st
-from ._safety_utils import (
-    get_unweighted_hours_to_tlv,
-    get_weighted_hours_to_tlv,
-    make_hour_string,
-)
+import numpy as np
 from ._widget import close_results, update_ozone_results, update_standard_results
 
 ss = st.session_state
@@ -19,13 +15,8 @@ def results_page():
     )
 
     # do some checks first. do we actually have any lamps?
-    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button"
-    if ss.guv_type == "Krypton chloride (222 nm)":
-        nolamps_msg += "and selecting a file from the `Lamp file` drop-down list in the left-hand panel."
-    else:
-        nolamps_msg += "and uploading a file in the left-hand panel."        
-    nolamps_msg += "Then hit `Calculate`"
-    
+    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button and selecting a file from the `Lamp file` drop-down list in the left-hand panel, or uploading your own file. Then, hit calculate."
+
     if not ss.room.lamps:
         st.warning(nolamps_msg)
     elif all(lamp.filedata is None for lampid, lamp in ss.room.lamps.items()):
@@ -42,7 +33,9 @@ def results_page():
             print_user_defined_zones()
         print_safety()
         print_efficacy()
-        if ss.wavelength == 222:
+        if all(
+            ["Krypton chloride" in lamp.guv_type for lamp in ss.room.lamps.values()]
+        ):
             print_airchem()
 
     st.subheader("Export Results", divider="grey")
@@ -58,16 +51,13 @@ def results_page():
     )
 
     for zone_id, zone in ss.room.calc_zones.items():
-        try:
-            col.download_button(
-                zone.name,
-                data=zone.export(),
-                file_name=zone.name + ".csv",
-                use_container_width=True,
-                disabled=True if zone.values is None else False,
-            )
-        except NotImplementedError:
-            pass
+        col.download_button(
+            zone.name,
+            data=zone.export(),
+            file_name=zone.name + ".csv",
+            use_container_width=True,
+            disabled=True if zone.values is None else False,
+        )
 
 
 def print_summary():
@@ -79,27 +69,40 @@ def print_summary():
     # avg fluence
     if fluence.values is not None:
         avg_fluence = round(fluence.values.mean(), 3)
-        fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm2"
+        fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm²"
         st.write("**Average fluence:** " + fluence_str)
 
     if skin.values is not None and eye.values is not None:
-        hours_skin, hours_eye = get_weighted_hours_to_tlv(ss.wavelength)
+
+        weighted_skin_dose, weighted_eye_dose = check_lamps(ss.room, warn=False)
+
+        # determine colors
+        skincolor, eyecolor = "blue", "blue"
+        if weighted_skin_dose.max() > 3:
+            skincolor = "red"
+        if weighted_eye_dose.max() > 3:
+            eyecolor = "red"
+
         skin_max = round(skin.values.max(), 2)
-        color = "red" if hours_skin < 8 else "blue"
-        skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
-        if hours_skin < 8:
-            dim = round((hours_skin / 8) * 100, 1)
-            skin_str += f" *(To be compliant with skin TLVs, lamp must be dimmed to {dim}% of its present power)*"
+        skin_str = f"**:{skincolor}[{skin_max}]** {skin.units}"
         st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
 
         eye_max = round(eye.values.max(), 2)
-        color = "red" if hours_eye < 8 else "blue"
-        eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
-        if hours_eye < 8:
-            dim = round((hours_eye / 8) * 100, 1)
-            eye_str += f" *(To be compliant with eye TLVs, lamp must be dimmed to {dim}% of its present power)*"
-
+        eye_str = f"**:{eyecolor}[{eye_max}]** {eye.units}"
         st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+
+        if max(weighted_skin_dose.max(), weighted_eye_dose.max()) > 3:
+            st.error("This installation does not comply with selected TLVs.")
+
+        # for lamp in ss.room.lamps.values():
+        # if (
+        # lamp.spectra is None
+        # and lamp.guv_type != "Low-pressure mercury (254 nm)"
+        # and lamp.filedata is not None
+        # ):
+        # msg = "At least one lamp spectra is missing. Photobiological safety calculations may be inaccurate."
+        # st.warning(msg)
+        # break
 
 
 def print_user_defined_zones():
@@ -116,15 +119,19 @@ def print_user_defined_zones():
                     **{"transparent": "True"},
                 )
             else:
-                cols[0].write("**" + zone.name + "**")
+                cols[0].write(f"**{zone.name}**")
             cols[1].write("")
             cols[1].write("")
             unitstr = zone.units
             if zone.dose:
-                unitstr += "/" + str(zone.hours) + " hours"
-            cols[1].write("**Average:** " + str(round(vals.mean(), 3)) + " " + unitstr)
-            cols[1].write("**Min:** " + str(round(vals.min(), 3)) + " " + unitstr)
-            cols[1].write("**Max:** " + str(round(vals.max(), 3)) + " " + unitstr)
+                unitstr = f"mJ/cm² over {zone.hours} hours"
+                roundval = 1
+            else:
+                unitstr = "uW/cm²"
+                roundal = 3
+            cols[1].write(f"**Average:** \t{round(vals.mean(), roundval)} {unitstr}")
+            cols[1].write(f"**Min:** \t{round(vals.min(), roundval)} {unitstr}")
+            cols[1].write(f"**Max:** \t{round(vals.max(), roundval)} {unitstr}")
             cols[1].write("")
             cols[1].write("")
             try:
@@ -160,62 +167,57 @@ def print_safety():
     )
     skin = ss.room.calc_zones["SkinLimits"]
     eye = ss.room.calc_zones["EyeLimits"]
+
     SHOW_SKIN = True if skin.values is not None else False
     SHOW_EYES = True if eye.values is not None else False
     if SHOW_SKIN and SHOW_EYES:
-        hours_skin_uw, hours_eye_uw = get_unweighted_hours_to_tlv(ss.wavelength)
-
-        # print the max values
-        skin_max = round(skin.values.max(), 2)
-        color = "red" if hours_skin_uw < 8 else "blue"
-        skin_str = "**:" + color + "[" + str(skin_max) + "]** " + skin.units
-
-        eye_max = round(eye.values.max(), 2)
-        color = "red" if hours_eye_uw < 8 else "blue"
-        eye_str = "**:" + color + "[" + str(eye_max) + "]** " + eye.units
         cols = st.columns(2)
-        cols[0].markdown("**Hours before skin TLV is reached:**")
-        cols[1].markdown("**Hours before eye TLV is reached:**")
-        hours_skin_uw_str = make_hour_string(hours_skin_uw, "skin")
-        hours_eye_uw_str = make_hour_string(hours_eye_uw, "eye")
 
-        writecols = st.columns([1, 6, 1, 6])
-        writecols[1].markdown(
-            f"With monochromatic assumption: {hours_skin_uw_str}",
-            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
-        )
-        writecols[3].markdown(
-            f"With monochromatic assumption: {hours_eye_uw_str}",
-            help="These results assume that all lamps in the simulation are perfectly monochromatic 222nm sources. They don't rely on any data besides anies file. For most *filtered* KrCl lamps, but not all, the monochromatic approximation is a reasonable assumption.",
-        )
+        weighted_skin_dose, weighted_eye_dose = check_lamps(ss.room, warn=True)
 
-        # weighted hours to TLV
-        hours_skin_w, hours_eye_w = get_weighted_hours_to_tlv(ss.wavelength)
-        hours_skin_w_str = make_hour_string(hours_skin_w, "skin")
-        hours_eye_w_str = make_hour_string(hours_eye_w, "eye")
+        skinmax = skin.values.max().round(1)
+        skinmax_w = weighted_skin_dose.max().round(2)
+        skin_hrs = round(3 * 8 / weighted_skin_dose.max(), 1)
 
-        if ss.wavelength == 222:
-            writecols[1].markdown(
-                f"With spectral weighting: {hours_skin_w_str}",
-                help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
+        eyemax = eye.values.max().round(1)
+        eyemax_w = weighted_eye_dose.max().round(2)
+        eye_hrs = round(3 * 8 / weighted_eye_dose.max(), 1)
+
+        skincolor, eyecolor = "blue", "blue"
+        if weighted_skin_dose.max() > 3:
+            skincolor = "red"
+        if weighted_eye_dose.max() > 3:
+            eyecolor = "red"
+
+        if skin_hrs < 8:
+            skin_hours_str = f"\tHours to skin TLV: **:{skincolor}[{skin_hrs}]** hours"
+        else:
+            skin_hours_str = (
+                f"\tHours to skin TLV: **:{skincolor}[Indefinite]** ({skin_hrs} hours)"
             )
-            writecols[3].markdown(
-                f"With spectral weighting: {hours_eye_w_str}",
-                help="These results take into account the spectra of the lamps in the simulation. Because Threshold Limit Values (TLVs) are calculated by summing over the *entire* spectrum, not just the peak wavelength, some lamps may have effective TLVs substantially below the monochromatic TLVs at 222nm.",
-            )
+        cols[0].write(skin_hours_str)
+        cols[0].write(f"\tMax 8-hour skin dose: **:{skincolor}[{skinmax}]** mJ/cm²")
+        cols[0].write(
+            f"\tMax 8-hour *weighted* skin dose: **:{skincolor}[{skinmax_w}]** mJ/cm²"
+        )
 
-        # cols = st.columns(2)
-        # with cols[0]:
-        # st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
-        # with cols[1]:
-        # st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+        if eye_hrs < 8:
+            eye_hours_str = f"\tHours to eye TLV: **:{eyecolor}[{eye_hrs}]** hours"
+        else:
+            eye_hours_str = (
+                f"\tHours to eye TLV: **:{eyecolor}[Indefinite]** ({eye_hrs} hours)"
+            )
+        cols[1].write(eye_hours_str)
+        cols[1].write(f"\tMax 8-hour eye dose: **:{eyecolor}[{eyemax}]** mJ/cm²")
+        cols[1].write(
+            f"\tMax 8-hour *weighted* eye dose: **:{eyecolor}[{eyemax_w}]** mJ/cm²"
+        )
+
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
-            skintitle = (
-                "8-Hour Skin Dose (Max: " + str(skin_max) + " " + skin.units + ")"
-            )
-            eyetitle = "8-Hour Eye Dose (Max: " + str(eye_max) + " " + eye.units + ")"
+            skintitle = f"8-Hour Skin Dose (Max: {skinmax} {skin.units})"
+            eyetitle = f"8-Hour Skin Dose (Max: {eyemax} {eye.units})"
 
             cols[0].pyplot(
                 skin.plot_plane(title=skintitle)[0],
@@ -230,6 +232,119 @@ def print_safety():
             st.write(
                 "*Note: Estimates of eye-level dose may be overestimated for multiple fixtures pointed in opposite directions.*"
             )
+
+
+def check_lamps(room, warn=True):
+    """
+    Iterate through every lamp in the Room object and assess whether it
+    individually exceeds the skin or eye limits.  If warn is True, print a
+    warning and dimming recommendation
+
+    Then, check if the combination of all lamps exceeds the limits, even if no
+    individual lamp does.
+
+    Finally, apply the recommended dimming, and check if doing so will make the
+    installation compliant.
+
+    Return the weighted skin and eye dose, which must be < 3 mJ to be compliant.
+
+    """
+
+    skin = room.calc_zones["SkinLimits"]
+    eye = room.calc_zones["EyeLimits"]
+
+    skindims, eyedims = {}, {}
+    weighted_skin_dose = np.zeros(skin.values.shape)
+    weighted_eye_dose = np.zeros(eye.values.shape)
+
+    dimmed_weighted_skin_dose = np.zeros(skin.values.shape)
+    dimmed_weighted_eye_dose = np.zeros(eye.values.shape)
+
+    # check if any individual lamp exceeds the limits
+    for lampid, lamp in room.lamps.items():
+        if lampid in eye.lamp_values.keys() and lampid in skin.lamp_values.keys():
+            skinmax, eyemax = room.lamps[lampid].get_limits()
+            skinvals, eyevals = skin.lamp_values[lampid], eye.lamp_values[lampid]
+            skinweight, eyeweight = 3 / skinmax, 3 / eyemax
+            skindim, eyedim = skinmax / skinvals.max(), eyemax / eyevals.max()
+            weighted_skin_dose += skinvals * skinweight
+            weighted_eye_dose += eyevals * eyeweight
+
+            skindims[lampid], eyedims[lampid] = skindim, eyedim
+            total_dim = min(skindim, eyedim, 1)
+            dimmed_weighted_eye_dose += eyevals * eyeweight * total_dim
+            dimmed_weighted_skin_dose += skinvals * skinweight * total_dim
+
+            # individual lamp check
+            if min(skindim, eyedim, 1) < 1:
+                skindim, eyedim = round(skindim * 100, 1), round(eyedim * 100, 1)
+                if skindim < 100:
+                    string = f"{lamp.name} must be dimmed to **{skindim}%** its present power to comply with selected skin TLVs"
+                    if eyedim < 100:
+                        string += f" and to **{eyedim}%** to comply with eye TLVs."
+                elif eyedim < 100:
+                    string = f"{lamp.name} must be dimmed to **{eyedim}%** its present power comply with selected eye TLVs"
+                if warn:
+                    st.warning(string)
+
+            if (
+                lamp.guv_type != "Low-pressure mercury (254 nm)"
+                and lamp.spectra is None
+                and lamp.filedata is not None
+                and warn
+            ):
+                msg = f"{lamp.name} is missing a spectrum. Photobiological safety calculations may be inaccurate."
+                st.warning(msg)
+
+    # Check if seemingly-compliant installations actually aren't
+    dimvals = list(skindims.values()) + list(eyedims.values())
+    DIMMING_NOT_REQUIRED = all([dim > 1 for dim in dimvals])
+    LAMPS_COMPLIANT = (
+        max(weighted_skin_dose.max().round(2), weighted_eye_dose.max().round(2)) <= 3
+    )
+    DIMMED_LAMPS_COMPLIANT = (
+        max(
+            dimmed_weighted_skin_dose.max().round(2),
+            dimmed_weighted_eye_dose.max().round(2),
+        )
+        <= 3
+    )
+    if DIMMING_NOT_REQUIRED and not LAMPS_COMPLIANT:
+        string = "Though all lamps are individually compliant, dose must be reduced to "
+        skindim = round(3 / weighted_skin_dose.max() * 100, 1)
+        eyedim = round(3 / weighted_eye_dose.max() * 100, 1)
+        if weighted_skin_dose.max() > 3:
+            string += (
+                f"**{skindim}%** its present value to comply with selected skin TLVs"
+            )
+            if weighted_eye_dose.max() > 3:
+                string += f" and to **{eyedim}%** to comply with selected eye TLVs."
+        elif weighted_eye_dose.max() > 3:
+            string += (
+                f"**{eyedim}%** its present value to comply with selected eye TLVs"
+            )
+        if warn:
+            st.warning(string)
+
+    # check if dimming will make the installation compliant
+    if not DIMMED_LAMPS_COMPLIANT:
+        string = "Even after applying dimming, this installation may not be compliant. Dose must be reduced to "
+        skindim = round(3 / weighted_skin_dose.max() * 100, 1)
+        eyedim = round(3 / weighted_eye_dose.max() * 100, 1)
+        if dimmed_weighted_skin_dose.max() > 3:
+            string += (
+                f"**{skindim}%** its present value to comply with selected skin TLVs"
+            )
+            if dimmed_weighted_eye_dose.max() > 3:
+                string += f" and to {eyedim}% to comply with eye TLVs."
+        elif dimmed_weighted_eye_dose.max() > 3:
+            string += (
+                f"**{eyedim}%** its present value to comply with selected eye TLVs"
+            )
+        if warn:
+            st.warning(string)
+
+    return weighted_skin_dose, weighted_eye_dose
 
 
 def print_efficacy():

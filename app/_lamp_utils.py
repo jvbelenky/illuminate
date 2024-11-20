@@ -1,9 +1,8 @@
 import streamlit as st
 from pathlib import Path
 import requests
-import numpy as np
 import matplotlib.pyplot as plt
-from guv_calcs.lamp import Lamp, Spectrum
+from guv_calcs import Lamp, Spectrum, new_lamp_position
 from ._widget import (
     set_val,
     initialize_lamp,
@@ -31,13 +30,15 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
     new_lamp_id = f"Lamp{new_lamp_idx}"
     name = new_lamp_id if name is None else name
 
-    x, y = get_lamp_position(lamp_idx=new_lamp_idx, x=ss.room.x, y=ss.room.y)
+    x, y = new_lamp_position(lamp_idx=new_lamp_idx, x=ss.room.x, y=ss.room.y)
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
         name=name,
         x=defaults.get("x", x),
         y=defaults.get("y", y),
         z=defaults.get("z", ss.room.z - 0.1),
+        wavelength=222,
+        guv_type="Krypton chloride (222 nm)",
     )
     new_lamp.set_tilt(defaults.get("tilt", 0))
     new_lamp.set_orientation(defaults.get("orientation", 0))
@@ -172,7 +173,7 @@ def make_file_list():
     """generate current list of lampfile options, both locally uploaded and from assays.osluv.org"""
     vendorfiles = list(ss.vendored_lamps.keys())
     uploadfiles = list(ss.uploaded_files.keys())
-    if ss.wavelength == 222:
+    if ss.selected_lamp.guv_type == "Krypton chloride (222 nm)":
         ss.lamp_options = [None] + vendorfiles + uploadfiles + [SELECT_LOCAL]
     else:
         ss.lamp_options = [None] + uploadfiles + [SELECT_LOCAL]
@@ -210,55 +211,6 @@ def get_ies_files():
     return index_data, ies_files, spectra, reports
 
 
-def get_lamp_position(lamp_idx, x, y, num_divisions=100):
-    """get the default position for an additional new lamp"""
-    xp = np.linspace(0, x, num_divisions + 1)
-    yp = np.linspace(0, y, num_divisions + 1)
-    xidx, yidx = _get_idx(lamp_idx, num_divisions=num_divisions)
-    return xp[xidx], yp[yidx]
-
-
-def _get_idx(num_points, num_divisions=100):
-    grid_size = (num_divisions, num_divisions)
-    return _place_points(grid_size, num_points)[-1]
-
-
-def _place_points(grid_size, num_points):
-    M, N = grid_size
-    grid = np.zeros(grid_size)
-    points = []
-
-    # Place the first point in the center
-    center = (M // 2, N // 2)
-    points.append(center)
-    grid[center] = 1  # Marking the grid cell as occupied
-
-    for _ in range(1, num_points):
-        max_dist = -1
-        best_point = None
-
-        for x in range(M):
-            for y in range(N):
-                if grid[x, y] == 0:
-                    # Calculate the minimum distance to all existing points
-                    min_point_dist = min(
-                        [np.sqrt((x - px) ** 2 + (y - py) ** 2) for px, py in points]
-                    )
-                    # Calculate the distance to the nearest boundary
-                    min_boundary_dist = min(x, M - 1 - x, y, N - 1 - y)
-                    # Find the point where the minimum of these distances is maximized
-                    min_dist = min(min_point_dist, min_boundary_dist)
-
-                    if min_dist > max_dist:
-                        max_dist = min_dist
-                        best_point = (x, y)
-
-        if best_point:
-            points.append(best_point)
-            grid[best_point] = 1  # Marking the grid cell as occupied
-    return points
-
-
 # widgets
 def lamp_name_widget(lamp):
     return st.text_input(
@@ -269,32 +221,32 @@ def lamp_name_widget(lamp):
     )
 
 
-def lamp_type_widget():
+def lamp_type_widget(lamp):
     options = list(ss.guv_dict.keys())
     return st.selectbox(
         "Lamp type",
         options=options,
-        index=options.index(ss.guv_type),
-        key="lamp_type",
+        key=f"guv_type_{lamp.lamp_id}",
         on_change=update_wavelength,
+        args=[lamp],
     )
 
 
-def update_wavelength():
-    ss.guv_type = set_val("lamp_type", ss.guv_type)
-    ss.wavelength = ss.guv_dict[ss.guv_type]
+def update_wavelength(lamp):
+    lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
+    lamp.wavelength = ss.guv_dict[lamp.guv_type]
     if ss.show_results:
         show_results()
 
 
-def update_wavelength_select():
-    ss.wavelength = set_val("wavelength_select", ss.wavelength)
+def update_wavelength_select(lamp):
+    lamp.wavelength = set_val("wavelength_select", lamp.wavelength)
     if ss.show_results:
         show_results()
 
 
-def update_custom_wavelength():
-    ss.wavelength = set_val("custom_wavelength_input", ss.wavelength)
+def update_custom_wavelength(lamp):
+    lamp.wavelength = set_val("custom_wavelength_input", lamp.wavelength)
     if ss.show_results:
         show_results()
 
@@ -311,7 +263,7 @@ def lamp_select_widget(lamp):
         fname_idx = 0
         lamp.reload(filename=None, filedata=None)  # unload
         lamp.load_spectra(spectra_source=None)  # unload spectra if any
-    if ss.wavelength == 222:
+    if lamp.guv_type == "Krypton chloride (222 nm)":
         helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files."
     else:
         helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."

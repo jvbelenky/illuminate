@@ -8,6 +8,10 @@ from ._widget import initialize_zone
 
 SELECT_LOCAL = "Select local file..."
 ss = st.session_state
+"""
+TODO: get rid of ss.wavelength and ss.guv_type entirely, 
+should be set from lamps only
+"""
 
 
 def initialize():
@@ -27,8 +31,6 @@ def initialize():
     ss.guv_dict["Krypton chloride (222 nm)"] = 222
     ss.guv_dict["Low-pressure mercury (254 nm)"] = 254
     # ss.guv_dict["Other"] = 268 # to be added later
-    ss.guv_type = "Krypton chloride (222 nm)"
-    ss.wavelength = 222
 
     df = get_full_disinfection_table()
 

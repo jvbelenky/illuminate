@@ -48,9 +48,9 @@ def lamp_sidebar():
     initialize_lamp(ss.selected_lamp)  # initialize widgets
     lamp_name_widget(ss.selected_lamp)  # name
 
-    lamp_type_widget()
-    if ss.lamp_type == "Other":
-        lamp_wavelength_options()
+    lamp_type_widget(ss.selected_lamp)
+    if ss.selected_lamp.guv_type == "Other":
+        lamp_wavelength_options(ss.selected_lamp)
 
     lamp_file_options()  # file input
     if ss.selected_lamp.filename in ss.vendored_spectra.keys():
@@ -66,8 +66,8 @@ def lamp_sidebar():
             max_skin_dose = ss.selected_lamp.spectra.get_tlv(skin_standard)
             max_eye_dose = ss.selected_lamp.spectra.get_tlv(eye_standard)
         else:
-            max_skin_dose = get_tlv(ss.wavelength, skin_standard)
-            max_eye_dose = get_tlv(ss.wavelength, eye_standard)
+            max_skin_dose = get_tlv(ss.selected_lamp.wavelength, skin_standard)
+            max_eye_dose = get_tlv(ss.selected_lamp.wavelength, eye_standard)
         cola.write(
             "Max 8-hour skin dose: **:violet["
             + str(round(max_skin_dose, 1))
@@ -105,10 +105,11 @@ def lamp_sidebar():
 
     # prevent lamp from participating in calculations
     ss.selected_lamp.enabled = lamp_enabled_widget(ss.selected_lamp)
-    
-def lamp_wavelength_options():
-    if ss.wavelength in ss.wavelength_options:
-        wv_idx = ss.wavelength_options.index(ss.wavelength)
+
+
+def lamp_wavelength_options(lamp):
+    if lamp.wavelength in ss.wavelength_options:
+        wv_idx = ss.wavelength_options.index(lamp.wavelength)
     else:
         wv_idx = 0
     st.selectbox(
@@ -116,6 +117,7 @@ def lamp_wavelength_options():
         options=ss.wavelength_options,
         index=wv_idx,
         on_change=update_wavelength_select,
+        args=[lamp],
         key="wavelength_select",
         disabled=ss.custom_wavelength,
     )
@@ -123,6 +125,7 @@ def lamp_wavelength_options():
         "Enter wavelength [nm]",
         value=ss.wavelength,
         on_change=update_custom_wavelength,
+        args=[lamp],
         disabled=not ss.custom_wavelength,
         key="custom_wavelength_input",
     )
@@ -135,10 +138,11 @@ def lamp_wavelength_options():
         help="Estimates for k may not be available",
     )
 
+
 def lamp_file_options():
     """widgets and plots to do with lamp file sources"""
 
-    if ss.wavelength == 222:
+    if ss.selected_lamp.guv_type == "Krypton chloride (222 nm)":
 
         lamp_select_widget(ss.selected_lamp)
 
@@ -160,10 +164,14 @@ def lamp_file_options():
                 spectra_upload_widget(ss.selected_lamp)
             if ss.warning_message is not None:
                 st.warning(ss.warning_message)
-                
+
     else:
-        lamp_upload_widget(ss.selected_lamp)
-        if ss.guv_type == "Other":
+        if ss.selected_lamp.filename in ss.uploaded_files:
+            lamp_select_widget(ss.selected_lamp)
+        else:
+            lamp_upload_widget(ss.selected_lamp)
+
+        if ss.selected_lamp.guv_type == "Other":
             if ss.selected_lamp.filename in ss.uploaded_files:
                 if ss.selected_lamp.filename in ss.uploaded_spectras:
                     load_uploaded_spectra(ss.selected_lamp)

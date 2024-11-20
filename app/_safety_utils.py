@@ -5,6 +5,37 @@ from guv_calcs import get_tlv
 ss = st.session_state
 
 
+def dim_check(warn=False):
+    skin = ss.room.calc_zones["SkinLimits"]
+    eye = ss.room.calc_zones["EyeLimits"]
+
+    skindim = []
+    for key, val in skin.lamp_values.items():
+        skinmax, eyemax = ss.room.lamps[key].get_limits()
+        dim = skinmax / val.max()
+        skindim.append(dim)
+        if warn and dim < 1:
+            msg = f"{key.name} must be dimmed to {round(dim*100)}% its total power to comply with skin TLVs"
+            st.warning(msg)
+
+    eyedim = []
+    for key, val in eye.lamp_values.items():
+        skinmax, eyemax = ss.room.lamps[key].get_limits()
+        dim = eyemax / val.max()
+        eyedim.append(dim)
+        if warn and dim < 1:
+            msg = f"{key.name} must be dimmed to {round(dim*100)}% its total power to comply with eue TLVs"
+            st.warning(msg)
+    return skindim, eyedim
+
+    # dimvals = [min(val) for val in np.array([skindim, eyedim]).T]
+    # for lamp, dimval in zip(ss.room.lamps.values(), dimvals):
+    # if dimval < 1:
+    # st.warning(
+    # f"{lamp.name} must be dimmed to {round(dimval*100)}% its total power to comply with TLVs"
+    # )
+
+
 def get_unweighted_hours_to_tlv(wavelength=222):
     """
     calculate hours to tlv without taking into account lamp spectra
@@ -36,7 +67,7 @@ def get_weighted_hours_to_tlv(wavelength=222):
     skin_limits = ss.room.calc_zones["SkinLimits"]
     eye_limits = ss.room.calc_zones["EyeLimits"]
 
-    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps(wavelength)
+    skin_hours, eyes_hours, skin_maxes, eye_maxes = _tlvs_over_lamps()
 
     # now check that overlapping beams in the calc zone aren't pushing you over the edge
     # max irradiance in the wholeplane
@@ -93,14 +124,14 @@ def _get_mono_limits(wavelength):
     return skin_tlv, eye_tlv
 
 
-def _tlvs_over_lamps(wavelength=222):
+def _tlvs_over_lamps():
     """calculate the hours to TLV over each lamp in the calc zone"""
 
     skin_standard, eye_standard = _get_standards(ss.room.standard)
-    mono_skinmax, mono_eyemax = _get_mono_limits(wavelength)
+
     # iterate over all lamps
-    hours_to_tlv_skin, hours_to_tlv_eye = [], []
-    skin_maxes, eye_maxes = [], []
+    hours_to_tlv_skin, hours_to_tlv_eye = {}, {}
+    skin_maxes, eye_maxes = {}, {}
     for lamp_id, lamp in ss.room.lamps.items():
         if len(lamp.max_irradiances) > 0:
             # get max irradiance shown by this lamp upon both zones
@@ -118,24 +149,31 @@ def _tlvs_over_lamps(wavelength=222):
                 )
             else:
                 # if it doesn't, first, yell.
-                if ss.wavelength == 222:
+                if lamp.guv_type != "Low-pressure mercury (254 nm)":
                     st.warning(
                         f"{lamp.name} does not have an associated spectra. Photobiological safety calculations may be inaccurate."
                     )
-
+                mono_skinmax, mono_eyemax = _get_mono_limits(lamp.wavelength)
                 # then just use the monochromatic approximation
-                skin_hours = mono_skinmax / (skin_irradiance * 3.6)
-                eye_hours = mono_eyemax / (eye_irradiance * 3.6)
-            hours_to_tlv_skin.append(skin_hours)
-            hours_to_tlv_eye.append(eye_hours)
-            skin_maxes.append(skin_irradiance)
-            eye_maxes.append(eye_irradiance)
+                skin_hours = mono_skinmax * 8 / (skin_irradiance * 3.6)
+                eye_hours = mono_eyemax * 8 / (eye_irradiance * 3.6)
+            hours_to_tlv_skin[lamp_id] = skin_hours
+            hours_to_tlv_eye[lamp_id] = eye_hours
+            skin_maxes[lamp_id] = skin_irradiance
+            eye_maxes[lamp_id] = eye_irradiance
         else:
-            hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
-            skin_maxes, eye_maxes = [0], [0]
+            hours_to_tlv_skin[lamp_id] = np.inf
+            hours_to_tlv_eye[lamp_id] = np.inf
+            skin_maxes[lamp_id] = np.inf
+            eye_maxes[lamp_id] = np.inf
     if len(ss.room.lamps.items()) == 0:
         hours_to_tlv_skin, hours_to_tlv_eye = [np.inf], [np.inf]
         skin_maxes, eye_maxes = [0], [0]
+    else:
+        hours_to_tlv_skin = list(hours_to_tlv_skin.values())
+        hours_to_tlv_eye = list(hours_to_tlv_eye.values())
+        skin_maxes = list(skin_maxes.values())
+        eye_maxes = list(eye_maxes.values())
 
     return hours_to_tlv_skin, hours_to_tlv_eye, skin_maxes, eye_maxes
 
