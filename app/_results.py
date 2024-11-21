@@ -128,7 +128,7 @@ def print_user_defined_zones():
                 roundval = 1
             else:
                 unitstr = "uW/cm²"
-                roundal = 3
+                roundval = 3
             cols[1].write(f"**Average:** \t{round(vals.mean(), roundval)} {unitstr}")
             cols[1].write(f"**Min:** \t{round(vals.min(), roundval)} {unitstr}")
             cols[1].write(f"**Max:** \t{round(vals.max(), roundval)} {unitstr}")
