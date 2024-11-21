@@ -1,5 +1,4 @@
 import streamlit as st
-from guv_calcs import get_tlv
 from ._widget import initialize_lamp, close_sidebar
 from ._lamp_utils import (
     load_uploaded_spectra,
@@ -61,16 +60,8 @@ def lamp_sidebar():
     if ss.selected_lamp.filedata is not None:
         cola, colb = st.columns(2)
         skinmax, eyemax = ss.selected_lamp.get_limits(ss.room.standard)
-        cola.write(
-            "Max 8-hour skin dose: **:violet["
-            + str(round(skinmax, 1))
-            + "] mJ/cm2**"
-        )
-        colb.write(
-            "Max 8-hour eye dose: **:violet["
-            + str(round(eyemax, 1))
-            + "] mJ/cm2**"
-        )
+        cola.write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
+        colb.write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
 
     lamp_plots()  # plot if file has been selected
     lamp_position_options()  # position, orientation, etc

@@ -38,26 +38,26 @@ def results_page():
         ):
             print_airchem()
 
-    st.subheader("Export Results", divider="grey")
-    col, col2 = st.columns(2)
-    include_plots = col2.checkbox("Include result plots")
-    col.download_button(
-        "Export All Results",
-        data=ss.room.export_zip(include_plots=include_plots),
-        file_name="illuminate.zip",
-        use_container_width=True,
-        type="primary",
-        key="export_all_results",
-    )
-
-    for zone_id, zone in ss.room.calc_zones.items():
+        st.subheader("Export Results", divider="grey")
+        col, col2 = st.columns(2)
+        include_plots = col2.checkbox("Include result plots")
         col.download_button(
-            zone.name,
-            data=zone.export(),
-            file_name=zone.name + ".csv",
+            "Export All Results",
+            data=ss.room.export_zip(include_plots=include_plots),
+            file_name="illuminate.zip",
             use_container_width=True,
-            disabled=True if zone.values is None else False,
+            type="primary",
+            key="export_all_results",
         )
+
+        for zone_id, zone in ss.room.calc_zones.items():
+            col.download_button(
+                zone.name,
+                data=zone.export(),
+                file_name=zone.name + ".csv",
+                use_container_width=True,
+                disabled=True if zone.values is None else False,
+            )
 
 
 def print_summary():

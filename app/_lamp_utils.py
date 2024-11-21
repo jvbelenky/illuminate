@@ -235,6 +235,7 @@ def lamp_type_widget(lamp):
 def update_wavelength(lamp):
     lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
     lamp.wavelength = ss.guv_dict[lamp.guv_type]
+    lamp.reload()
     if ss.show_results:
         show_results()
 
