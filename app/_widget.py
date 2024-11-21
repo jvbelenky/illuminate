@@ -417,6 +417,11 @@ def update_vol_points(zone):
     zone.set_num_points(numx, numy, numz)
 
 
+def update_fov80(zone):
+
+    zone.fov80 = set_val(f"fov80_{zone.zone_id}", zone.fov80)
+
+
 def update_lamp_position(lamp):
     """update lamp position and aim point based on widget input"""
 

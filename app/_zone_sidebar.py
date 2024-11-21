@@ -11,6 +11,7 @@ from ._widget import (
     update_vol_points,
     update_offset,
     update_zone_visibility,
+    update_fov80,
     close_sidebar,
 )
 
@@ -164,9 +165,11 @@ def zone_sidebar():
             selected_zone.vert = True
 
         # Toggle 80 degree field of view
-        selected_zone.fov80 = st.checkbox(
+        st.checkbox(
             "Field of View 80°",
             key=f"fov80_{selected_zone.zone_id}",
+            on_change=update_fov80,
+            args=[selected_zone],
             disabled=DISABLED,
         )
 
