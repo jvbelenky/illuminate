@@ -1,7 +1,6 @@
 import streamlit as st
 from guv_calcs import get_tlv
 from ._widget import initialize_lamp, close_sidebar
-from ._safety_utils import _get_standards
 from ._lamp_utils import (
     load_uploaded_spectra,
     lamp_select_widget,
@@ -61,21 +60,15 @@ def lamp_sidebar():
 
     if ss.selected_lamp.filedata is not None:
         cola, colb = st.columns(2)
-        skin_standard, eye_standard = _get_standards(ss.room.standard)
-        if ss.selected_lamp.spectra is not None:
-            max_skin_dose = ss.selected_lamp.spectra.get_tlv(skin_standard)
-            max_eye_dose = ss.selected_lamp.spectra.get_tlv(eye_standard)
-        else:
-            max_skin_dose = get_tlv(ss.selected_lamp.wavelength, skin_standard)
-            max_eye_dose = get_tlv(ss.selected_lamp.wavelength, eye_standard)
+        skinmax, eyemax = ss.selected_lamp.get_limits(ss.room.standard)
         cola.write(
             "Max 8-hour skin dose: **:violet["
-            + str(round(max_skin_dose, 1))
+            + str(round(skinmax, 1))
             + "] mJ/cm2**"
         )
         colb.write(
             "Max 8-hour eye dose: **:violet["
-            + str(round(max_eye_dose, 1))
+            + str(round(eyemax, 1))
             + "] mJ/cm2**"
         )
 

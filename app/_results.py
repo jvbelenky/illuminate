@@ -263,7 +263,7 @@ def check_lamps(room, warn=True):
     # check if any individual lamp exceeds the limits
     for lampid, lamp in room.lamps.items():
         if lampid in eye.lamp_values.keys() and lampid in skin.lamp_values.keys():
-            skinmax, eyemax = room.lamps[lampid].get_limits()
+            skinmax, eyemax = room.lamps[lampid].get_limits(room.standard)
             skinvals, eyevals = skin.lamp_values[lampid], eye.lamp_values[lampid]
             skinweight, eyeweight = 3 / skinmax, 3 / eyemax
             skindim, eyedim = skinmax / skinvals.max(), eyemax / eyevals.max()

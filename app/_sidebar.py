@@ -268,28 +268,30 @@ def default_sidebar():
     )
 
     st.subheader(
-        "***A free and open source simulation tool for germicidal far-UV applications***"
+        "***A free and open source simulation tool for germicidal UV applications***"
     )
 
     st.header("Getting Started", divider="grey")
     st.write(
         """
-        To run your first simulation, simply click on the `Add Luminaire` 
-        button on the right panel, select a photometric file from the dropdown menu, 
-        and click the red `Calculate` button to immediately see results.
+        To run your first simulation, click on the **`Select luminaire...`** menu in the top
+        bar, and select **`Add new luminaire`**. The luminaire editing menu will appear on the left panel.
+        Select a file from the **`Select lamp`** menu, then click on the red **:red[Calculate!]** button
+        in the upper right corner to immediately see average room fluence rate and skin and eye safety results.
+        Click the **`About`** button in the upper left corner at any time to return to this page.
         """
     )
 
-    st.subheader("Editing the Room")  # , divider="grey")
+    st.subheader("Editing the Room")
     st.write(
         """
-        In the `Edit Room` menu, you can change the size of the room, the air changes from ventilation and ozone decay
+        In the **`Edit Room`** menu, you can change the size of the room, the air changes from ventilation and ozone decay
         rate, as well as the photobiological safety standard to calculate for. Updating these options will update the 
-        calculation zones, so be sure to hit `Calculate` again after doing so.
+        calculation zones, so be sure to hit **:red[Calculate!]** again after doing so.
         """
     )
 
-    st.subheader("Adding and Editing Luminaires")  # , divider="grey")
+    st.subheader("Adding and Editing Luminaires")
     st.write(
         """
         For more complex simulations, you can configure the position and orientation of the luminaire,
@@ -297,7 +299,7 @@ def default_sidebar():
         should also provide a spectrum file, or photobiological safety calculations may be inaccurate. 
         
         Note that if a luminaire is placed outside the room boundaries, it will not appear in the plot, 
-        but will still participate in calculations, but not if you uncheck the box labeled `Enabled`.
+        but will still participate in calculations, but not if you uncheck the box labeled **`Enabled`**.
         """
     )
     st.subheader("Adding and Editing Calculation Zones")  # , divider="grey")
@@ -318,7 +320,11 @@ def default_sidebar():
     st.write(
         """
         You can also define your own calculation zones, whether a plane or a
-        volume. Currently, only planes normal to the floor are supported. These calculation 
+        volume. Click  on **`Select calculation zone...`** and then on **`Add new calculation zone`** 
+        to bring up the calculation zone menu in the left hand panel. Select **`Plane`** or **`Volume`**
+        and click **`Go`** to enter the full editing menu.
+        
+        Currently, only planes normal to the floor are supported. These calculation 
         zones will have their statistics displayed in the Results page alongside the built-in
         calculation zones.
         """
@@ -327,14 +333,30 @@ def default_sidebar():
     st.subheader("Calculating")  # , divider="grey")
     st.write(
         """
-        When the `Calculate!` button is pressed, calculations are performed for each luminaire
+        When the **:red[Calculate!]** button is pressed, calculations are performed for each luminaire
         and each calculation zone, such that the number of calculations is the product of the 
         number of luminaires and the number of calculation zones. With only a few calculation zones
-        and a few luminaires, calculation time should be nearly instantaneous, but for largeer numbers
-        of lamps and calculation zones, calculation time may be several minutes. For this reason, cached
-        results may be viewed with the `Show Results` button. Decreasing the spacing of any calculation volume
-        below 0.05 meters, or generating a very large room, may also result in significantly increased 
-        calculation time.
+        and a few luminaires, calculation time should be nearly instantaneous, but for larger numbers
+        of lamps and calculation zones, calculation time may be several minutes. Larger numbers of
+        calculation points, or very large rooms, may also significantly increase calculation time.
+        """
+    )
+
+    st.subheader("Saving and Loading")
+    st.write(
+        """
+        Click the **`Project`** button in the top ribbon menu. Click on **`Save Project`** to save the current
+        configuration of luminaires and calculation zones. A file called **`illuminate.guv`** will be generated.
+        It can be renamed to anything as long as the **`.guv`** extension remains. Depending on your browser
+        settings, you may be prompted on a location to save the file, or it may download automatically.
+        
+        To load a project, click on **`Load Project`** and then on the file upload widget that appears. Select any 
+        **`.guv`** file generated by Illuminate to load it. Note that projects saved under earlier versions of guv-calcs
+        may not work correctly. To minimize errors for ongoing projects, resave an outdated project using the current
+        version of Illuminate.
+        
+        **`.guv`** files are plain text JSON; you can read them with any plain text reader such as Notepad or Microsoft 
+        Word.
         """
     )
 
@@ -342,12 +364,12 @@ def default_sidebar():
     st.subheader("Purpose and Scope")
     st.write(
         """
-        Currently, Illuminate only supports far-UV sources; calculations will
-        assume that all inputted luminaires are krypton-chloride (KrCl) lamps, as 
-        these are the sources for which we have [characterization data](https://assay.osluv.org/)
-        and a reasonable quantity of [inactivation data](https://docs.google.com/spreadsheets/d/1lVr0aWTFvlcjG2Rp7GPKOan_ET2hwSBoy05Ap8KsUko/edit#gid=0).
-        Eventually, there will be support for other GUV sources, with priority for non-KrCl far-UV sources 
-        and 254nm low-pressure mercury lamps.
+        Illuminate supports both far-UV (222 nm krpyton chloride) and upper-room UV (254 nm low pressure mercury)
+        installations. However, currently, only far-UV lamps have pre-filled photometric files and other
+        [characterization data](https://assay.osluv.org/). For 254 nm modeling, you will have to provide your own
+        photometric file. 
+        
+        We are eager to work with UV companies to expand the list of characterized fixtures available on Illuminate. Get in contact at contact-assay@osluv.org 
         """
     )
     st.subheader("Source Libraries")  # , divider="grey")
@@ -377,14 +399,13 @@ def default_sidebar():
     st.write("*Tooling Features:*")
     st.write(
         """
-        - **Saving and load projects**: Save all the parameters of a project as a .json blob, and upload again
-        - **Mobile view**: Clean layout configured for mobile devices
-        - **Exporting results**: Export the result of any calculation zone, or all calculation zones, for use with other modeling software
+        - **Improved mobile view**: Clean layout configured for mobile devices
         - **Generating a report**: Generate a polished safety and efficacy report of an installation with a click of a button
         - **Copying objects**: Duplicate a luminaire or calculation zone
         - **Interactive plotting**: Place luminaires and draw calculation zones directly onto the interactive visualization plot
         - **In-tool CAD support**: Design complex environments directly in the interface
         - **Locally installable app**: Run easily as a desktop app without internet access
+        - **Arbitray GUV wavelength support**: Run simulations for any GUV wavelength
         - *...and much more!*
         """
     )
@@ -397,7 +418,6 @@ def default_sidebar():
         """
         - **Support for diffuse reflectance**: Include reflectance values in the fluence and irradiance calculations
         - **Support for design of complex environments**: Whether designing a complex environment 
-        - **Support for other GUV wavelengths**: Currently, only GUV222 with krypton-chloride lamps is supported. Future releases will also support GUV254        
         - **More accurate near-field modeling**: Definitions of GUV sources that take into account emission surface geometry and near-field radiation distribution.
         
         """
