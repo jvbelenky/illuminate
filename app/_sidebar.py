@@ -246,7 +246,6 @@ def upload():
             # make lampfile options
             if lamp.filename not in ss.vendored_lamps.keys():
                 ss.uploaded_files[lamp.filename] = lamp.filedata
-        make_file_list()
 
         update_calc_zones()
         if ss.show_results:
