@@ -11,7 +11,7 @@ from ._widget import (
     update_vol_points,
     update_offset,
     update_zone_visibility,
-    update_fov80,
+    update_fov,
     close_sidebar,
 )
 
@@ -165,12 +165,24 @@ def zone_sidebar():
             selected_zone.vert = True
 
         # Toggle 80 degree field of view
-        st.checkbox(
-            "Field of View 80°",
-            key=f"fov80_{selected_zone.zone_id}",
-            on_change=update_fov80,
+        cols = st.columns(2)
+        cols[0].number_input(
+            "Vertical Field of View",
+            step=1,
+            key=f"fov_vert_{selected_zone.zone_id}",
+            on_change=update_fov,
             args=[selected_zone],
             disabled=DISABLED,
+            help="For calculating eye-dose. 80° per ANSI/IES RP 27.1-22. Max value: 180°",
+        )
+        cols[1].number_input(
+            "Horizontal Field of View",
+            step=1,
+            key=f"fov_horiz_{selected_zone.zone_id}",
+            on_change=update_fov,
+            args=[selected_zone],
+            disabled=DISABLED,
+            help="For calculating eye-dose, given that most people do not have eyes in the back of their head. Values will be calculated as the largest value possible within the provided field of view. Max value: 360°",
         )
 
         # Set dose vs irradiance

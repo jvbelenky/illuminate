@@ -116,7 +116,8 @@ def initialize_zone(zone):
     ]
     if isinstance(zone, CalcPlane):
         keys.append(f"height_{zone.zone_id}")
-        keys.append(f"fov80_{zone.zone_id}")
+        keys.append(f"fov_vert_{zone.zone_id}")
+        keys.append(f"fov_horiz_{zone.zone_id}")
     elif isinstance(zone, CalcVol):
         keys.append(f"z1_{zone.zone_id}")
         keys.append(f"z2_{zone.zone_id}")
@@ -139,7 +140,8 @@ def initialize_zone(zone):
     ]
     if isinstance(zone, CalcPlane):
         vals.append(zone.height)
-        vals.append(zone.fov80)
+        vals.append(zone.fov_vert)
+        vals.append(zone.fov_horiz)
     elif isinstance(zone, CalcVol):
         vals.append(zone.z1)
         vals.append(zone.z2)
@@ -417,9 +419,10 @@ def update_vol_points(zone):
     zone.set_num_points(numx, numy, numz)
 
 
-def update_fov80(zone):
-
-    zone.fov80 = set_val(f"fov80_{zone.zone_id}", zone.fov80)
+def update_fov(zone):
+    """update the vertical or horizontal field of view ="""
+    zone.fov_vert = set_val(f"fov_vert_{zone.zone_id}", zone.fov_vert)
+    zone.fov_horiz = set_val(f"fov_horiz_{zone.zone_id}", zone.fov_horiz)
 
 
 def update_lamp_position(lamp):

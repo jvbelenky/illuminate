@@ -94,17 +94,6 @@ def print_summary():
         if max(weighted_skin_dose.max(), weighted_eye_dose.max()) > 3:
             st.error("This installation does not comply with selected TLVs.")
 
-        # for lamp in ss.room.lamps.values():
-        # if (
-        # lamp.spectra is None
-        # and lamp.guv_type != "Low-pressure mercury (254 nm)"
-        # and lamp.filedata is not None
-        # ):
-        # msg = "At least one lamp spectra is missing. Photobiological safety calculations may be inaccurate."
-        # st.warning(msg)
-        # break
-
-
 def print_user_defined_zones():
 
     """all user-defined calc zones, basic stats and"""
@@ -227,12 +216,6 @@ def print_safety():
                 eye.plot_plane(title=eyetitle)[0],
                 **{"transparent": "True"},
             )
-
-        if len(ss.room.lamps) > 1:
-            st.write(
-                "*Note: Estimates of eye-level dose may be overestimated for multiple fixtures pointed in opposite directions.*"
-            )
-
 
 def check_lamps(room, warn=True):
     """
