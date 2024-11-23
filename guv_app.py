@@ -82,11 +82,13 @@ with left_pane:
         # if not ss.show_results, then this is an empty panel
 
 with right_pane:
-
-    if ss.show_results:
+    show_room = st.button("Show Updated Room")
+    if ss.show_results:        
+        if show_room or ss.show_room:
+            room_plot()
+            ss.show_room = False
         results_page()
     else:
-        show_room = st.button("Show Updated Room")
         if show_room or ss.show_room:
             room_plot()
             ss.show_room = False
