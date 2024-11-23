@@ -13,7 +13,6 @@ from ._widget import (
     close_sidebar,
 )
 from ._top_ribbon import show_results
-from ._lamp_utils import make_file_list
 
 SELECT_LOCAL = "Select local file..."
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]

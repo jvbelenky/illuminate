@@ -76,9 +76,9 @@ def initialize_lamp(lamp):
         f"rotation_{lamp.lamp_id}",
         f"orientation_{lamp.lamp_id}",
         f"tilt_{lamp.lamp_id}",
-        f"enabled_{lamp.lamp_id}",
         f"guv_type_{lamp.lamp_id}",
-        f"wavelength_{lamp.lamp_id}",
+        f"wavelength_{lamp.lamp_id}",        
+        f"enabled_{lamp.lamp_id}",
     ]
     vals = [
         lamp.name,
@@ -91,9 +91,9 @@ def initialize_lamp(lamp):
         lamp.angle,
         lamp.heading,
         lamp.bank,
-        lamp.enabled,
         lamp.guv_type,
-        lamp.wavelength,
+        lamp.wavelength,        
+        lamp.enabled,
     ]
     add_keys(keys, vals)
 
@@ -423,6 +423,13 @@ def update_fov(zone):
     """update the vertical or horizontal field of view ="""
     zone.fov_vert = set_val(f"fov_vert_{zone.zone_id}", zone.fov_vert)
     zone.fov_horiz = set_val(f"fov_horiz_{zone.zone_id}", zone.fov_horiz)
+
+
+def update_lamp_intensity_units(lamp):
+    """update the lamp intensity units of the photometric file; generally either mW/Sr or uW/cm2"""
+    lamp.intensity_units = set_val(
+        f"intensity_units_{lamp.lamp_id}", lamp.intensity_units
+    )
 
 
 def update_lamp_position(lamp):

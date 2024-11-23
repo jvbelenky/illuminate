@@ -7,6 +7,7 @@ from ._widget import (
     set_val,
     initialize_lamp,
     update_lamp_name,
+    update_lamp_intensity_units,
     update_lamp_position,
     update_lamp_rotation,
     update_lamp_aim_point,
@@ -268,7 +269,9 @@ def lamp_select_widget(lamp):
         helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files."
     else:
         helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."
-    return st.selectbox(
+
+    cols = st.columns([3, 1])
+    cols[0].selectbox(
         "Select lamp",
         ss.lamp_options,
         index=fname_idx,
@@ -276,6 +279,15 @@ def lamp_select_widget(lamp):
         args=[lamp],
         key=f"file_{lamp.lamp_id}",
         help=helptext,
+    )
+    cols[1].selectbox(
+        "Intensity units",
+        options=["mW/sr", "uW/cm²"],
+        index=0 if lamp.intensity_units.lower() == "mw/sr" else 1,
+        on_change=update_lamp_intensity_units,
+        args=[lamp],
+        key=f"intensity_units_{lamp.lamp_id}",
+        help="Most photometric files are in units of mW/Sr, but some GUV photometric files may be in uW/cm². If your calculation seems suspiciously off by a large factor, try changing this option.",
     )
 
 
