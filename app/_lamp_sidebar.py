@@ -50,29 +50,9 @@ def lamp_sidebar():
     if ss.selected_lamp.guv_type == "Other":
         lamp_wavelength_options(ss.selected_lamp)
 
-    lamp_file_options()  # file input
-    if ss.selected_lamp.filename in ss.vendored_spectra.keys():
-
-        if "PRERELEASE" not in ss.selected_lamp.filename:
-            link = ss.reports[ss.selected_lamp.filename].replace(" ", "%20")
-            st.markdown(f"[View Full Report]({link})")
-
-    if ss.selected_lamp.filedata is not None:
-        cols = st.columns([1,1.5,1.5])
-        cols[0].download_button(
-            "Download .ies file",
-            data=ss.selected_lamp.save_ies(),
-            file_name=str(ss.selected_lamp.filename).split(".ies")[0] + ".ies",
-            # use_container_width=True,
-            key=f"download_ies_{ss.selected_lamp.lamp_id}",
-        )
-        skinmax, eyemax = ss.selected_lamp.get_limits(ss.room.standard)
-        cols[1].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
-        cols[2].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
-        
-
-    lamp_plots()  # plot if file has been selected
-    lamp_position_options()  # position, orientation, etc
+    lamp_file_options(ss.selected_lamp)  # file input
+    lamp_info(ss.selected_lamp)  # plot and display other info if file has been selected
+    lamp_position_options(ss.selected_lamp)  # position, orientation, etc
 
     col3, col4 = st.columns(2)
     with col3:
@@ -131,20 +111,20 @@ def lamp_wavelength_options(lamp):
     )
 
 
-def lamp_file_options():
+def lamp_file_options(lamp):
     """widgets and plots to do with lamp file sources"""
 
-    if ss.selected_lamp.guv_type == "Krypton chloride (222 nm)":
+    if lamp.guv_type == "Krypton chloride (222 nm)":
 
-        lamp_select_widget(ss.selected_lamp)
+        lamp_select_widget(lamp)
 
-        if ss.selected_lamp.filename == SELECT_LOCAL:
-            lamp_upload_widget(ss.selected_lamp)
-            # spectra_upload_widget(ss.selected_lamp)
+        if lamp.filename == SELECT_LOCAL:
+            lamp_upload_widget(lamp)
+            # spectra_upload_widget(lamp)
 
-        if ss.selected_lamp.filename in ss.uploaded_files:
-            if ss.selected_lamp.filename in ss.uploaded_spectras:
-                load_uploaded_spectra(ss.selected_lamp)
+        if lamp.filename in ss.uploaded_files:
+            if lamp.filename in ss.uploaded_spectras:
+                load_uploaded_spectra(lamp)
             else:
                 st.warning(
                     """
@@ -153,36 +133,64 @@ def lamp_file_options():
                     photobiological safety calculations may be inaccurate.]
                     """
                 )
-                spectra_upload_widget(ss.selected_lamp)
+                spectra_upload_widget(lamp)
             if ss.warning_message is not None:
                 st.warning(ss.warning_message)
 
     else:
-        if ss.selected_lamp.filename in ss.uploaded_files:
-            lamp_select_widget(ss.selected_lamp)
+        if lamp.filename in ss.uploaded_files:
+            lamp_select_widget(lamp)
         else:
-            lamp_upload_widget(ss.selected_lamp)
+            lamp_upload_widget(lamp)
 
-        if ss.selected_lamp.guv_type == "Other":
-            if ss.selected_lamp.filename in ss.uploaded_files:
-                if ss.selected_lamp.filename in ss.uploaded_spectras:
-                    load_uploaded_spectra(ss.selected_lamp)
+        if lamp.guv_type == "Other":
+            if lamp.filename in ss.uploaded_files:
+                if lamp.filename in ss.uploaded_spectras:
+                    load_uploaded_spectra(lamp)
                 else:
-                    spectra_upload_widget(ss.selected_lamp)
+                    spectra_upload_widget(lamp)
 
 
-def lamp_plots():
-    """plot if there is data to plot with"""
+def lamp_info(lamp):
+    """display info and plot if there is data to plot with"""
+
+    if lamp.filedata is not None:
+        cols = st.columns(2)
+        skinmax, eyemax = lamp.get_limits(ss.room.standard)
+        cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
+        cols[1].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
+
     PLOT_IES, PLOT_SPECTRA = False, False
-    cols = st.columns(3)
-    if ss.selected_lamp.filedata is not None:
+    cols = st.columns([2, 2, 1])
+    if lamp.filedata is not None:
+        fname = str(lamp.filename)
+        fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        cols[0].download_button(
+            "Download .ies file",
+            data=lamp.save_ies(),
+            file_name=fname,
+            use_container_width=True,
+            key=f"download_ies_{lamp.lamp_id}",
+        )
         PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=False)
 
-    if ss.selected_lamp.spectra is not None:
+    if lamp.spectra is not None:
+        fname = str(lamp.filename)
+        fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
+        cols[1].download_button(
+            "Download spectrum .csv",
+            data=lamp.spectra.to_csv(),
+            file_name=fname,
+            use_container_width=True,
+            key=f"download_spectrum_{lamp.lamp_id}",
+        )
         PLOT_SPECTRA = cols[1].checkbox(
             "Show spectra plot", key="show_spectra", value=False
         )
         if PLOT_SPECTRA:
+            cols[2].write("")
+            cols[2].write("")
+            cols[2].write("")
             yscale = cols[2].selectbox(
                 "Spectra y-scale",
                 options=["linear", "log"],
@@ -194,9 +202,9 @@ def lamp_plots():
 
     if PLOT_IES and PLOT_SPECTRA:
         # plot both charts side by side
-        iesfig, iesax = ss.selected_lamp.plot_ies()
+        iesfig, iesax = lamp.plot_ies()
         # fig, ax = plt.subplots()
-        spectrafig, _ = ss.selected_lamp.spectra.plot(
+        spectrafig, _ = lamp.spectra.plot(
             # fig=fig, ax=ax,
             title="",
             weights=True,
@@ -209,11 +217,11 @@ def lamp_plots():
         cols[0].pyplot(iesfig, use_container_width=True)
     elif PLOT_IES and not PLOT_SPECTRA:
         # just display the ies file plot
-        iesfig, iesax = ss.selected_lamp.plot_ies()
+        iesfig, iesax = lamp.plot_ies()
         st.pyplot(iesfig, use_container_width=True)
     elif PLOT_SPECTRA and not PLOT_IES:
         # display just the spectra
-        spectrafig, _ = ss.selected_lamp.spectra.plot(
+        spectrafig, _ = lamp.spectra.plot(
             # fig=fig, ax=ax,
             title="",
             weights=True,
@@ -222,21 +230,28 @@ def lamp_plots():
         spectrafig.set_size_inches(6, 4, forward=True)
         spectrafig.axes[0].set_yscale(yscale)
         st.pyplot(spectrafig, use_container_width=True)
+        
+    
+    if lamp.filename in ss.vendored_spectra.keys():
+
+        if "PRERELEASE" not in lamp.filename:
+            link = ss.reports[lamp.filename].replace(" ", "%20")
+            st.markdown(f"[View Full Report]({link})")
 
 
-def lamp_position_options():
+def lamp_position_options(lamp):
 
     # Position inputs
     col1, col2, col3 = st.columns(3)
     with col1:
-        lamp_x_widget(ss.selected_lamp)
+        lamp_x_widget(lamp)
     with col2:
-        lamp_y_widget(ss.selected_lamp)
+        lamp_y_widget(lamp)
     with col3:
-        lamp_z_widget(ss.selected_lamp)
+        lamp_z_widget(lamp)
 
     # Rotation input
-    lamp_angle_widget(ss.selected_lamp)
+    lamp_angle_widget(lamp)
     st.markdown(
         "Set aim point", help="Setting aim point will update the tilt and orientation"
     )
@@ -244,11 +259,11 @@ def lamp_position_options():
     # Aim point inputs
     col4, col5, col6 = st.columns(3)
     with col4:
-        lamp_aimx_widget(ss.selected_lamp)
+        lamp_aimx_widget(lamp)
     with col5:
-        lamp_aimy_widget(ss.selected_lamp)
+        lamp_aimy_widget(lamp)
     with col6:
-        lamp_aimz_widget(ss.selected_lamp)
+        lamp_aimz_widget(lamp)
 
     st.markdown(
         "Set tilt and orientation",
@@ -256,6 +271,6 @@ def lamp_position_options():
     )
     col7, col8 = st.columns(2)
     with col7:
-        lamp_tilt_widget(ss.selected_lamp)
+        lamp_tilt_widget(lamp)
     with col8:
-        lamp_orientation_widget(ss.selected_lamp)
+        lamp_orientation_widget(lamp)
