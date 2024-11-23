@@ -58,10 +58,18 @@ def lamp_sidebar():
             st.markdown(f"[View Full Report]({link})")
 
     if ss.selected_lamp.filedata is not None:
-        cola, colb = st.columns(2)
+        cols = st.columns([1,1.5,1.5])
+        cols[0].download_button(
+            "Download .ies file",
+            data=ss.selected_lamp.save_ies(),
+            file_name=str(ss.selected_lamp.filename).split(".ies")[0] + ".ies",
+            # use_container_width=True,
+            key=f"download_ies_{ss.selected_lamp.lamp_id}",
+        )
         skinmax, eyemax = ss.selected_lamp.get_limits(ss.room.standard)
-        cola.write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
-        colb.write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
+        cols[1].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
+        cols[2].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
+        
 
     lamp_plots()  # plot if file has been selected
     lamp_position_options()  # position, orientation, etc

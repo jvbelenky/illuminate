@@ -77,7 +77,7 @@ def initialize_lamp(lamp):
         f"orientation_{lamp.lamp_id}",
         f"tilt_{lamp.lamp_id}",
         f"guv_type_{lamp.lamp_id}",
-        f"wavelength_{lamp.lamp_id}",        
+        f"wavelength_{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
     ]
     vals = [
@@ -92,7 +92,7 @@ def initialize_lamp(lamp):
         lamp.heading,
         lamp.bank,
         lamp.guv_type,
-        lamp.wavelength,        
+        lamp.wavelength,
         lamp.enabled,
     ]
     add_keys(keys, vals)
