@@ -18,7 +18,7 @@ ADD_ZONE = "Add new calculation zone"
 
 def top_ribbon():
 
-    c = st.columns([1, 1, 1, 2, 2, 1, 1])
+    c = st.columns([1, 1, 1, 2, 2, 1])
 
     # with c[0]:
     c[0].button("About", on_click=show_about, use_container_width=True)
@@ -65,18 +65,41 @@ def top_ribbon():
         key="zone_select",
     )
 
-    c[5].button(
-        "Show Results",
-        on_click=show_results,
-        use_container_width=True,
-    )
+    # c[5].button(
+    # "Show Results",
+    # on_click=show_results,
+    # use_container_width=True,
+    # )
 
-    c[6].button(
-        "Calculate!",
-        on_click=calculate,
-        type="primary",
-        use_container_width=True,
-    )
+    recalculate = False
+    DISABLED = False
+    if ss.room.calc_state == {}:
+        recalculate = True
+    if ss.room.lamps:
+        if not all(lamp.filedata is None for lamp in ss.room.lamps.values()):
+            if not ss.room.calc_state == ss.room.get_calc_state():
+                recalculate = True
+        else:
+            DISABLED = True
+    else:
+        DISABLED = True
+
+    if recalculate:
+        c[5].button(
+            "Calculate!",
+            on_click=calculate,
+            type="primary",
+            use_container_width=True,
+            disabled=DISABLED,
+        )
+    else:
+        c[5].button(
+            "Show Results",
+            on_click=show_results,
+            type="secondary",
+            use_container_width=True,
+            disabled=DISABLED,
+        )
 
 
 def show_about():

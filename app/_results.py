@@ -15,12 +15,13 @@ def results_page():
     )
 
     # do some checks first. do we actually have any lamps?
-    nolamps_msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button and selecting a file from the `Lamp file` drop-down list in the left-hand panel, or uploading your own file. Then, hit calculate."
 
     if not ss.room.lamps:
-        st.warning(nolamps_msg)
+        msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button."
+        st.warning(msg)
     elif all(lamp.filedata is None for lampid, lamp in ss.room.lamps.items()):
-        st.warning(nolamps_msg)
+        msg = "You've added at least one luminaire, but you haven't selected a file to define it. Navigate to a luminaire in the `Select luminaire...` menu. Then, select a file from the `Lamp file` drop-down list in the left-hand panel, or uploading your own file. Then, hit the Calculate! button"
+        st.warning(msg)
     else:
         # check that all positions of lamps and calc zones are where they're supposed to be
         msgs = ss.room.check_positions()

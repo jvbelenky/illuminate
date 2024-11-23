@@ -53,6 +53,7 @@ def lamp_sidebar():
     lamp_file_options(ss.selected_lamp)  # file input
     lamp_info(ss.selected_lamp)  # plot and display other info if file has been selected
     lamp_position_options(ss.selected_lamp)  # position, orientation, etc
+    # lamp_source_options(ss.selected_lamp) # specify source  properties
 
     col3, col4 = st.columns(2)
     with col3:
@@ -230,8 +231,7 @@ def lamp_info(lamp):
         spectrafig.set_size_inches(6, 4, forward=True)
         spectrafig.axes[0].set_yscale(yscale)
         st.pyplot(spectrafig, use_container_width=True)
-        
-    
+
     if lamp.filename in ss.vendored_spectra.keys():
 
         if "PRERELEASE" not in lamp.filename:
@@ -274,3 +274,8 @@ def lamp_position_options(lamp):
         lamp_tilt_widget(lamp)
     with col8:
         lamp_orientation_widget(lamp)
+
+
+def lamp_source_options(lamp):
+    """TODO: everything. length, width, depth, and units."""
+    cols = st.columns(3)
