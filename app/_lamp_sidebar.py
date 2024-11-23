@@ -174,13 +174,14 @@ def lamp_plots():
         PLOT_SPECTRA = cols[1].checkbox(
             "Show spectra plot", key="show_spectra", value=False
         )
-        yscale = cols[2].selectbox(
-            "Spectra y-scale",
-            options=["linear", "log"],
-            label_visibility="collapsed",
-            key="spectra_yscale",
-        )
-        if yscale is None:
+        if PLOT_SPECTRA:
+            yscale = cols[2].selectbox(
+                "Spectra y-scale",
+                options=["linear", "log"],
+                label_visibility="collapsed",
+                key="spectra_yscale",
+            )
+        else:
             yscale = "linear"  # kludgey default value setting
 
     if PLOT_IES and PLOT_SPECTRA:

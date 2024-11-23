@@ -94,6 +94,7 @@ def print_summary():
         if max(weighted_skin_dose.max(), weighted_eye_dose.max()) > 3:
             st.error("This installation does not comply with selected TLVs.")
 
+
 def print_user_defined_zones():
 
     """all user-defined calc zones, basic stats and"""
@@ -217,6 +218,7 @@ def print_safety():
                 **{"transparent": "True"},
             )
 
+
 def check_lamps(room, warn=True):
     """
     Iterate through every lamp in the Room object and assess whether it
@@ -230,6 +232,8 @@ def check_lamps(room, warn=True):
     installation compliant.
 
     Return the weighted skin and eye dose, which must be < 3 mJ to be compliant.
+
+    TODO: Possibly worth moving this function into guv-calcs instead.
 
     """
 
