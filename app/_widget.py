@@ -78,6 +78,10 @@ def initialize_lamp(lamp):
         f"tilt_{lamp.lamp_id}",
         f"guv_type_{lamp.lamp_id}",
         f"wavelength_{lamp.lamp_id}",
+        f"width_{lamp.lamp_id}",
+        f"length_{lamp.lamp_id}",
+        f"depth_{lamp.lamp_id}",
+        f"units_{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
     ]
     vals = [
@@ -93,6 +97,10 @@ def initialize_lamp(lamp):
         lamp.bank,
         lamp.guv_type,
         lamp.wavelength,
+        lamp.width,
+        lamp.length,
+        lamp.depth,
+        lamp.units,
         lamp.enabled,
     ]
     add_keys(keys, vals)
@@ -342,19 +350,9 @@ def get_lamp_types():
     return lamp_labels
 
 
-def update_lamp_name(lamp):
-    """update lamp name from widget"""
-    lamp.name = set_val(f"name_{lamp.lamp_id}", lamp.name)
-
-
 def update_zone_name(zone):
     """update zone name from widget"""
     zone.name = set_val(f"name_{zone.zone_id}", zone.name)
-
-
-def update_lamp_visibility(lamp):
-    """update whether lamp shows in plot or not from widget"""
-    lamp.enabled = set_val(f"enabled_{lamp.lamp_id}", lamp.enabled)
 
 
 def update_zone_visibility(zone):
@@ -423,60 +421,6 @@ def update_fov(zone):
     """update the vertical or horizontal field of view ="""
     zone.fov_vert = set_val(f"fov_vert_{zone.zone_id}", zone.fov_vert)
     zone.fov_horiz = set_val(f"fov_horiz_{zone.zone_id}", zone.fov_horiz)
-
-
-def update_lamp_intensity_units(lamp):
-    """update the lamp intensity units of the photometric file; generally either mW/Sr or uW/cm2"""
-    lamp.intensity_units = set_val(
-        f"intensity_units_{lamp.lamp_id}", lamp.intensity_units
-    )
-
-
-def update_lamp_position(lamp):
-    """update lamp position and aim point based on widget input"""
-
-    x = set_val(f"pos_x_{lamp.lamp_id}", lamp.x)
-    y = set_val(f"pos_y_{lamp.lamp_id}", lamp.y)
-    z = set_val(f"pos_z_{lamp.lamp_id}", lamp.z)
-    lamp.move(x, y, z)
-    # update widgets
-    update_lamp_aim_point(lamp)
-
-
-def update_lamp_rotation(lamp):
-    angle = set_val(f"rotation_{lamp.lamp_id}", lamp.angle)
-    lamp.rotate(angle)
-
-
-def update_lamp_orientation(lamp):
-    """update lamp object aim point, and tilt/orientation widgets"""
-    aimx = set_val(f"aim_x_{lamp.lamp_id}", lamp.aimx)
-    aimy = set_val(f"aim_y_{lamp.lamp_id}", lamp.aimy)
-    aimz = set_val(f"aim_z_{lamp.lamp_id}", lamp.aimz)
-    lamp.aim(aimx, aimy, aimz)
-    ss[f"orientation_{lamp.lamp_id}"] = lamp.heading
-    ss[f"tilt_{lamp.lamp_id}"] = lamp.bank
-
-
-def update_from_tilt(lamp):
-    """update tilt+aim point in lamp, and aim point widget"""
-    tilt = set_val(f"tilt_{lamp.lamp_id}", lamp.bank)
-    lamp.set_tilt(tilt, dimensions=ss.room.dimensions)
-    update_lamp_aim_point(lamp)
-
-
-def update_from_orientation(lamp):
-    """update orientation+aim point in lamp, and aim point widget"""
-    orientation = set_val(f"orientation_{lamp.lamp_id}", lamp.heading)
-    lamp.set_orientation(orientation, ss.room.dimensions)
-    update_lamp_aim_point(lamp)
-
-
-def update_lamp_aim_point(lamp):
-    """reset aim point widget if any other parameter has been altered"""
-    ss[f"aim_x_{lamp.lamp_id}"] = lamp.aimx
-    ss[f"aim_y_{lamp.lamp_id}"] = lamp.aimy
-    ss[f"aim_z_{lamp.lamp_id}"] = lamp.aimz
 
 
 def update_standard():

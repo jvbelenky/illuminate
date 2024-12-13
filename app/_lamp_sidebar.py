@@ -20,6 +20,7 @@ from ._lamp_utils import (
     lamp_tilt_widget,
     lamp_orientation_widget,
     lamp_enabled_widget,
+    update_source_parameters,
 )
 
 SELECT_LOCAL = "Select local file..."
@@ -53,7 +54,9 @@ def lamp_sidebar():
     lamp_file_options(ss.selected_lamp)  # file input
     lamp_info(ss.selected_lamp)  # plot and display other info if file has been selected
     lamp_position_options(ss.selected_lamp)  # position, orientation, etc
-    # lamp_source_options(ss.selected_lamp) # specify source  properties
+
+    if ss.selected_lamp.filedata is not None:
+        lamp_source_options(ss.selected_lamp)  # specify source  properties
 
     col3, col4 = st.columns(2)
     with col3:
@@ -168,7 +171,7 @@ def lamp_info(lamp):
         fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
         cols[0].download_button(
             "Download .ies file",
-            data=lamp.save_ies(),
+            data=lamp.save_ies(original=True),
             file_name=fname,
             use_container_width=True,
             key=f"download_ies_{lamp.lamp_id}",
@@ -278,4 +281,42 @@ def lamp_position_options(lamp):
 
 def lamp_source_options(lamp):
     """TODO: everything. length, width, depth, and units."""
-    cols = st.columns(3)
+
+    st.markdown(
+        "Source dimensions (for near-field calculations)",
+        help="These values were set automatically from your .ies file. They only matter for near-field calculations. If they are incorrect, you can change them and download the corrected .ies file.",
+    )
+
+    cols = st.columns([1, 1, 1, 0.8])
+
+    cols[0].number_input(
+        "Source width",
+        key=f"width_{lamp.lamp_id}",
+        on_change=update_source_parameters,
+        args=[lamp],
+        help="X-axis distance for the lamp's emissive surface",
+    )
+    cols[1].number_input(
+        "Source height",
+        key=f"height_{lamp.lamp_id}",
+        on_change=update_source_parameters,
+        help="Y-axis distance of the lamp's emissive surface",
+        args=[lamp],
+    )
+
+    cols[2].number_input(
+        "Fixture depth",
+        key=f"depth_{lamp.lamp_id}",
+        on_change=update_source_parameters,
+        args=[lamp],
+        help="Determines the minimum mounting distance of the luminaire.",
+    )
+
+    cols[3].selectbox(
+        "Source units",
+        options=["feet", "meters"],
+        key=f"units_{lamp.lamp_id}",
+        on_change=update_source_parameters,
+        args=[lamp],
+        help="Units for all source parameters",
+    )
