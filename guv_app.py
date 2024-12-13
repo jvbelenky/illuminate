@@ -83,7 +83,7 @@ with left_pane:
 
 with right_pane:
     show_room = st.button("Show Updated Room")
-    if ss.show_results:        
+    if ss.show_results:
         if show_room and ss.editing is not None:
             room_plot()
             ss.show_room = False

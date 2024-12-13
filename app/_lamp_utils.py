@@ -1,26 +1,35 @@
 import streamlit as st
 from pathlib import Path
 import requests
+import json
 import matplotlib.pyplot as plt
 from guv_calcs import Lamp, Spectrum, new_lamp_position
 from ._widget import (
     set_val,
     initialize_lamp,
-    update_lamp_name,
-    update_lamp_intensity_units,
-    update_lamp_position,
-    update_lamp_rotation,
-    update_lamp_aim_point,
-    update_lamp_orientation,
-    update_from_tilt,
-    update_from_orientation,
-    update_lamp_visibility,
     clear_zone_cache,
     show_results,
 )
 
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
+
+BASE_URL = "https://assay.osluv.org/static/assay"
+
+LAMP_KEYS = {
+    "Beacon (PRERELEASE DATA)": "beacon",
+    "Beacon": "beacon",
+    "Lumenizer Zone": "lumenizer_zone",
+    "Sterilray GermBuster Sabre (PRERELEASE DATA)": "sterilray",
+    "Sterilray GermBuster Sabre": "sterilray",
+    "USHIO B1 (PRERELEASE DATA)": "ushio_b1",
+    "USHIO B1": "ushio_b1",
+    "USHIO B1.5 (PRERELEASE DATA)": "ushio_b1",
+    "USHIO B1.5": "ushio_b1",
+    "UVPro222 B1": "uvpro222_b1",
+    "UVPro222 B2": "uvpro222_b2",
+    "Visium 1": "visium",
+}
 
 
 def add_new_lamp(name=None, interactive=True, defaults={}):
@@ -81,14 +90,16 @@ def load_lamp(lamp):
 
 def load_prepopulated_lamp(lamp, fname):
     """load prepopulated lamp from osluv server"""
-    # files from osluv server
-    # set name
-    # load ies data
-    fdata = requests.get(ss.vendored_lamps[fname]).content
-    lamp.reload(filename=fname, filedata=fdata)
-    # load spectra data
-    spectra_data = requests.get(ss.vendored_spectra[fname]).content
-    _load_spectra(lamp, spectra_data)
+
+    if ss.online:  # files from osluv server
+        fdata = requests.get(ss.vendored_lamps[fname]).content
+        spectra_data = requests.get(ss.vendored_spectra[fname]).content
+    else:  # get local files
+        temp_lamp = Lamp.from_keyword(LAMP_KEYS[fname])
+        fdata = temp_lamp.filedata
+        spectra_data = temp_lamp.spectra_source
+
+    _load_lamp(lamp, fname=fname, fdata=fdata, spectra_data=spectra_data)
 
 
 def load_uploaded_lamp(lamp):
@@ -189,11 +200,25 @@ def get_local_ies_files():
     return ies_files
 
 
+def get_index():
+    if ss.online:
+        index_data = requests.get(f"{BASE_URL}/index.json").json()
+    else:
+        with open("./data/index_data.json", "r") as j:
+            index_data = json.loads(j.read())
+    return index_data
+
+
+def get_defaults(name):
+    index_data = get_index()
+    vals = index_data.values()
+    return [x for x in vals if x["reporting_name"] == name]
+
+
 def get_ies_files():
     """retrive ies files from osluv website"""
-    BASE_URL = "https://assay.osluv.org/static/assay"
 
-    index_data = requests.get(f"{BASE_URL}/index.json").json()
+    index_data = get_index()
 
     ies_files = {}
     spectra = {}
@@ -209,7 +234,7 @@ def get_ies_files():
         spectra[name] = f"{BASE_URL}/{filename}-spectrum.csv"
         reports[name] = f"{BASE_URL}/{filename}.html"
 
-    return index_data, ies_files, spectra, reports
+    return ies_files, spectra, reports
 
 
 # widgets
@@ -231,30 +256,6 @@ def lamp_type_widget(lamp):
         on_change=update_wavelength,
         args=[lamp],
     )
-
-
-def update_wavelength(lamp):
-    lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
-    lamp.wavelength = ss.guv_dict[lamp.guv_type]
-    lamp.reload()
-    if ss.show_results:
-        show_results()
-
-
-def update_wavelength_select(lamp):
-    lamp.wavelength = set_val("wavelength_select", lamp.wavelength)
-    if ss.show_results:
-        show_results()
-
-
-def update_custom_wavelength(lamp):
-    lamp.wavelength = set_val("custom_wavelength_input", lamp.wavelength)
-    if ss.show_results:
-        show_results()
-
-
-def update_custom_wavelength_check():
-    ss.custom_wavelength = set_val("custom_wavelength_check", ss.custom_wavelength)
 
 
 def lamp_select_widget(lamp):
@@ -413,3 +414,102 @@ def lamp_enabled_widget(lamp):
         args=[lamp],
         key=f"enabled_{lamp.lamp_id}",
     )
+
+
+# widget callbacks
+
+
+def update_lamp_name(lamp):
+    """update lamp name from widget"""
+    lamp.name = set_val(f"name_{lamp.lamp_id}", lamp.name)
+
+
+def update_lamp_intensity_units(lamp):
+    """update the lamp intensity units of the photometric file; generally either mW/Sr or uW/cm2"""
+    lamp.intensity_units = set_val(
+        f"intensity_units_{lamp.lamp_id}", lamp.intensity_units
+    )
+
+
+def update_wavelength(lamp):
+    lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
+    lamp.wavelength = ss.guv_dict[lamp.guv_type]
+    lamp.reload()
+    if ss.show_results:
+        show_results()
+
+
+def update_wavelength_select(lamp):
+    lamp.wavelength = set_val("wavelength_select", lamp.wavelength)
+    if ss.show_results:
+        show_results()
+
+
+def update_custom_wavelength(lamp):
+    lamp.wavelength = set_val("custom_wavelength_input", lamp.wavelength)
+    if ss.show_results:
+        show_results()
+
+
+def update_custom_wavelength_check():
+    ss.custom_wavelength = set_val("custom_wavelength_check", ss.custom_wavelength)
+
+
+def update_lamp_position(lamp):
+    """update lamp position and aim point based on widget input"""
+
+    x = set_val(f"pos_x_{lamp.lamp_id}", lamp.x)
+    y = set_val(f"pos_y_{lamp.lamp_id}", lamp.y)
+    z = set_val(f"pos_z_{lamp.lamp_id}", lamp.z)
+    lamp.move(x, y, z)
+    # update widgets
+    update_lamp_aim_point(lamp)
+
+
+def update_lamp_rotation(lamp):
+    angle = set_val(f"rotation_{lamp.lamp_id}", lamp.angle)
+    lamp.rotate(angle)
+
+
+def update_lamp_orientation(lamp):
+    """update lamp object aim point, and tilt/orientation widgets"""
+    aimx = set_val(f"aim_x_{lamp.lamp_id}", lamp.aimx)
+    aimy = set_val(f"aim_y_{lamp.lamp_id}", lamp.aimy)
+    aimz = set_val(f"aim_z_{lamp.lamp_id}", lamp.aimz)
+    lamp.aim(aimx, aimy, aimz)
+    ss[f"orientation_{lamp.lamp_id}"] = lamp.heading
+    ss[f"tilt_{lamp.lamp_id}"] = lamp.bank
+
+
+def update_from_tilt(lamp):
+    """update tilt+aim point in lamp, and aim point widget"""
+    tilt = set_val(f"tilt_{lamp.lamp_id}", lamp.bank)
+    lamp.set_tilt(tilt, dimensions=ss.room.dimensions)
+    update_lamp_aim_point(lamp)
+
+
+def update_from_orientation(lamp):
+    """update orientation+aim point in lamp, and aim point widget"""
+    orientation = set_val(f"orientation_{lamp.lamp_id}", lamp.heading)
+    lamp.set_orientation(orientation, ss.room.dimensions)
+    update_lamp_aim_point(lamp)
+
+
+def update_lamp_aim_point(lamp):
+    """reset aim point widget if any other parameter has been altered"""
+    ss[f"aim_x_{lamp.lamp_id}"] = lamp.aimx
+    ss[f"aim_y_{lamp.lamp_id}"] = lamp.aimy
+    ss[f"aim_z_{lamp.lamp_id}"] = lamp.aimz
+
+
+def update_source_parameters(lamp):
+    """Update source dimensions and units"""
+    lamp.width = set_val(f"width_{lamp.lamp_id}", lamp.width)
+    lamp.length = set_val(f"height_{lamp.lamp_id}", lamp.length)
+    lamp.height = set_val(f"depth_{lamp.lamp_id}", lamp.height)
+    lamp.units = set_val(f"units_{lamp.lamp_id}", lamp.units)
+
+
+def update_lamp_visibility(lamp):
+    """update whether lamp shows in plot or not from widget"""
+    lamp.enabled = set_val(f"enabled_{lamp.lamp_id}", lamp.enabled)

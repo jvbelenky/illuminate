@@ -1,0 +1,210 @@
+{
+   "b00e6efc-a325-414c-ac2d-85ece848746f":{
+      "sketch":true,
+      "reporting_name":"Beacon",
+      "manufacturer_name":"X",
+      "reporting_subtitle":"None",
+      "catalog_id":"b00e6efc-a325-414c-ac2d-85ece848746f",
+      "total_uvc_power_mW":22.820979445297738,
+      "peak_1m_irradiance_uW_cm2":0.9254265872710677,
+      "w_s_222_score_ies_ansi_eye_pct":102.78144459653254,
+      "revisions":[
+         {
+            "name":"R00",
+            "date":"April 15, 2024",
+            "note":"Initial Version"
+         }
+      ],
+      "slug":"beacon--b00e6efc-a325-414c-ac2d-85ece848746f--R00"
+   },
+   "1e85a0e8-4704-4e11-afd2-8472ced14c89":{
+      "sketch":false,
+      "reporting_name":"Lumenizer Zone",
+      "manufacturer_name":"Lumenlabs",
+      "reporting_subtitle":"None",
+      "catalog_id":"1e85a0e8-4704-4e11-afd2-8472ced14c89",
+      "total_uvc_power_mW":161.8881940100518,
+      "peak_1m_irradiance_uW_cm2":19.50051128625107,
+      "w_s_222_score_ies_ansi_eye_pct":112.29160292707041,
+      "revisions":[
+         {
+            "name":"R03",
+            "date":"May 24, 2024",
+            "note":"Name correction; Update to use latest 3sym and burn-in data"
+         },
+         {
+            "name":"R02",
+            "date":"May 21, 2024",
+            "note":"Update to use scan that passes over all emitters"
+         },
+         {
+            "name":"R01",
+            "date":"May 16, 2024",
+            "note":"Power and burn-in data added; images"
+         },
+         {
+            "name":"R00",
+            "date":"May 7, 2024",
+            "note":"Initial Revision"
+         }
+      ],
+      "preview_setup":{
+         "x":3,
+         "y":2,
+         "z":2.6,
+         "tilt":0,
+         "orientation":0,
+         "rotation":0
+      },
+      "slug":"lumenizer zone--1e85a0e8-4704-4e11-afd2-8472ced14c89--R03"
+   },
+   "f512edd9-08a0-4892-9396-bcf375f0d120":{
+      "sketch":true,
+      "reporting_name":"Sterilray GermBuster Sabre",
+      "manufacturer_name":"Sterilray, Inc",
+      "reporting_subtitle":"None",
+      "catalog_id":"f512edd9-08a0-4892-9396-bcf375f0d120",
+      "total_uvc_power_mW":316.89361769812325,
+      "peak_1m_irradiance_uW_cm2":12.659149068293166,
+      "w_s_222_score_ies_ansi_eye_pct":280.6219743643417,
+      "revisions":[
+         {
+            "name":"R00",
+            "date":"December 11, 2023",
+            "note":"Initial Version"
+         }
+      ],
+      "slug":"sterilray germbuster sabre--f512edd9-08a0-4892-9396-bcf375f0d120--R00"
+   },
+   "8971ef4d-984f-421a-850f-aafdfd7fe7ad":{
+      "sketch":true,
+      "reporting_name":"USHIO B1",
+      "manufacturer_name":"Unknown",
+      "reporting_subtitle":"None",
+      "catalog_id":"8971ef4d-984f-421a-850f-aafdfd7fe7ad",
+      "total_uvc_power_mW":118.76880416386713,
+      "peak_1m_irradiance_uW_cm2":12.381611428087075,
+      "w_s_222_score_ies_ansi_eye_pct":106.67459747397503,
+      "revisions":[
+         {
+            "name":"R01",
+            "date":"December 11, 2023",
+            "note":"Example revision correcting XYZ"
+         },
+         {
+            "name":"R00",
+            "date":"December 11, 2023",
+            "note":"Initial Revision"
+         }
+      ],
+      "slug":"ushio b1--8971ef4d-984f-421a-850f-aafdfd7fe7ad--R01"
+   },
+   "a6117f19-67b5-40ff-a3f9-f5473c85a313":{
+      "sketch":true,
+      "reporting_name":"USHIO B1.5",
+      "manufacturer_name":"Unknown",
+      "reporting_subtitle":"None",
+      "catalog_id":"a6117f19-67b5-40ff-a3f9-f5473c85a313",
+      "total_uvc_power_mW":42.37467072885555,
+      "peak_1m_irradiance_uW_cm2":4.138408959786583,
+      "w_s_222_score_ies_ansi_eye_pct":109.93693866858992,
+      "revisions":[
+         {
+            "name":"R00",
+            "date":"December 11, 2023",
+            "note":"Initial Version"
+         }
+      ],
+      "slug":"ushio b1.5--a6117f19-67b5-40ff-a3f9-f5473c85a313--R00"
+   },
+   "e19b7def-1ae1-47ed-b847-44fb3c231b3f":{
+      "sketch":false,
+      "reporting_name":"UVPro222 B1",
+      "manufacturer_name":"Bioabundance",
+      "reporting_subtitle":"None",
+      "catalog_id":"e19b7def-1ae1-47ed-b847-44fb3c231b3f",
+      "total_uvc_power_mW":107.50971329367529,
+      "peak_1m_irradiance_uW_cm2":9.62179333118538,
+      "w_s_222_score_ies_ansi_eye_pct":111.40225838751583,
+      "revisions":[
+         {
+            "name":"R00",
+            "date":"May 30, 2024",
+            "note":"Initial Version"
+         }
+      ],
+      "preview_setup":{
+         "x":0.1,
+         "y":2,
+         "z":2.6,
+         "tilt":-45,
+         "orientation":0,
+         "rotation":0
+      },
+      "slug":"uvpro222 b1--e19b7def-1ae1-47ed-b847-44fb3c231b3f--R00"
+   },
+   "73960dbb-abb7-45ed-bd57-5c706636ca15":{
+      "sketch":false,
+      "reporting_name":"UVPro222 B2",
+      "manufacturer_name":"Bioabundance",
+      "reporting_subtitle":"None",
+      "catalog_id":"73960dbb-abb7-45ed-bd57-5c706636ca15",
+      "total_uvc_power_mW":51.20258784097576,
+      "peak_1m_irradiance_uW_cm2":1.9775761186682246,
+      "w_s_222_score_ies_ansi_eye_pct":133.95793140226922,
+      "revisions":[
+         {
+            "name":"R04",
+            "date":"May 24, 2024",
+            "note":"Name revision; PSU revision; Warmup revision"
+         },
+         {
+            "name":"R03",
+            "date":"May 3, 2024",
+            "note":"FWHM and misc reporting revisions"
+         },
+         {
+            "name":"R02",
+            "date":"May 2, 2024",
+            "note":"Electrical power, R², and safety revisions"
+         },
+         {
+            "name":"R01",
+            "date":"April 29, 2024",
+            "note":"Reporting Revision"
+         },
+         {
+            "name":"R00",
+            "date":"April 1, 2024",
+            "note":"Initial Version"
+         }
+      ],
+      "preview_setup":{
+         "x":0.1,
+         "y":2,
+         "z":2.6,
+         "tilt":-45,
+         "orientation":0,
+         "rotation":0
+      },
+      "slug":"uvpro222 b2--73960dbb-abb7-45ed-bd57-5c706636ca15--R04"
+   },
+   "1095d225-bc5c-4051-8d4e-338ec263745d":{
+      "sketch":false,
+      "reporting_name":"Visium 1",
+      "manufacturer_name":"Lit Thinking",
+      "reporting_subtitle":"(Diffused Optics)",
+      "catalog_id":"1095d225-bc5c-4051-8d4e-338ec263745d",
+      "total_uvc_power_mW":32.284700546115815,
+      "peak_1m_irradiance_uW_cm2":1.2596552528498255,
+      "w_s_222_score_ies_ansi_eye_pct":114.68995552268397,
+      "revisions":[
+         {
+            "name":"R00",
+            "date":"June 6, 2024",
+            "note":"Initial Revision"
+         }
+      ],
+      "slug":"visium 1--1095d225-bc5c-4051-8d4e-338ec263745d--R00"
+   }
+}

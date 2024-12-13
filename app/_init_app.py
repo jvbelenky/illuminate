@@ -1,8 +1,9 @@
 import streamlit as st
+import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from guv_calcs import Room, get_full_disinfection_table
-from ._lamp_utils import add_new_lamp, get_ies_files
+from ._lamp_utils import add_new_lamp, get_ies_files, get_defaults
 from ._top_ribbon import calculate
 from ._widget import initialize_zone
 
@@ -15,6 +16,8 @@ should be set from lamps only
 
 
 def initialize():
+
+    ss.online = is_internet_available()
 
     ss.editing = "about"  # determines what displays in the sidebar
     ss.show_results = False
@@ -41,7 +44,7 @@ def initialize():
     ss.custom_wavelength = False
 
     # load lamp list
-    ss.index_data, ss.vendored_lamps, ss.vendored_spectra, ss.reports = get_ies_files()
+    ss.vendored_lamps, ss.vendored_spectra, ss.reports = get_ies_files()
     ss.lamp_options = [None] + list(ss.vendored_lamps.keys()) + [SELECT_LOCAL]
 
     # initialize figures
@@ -72,10 +75,9 @@ def initialize():
     # populate with lamp from url if available
     preview_lamp_name = st.query_params.get("preview_lamp")
     if preview_lamp_name is not None:
-        vals = ss.index_data.values()
         # clean up the preview lamp name, not all browsers do by default_list
         name = preview_lamp_name.replace("%20", " ")
-        default_list = [x for x in vals if x["reporting_name"] == name]
+        default_list = get_defaults(name)
         if len(default_list) > 0:
             defaults = default_list[0].get("preview_setup", {})
             add_new_lamp(name=preview_lamp_name, interactive=False, defaults=defaults)
@@ -83,6 +85,18 @@ def initialize():
             ss.editing = None  # just for aesthetics
         else:
             st.warning(f"{preview_lamp_name} was not found in the index.")
+
+
+def is_internet_available(timeout=1):
+    """
+    Check if the internet connection is available by pinging a reliable URL.
+    Returns True if the internet is accessible, False otherwise.
+    """
+    try:
+        response = requests.head("https://illuminate.osluv.org", timeout=timeout)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
 
 
 def room_plot():
