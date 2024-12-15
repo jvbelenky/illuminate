@@ -71,35 +71,19 @@ def top_ribbon():
     # use_container_width=True,
     # )
 
-    recalculate = False
-    DISABLED = False
-    if ss.room.calc_state == {}:
-        recalculate = True
-    if ss.room.lamps:
-        if not all(lamp.filedata is None for lamp in ss.room.lamps.values()):
-            if not ss.room.calc_state == ss.room.get_calc_state():
-                recalculate = True
-        else:
-            DISABLED = True
-    else:
-        DISABLED = True
+    button_type = "secondary"
+    # if ss.room.calc_state != {}:
+    # button_type = "primary"
+    if any([v.enabled and v.filedata is not None for v in ss.room.lamps.values()]):
+        if ss.room.calc_state != ss.room.get_calc_state():
+            button_type = "primary"
 
-    if recalculate:
-        c[5].button(
-            "Calculate!",
-            on_click=calculate,
-            type="primary",
-            use_container_width=True,
-            disabled=DISABLED,
-        )
-    else:
-        c[5].button(
-            "Show Results",
-            on_click=show_results,
-            type="secondary",
-            use_container_width=True,
-            disabled=DISABLED,
-        )
+    c[5].button(
+        "Calculate!",
+        on_click=calculate,
+        type=button_type,
+        use_container_width=True,
+    )
 
 
 def show_about():
