@@ -15,12 +15,18 @@ def results_page():
     )
 
     # do some checks first. do we actually have any lamps?
-
-    if not ss.room.lamps:
+    lamps = ss.room.lamps
+    if not lamps:
         msg = "You haven't added any luminaires yet! Try adding a luminaire by clicking the `Add Luminaire` button."
         st.warning(msg)
-    elif all(lamp.filedata is None for lampid, lamp in ss.room.lamps.items()):
-        msg = "You've added at least one luminaire, but you haven't selected a file to define it. Navigate to a luminaire in the `Select luminaire...` menu. Then, select a file from the `Lamp file` drop-down list in the left-hand panel, or uploading your own file. Then, hit the Calculate! button"
+    elif all(v.filedata is None for v in lamps.values()):
+        msg = "You've added at least one luminaire, but you haven't selected a file to define it. Navigate to a luminaire in the `Select luminaire...` menu, then select a file from the `Lamp file` drop-down list in the left-hand panel."
+        st.warning(msg)
+    elif all(not v.enabled for v in lamps.values()):
+        msg = "You've added at least one luminaire, but all luminaires are currently disabled."
+        st.warning(msg)
+    elif all(not v.enabled or v.filedata is None for v in lamps.values()):
+        msg = "All luminaires are currently either disabled, or missing filedata."
         st.warning(msg)
     else:
         # check that all positions of lamps and calc zones are where they're supposed to be
@@ -28,37 +34,35 @@ def results_page():
         for msg in msgs:
             if msg is not None:
                 st.warning(msg)
-        # if we're good print the results
-        print_summary()
-        if any(key not in SPECIAL_ZONES for key in ss.room.calc_zones.keys()):
-            print_user_defined_zones()
-        print_safety()
-        print_efficacy()
-        if all(
-            ["Krypton chloride" in lamp.guv_type for lamp in ss.room.lamps.values()]
-        ):
-            print_airchem()
+    # if we're good print the results
+    print_summary()
+    if any(key not in SPECIAL_ZONES for key in ss.room.calc_zones.keys()):
+        print_user_defined_zones()
+    print_safety()
+    print_efficacy()
+    if all(["Krypton chloride" in lamp.guv_type for lamp in lamps.values()]):
+        print_airchem()
 
-        st.subheader("Export Results", divider="grey")
-        col, col2 = st.columns(2)
-        include_plots = col2.checkbox("Include result plots")
+    st.subheader("Export Results", divider="grey")
+    col, col2 = st.columns(2)
+    include_plots = col2.checkbox("Include result plots")
+    col.download_button(
+        "Export All Results",
+        data=ss.room.export_zip(include_plots=include_plots),
+        file_name="illuminate.zip",
+        use_container_width=True,
+        type="primary",
+        key="export_all_results",
+    )
+
+    for zone_id, zone in ss.room.calc_zones.items():
         col.download_button(
-            "Export All Results",
-            data=ss.room.export_zip(include_plots=include_plots),
-            file_name="illuminate.zip",
+            zone.name,
+            data=zone.export(),
+            file_name=zone.name + ".csv",
             use_container_width=True,
-            type="primary",
-            key="export_all_results",
+            disabled=True if zone.values is None else False,
         )
-
-        for zone_id, zone in ss.room.calc_zones.items():
-            col.download_button(
-                zone.name,
-                data=zone.export(),
-                file_name=zone.name + ".csv",
-                use_container_width=True,
-                disabled=True if zone.values is None else False,
-            )
 
 
 def print_summary():
