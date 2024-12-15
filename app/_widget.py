@@ -290,19 +290,23 @@ def show_results():
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
         fluence_dict = get_fluence_dict(ss.room)
-        df = get_disinfection_table(fluence_dict, room=ss.room)
-        if len(fluence_dict) == 1:
-            df = df.drop(columns="wavelength [nm]")
-        # move some keys arounds
-        new_keys = ["Link"] + [key for key in df.keys() if "Link" not in key]
-        ss.kdf = df[new_keys]
-        ss.kfig = plot_disinfection_data(
-            ss.kdf, fluence_dict=fluence_dict, room=ss.room
-        )
+        if len(fluence_dict) > 0:
+            df = get_disinfection_table(fluence_dict, room=ss.room)
+            if len(fluence_dict) == 1:
+                df = df.drop(columns="wavelength [nm]")
+            # move some keys arounds
+            new_keys = ["Link"] + [key for key in df.keys() if "Link" not in key]
+            ss.kdf = df[new_keys]
+            ss.kfig = plot_disinfection_data(
+                ss.kdf, fluence_dict=fluence_dict, room=ss.room
+            )
 
 
 def get_fluence_dict(room):
-    """get a dict of all the wavelengths"""
+    """
+    get a dict of all the wavelengths and the fluences they contribute
+    to the Whole Room Fluence
+    """
 
     lamp_types = np.unique([(lamp.wavelength) for lamp in room.lamps.values()], axis=0)
     zone = room.calc_zones["WholeRoomFluence"]

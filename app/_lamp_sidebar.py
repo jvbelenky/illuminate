@@ -10,17 +10,13 @@ from ._lamp_utils import (
     spectra_upload_widget,
     lamp_name_widget,
     lamp_type_widget,
-    lamp_x_widget,
-    lamp_y_widget,
-    lamp_z_widget,
-    lamp_angle_widget,
-    lamp_aimx_widget,
-    lamp_aimy_widget,
-    lamp_aimz_widget,
-    lamp_tilt_widget,
-    lamp_orientation_widget,
-    lamp_enabled_widget,
+    update_lamp_position,
+    update_lamp_rotation,
+    update_lamp_orientation,
+    update_from_tilt,
+    update_from_orientation,
     update_source_parameters,
+    update_lamp_visibility,
 )
 
 SELECT_LOCAL = "Select local file..."
@@ -55,8 +51,8 @@ def lamp_sidebar():
     lamp_info(ss.selected_lamp)  # plot and display other info if file has been selected
     lamp_position_options(ss.selected_lamp)  # position, orientation, etc
 
-    if ss.selected_lamp.filedata is not None:
-        lamp_source_options(ss.selected_lamp)  # specify source  properties
+    # if ss.selected_lamp.filedata is not None:
+    lamp_source_options(ss.selected_lamp)  # specify source  properties
 
     col3, col4 = st.columns(2)
     with col3:
@@ -80,7 +76,12 @@ def lamp_sidebar():
         )
 
     # prevent lamp from participating in calculations
-    ss.selected_lamp.enabled = lamp_enabled_widget(ss.selected_lamp)
+    ss.selected_lamp.enabled = st.checkbox(
+        "Enabled",
+        on_change=update_lamp_visibility,
+        args=[ss.selected_lamp],
+        key=f"enabled_{ss.selected_lamp.lamp_id}",
+    )
 
 
 def lamp_wavelength_options(lamp):
@@ -245,42 +246,95 @@ def lamp_info(lamp):
 def lamp_position_options(lamp):
 
     # Position inputs
+    st.markdown("Set lamp position")
+
     col1, col2, col3 = st.columns(3)
-    with col1:
-        lamp_x_widget(lamp)
-    with col2:
-        lamp_y_widget(lamp)
-    with col3:
-        lamp_z_widget(lamp)
+    col1.number_input(
+        "Position X",
+        min_value=0.0,
+        step=0.1,
+        key=f"pos_x_{lamp.lamp_id}",
+        on_change=update_lamp_position,
+        args=[lamp],
+    )
+    col2.number_input(
+        "Position Y",
+        min_value=0.0,
+        step=0.1,
+        key=f"pos_y_{lamp.lamp_id}",
+        on_change=update_lamp_position,
+        args=[lamp],
+    )
+    col3.number_input(
+        "Position Z",
+        min_value=0.0,
+        step=0.1,
+        key=f"pos_z_{lamp.lamp_id}",
+        on_change=update_lamp_position,
+        args=[lamp],
+    )
 
     # Rotation input
-    lamp_angle_widget(lamp)
+    st.number_input(
+        "Rotation",
+        min_value=0.0,
+        max_value=360.0,
+        step=1.0,
+        key=f"rotation_{lamp.lamp_id}",
+        on_change=update_lamp_rotation,
+        args=[lamp],
+    )
+
     st.markdown(
         "Set aim point", help="Setting aim point will update the tilt and orientation"
     )
 
     # Aim point inputs
     col4, col5, col6 = st.columns(3)
-    with col4:
-        lamp_aimx_widget(lamp)
-    with col5:
-        lamp_aimy_widget(lamp)
-    with col6:
-        lamp_aimz_widget(lamp)
+    col4.number_input(
+        "Aim X",
+        key=f"aim_x_{lamp.lamp_id}",
+        on_change=update_lamp_orientation,
+        args=[lamp],
+    )
+    col5.number_input(
+        "Aim Y",
+        key=f"aim_y_{lamp.lamp_id}",
+        on_change=update_lamp_orientation,
+        args=[lamp],
+    )
+    col6.number_input(
+        "Aim Z",
+        key=f"aim_z_{lamp.lamp_id}",
+        on_change=update_lamp_orientation,
+        args=[lamp],
+    )
 
     st.markdown(
         "Set tilt and orientation",
         help="Setting tilt and orientation will also update the aim point",
     )
     col7, col8 = st.columns(2)
-    with col7:
-        lamp_tilt_widget(lamp)
-    with col8:
-        lamp_orientation_widget(lamp)
+    col7.number_input(
+        "Tilt",
+        format="%.1f",
+        step=1.0,
+        key=f"tilt_{lamp.lamp_id}",
+        on_change=update_from_tilt,
+        args=[lamp],
+    )
+    col8.number_input(
+        "Orientation",
+        format="%.1f",
+        step=1.0,
+        key=f"orientation_{lamp.lamp_id}",
+        on_change=update_from_orientation,
+        args=[lamp],
+    )
 
 
 def lamp_source_options(lamp):
-    """TODO: everything. length, width, depth, and units."""
+    """maybe move to separate lamp report page."""
 
     st.markdown(
         "Source dimensions (for near-field calculations)",
@@ -291,21 +345,24 @@ def lamp_source_options(lamp):
 
     cols[0].number_input(
         "Source width",
+        min_value=0.0,
         key=f"width_{lamp.lamp_id}",
         on_change=update_source_parameters,
         args=[lamp],
         help="X-axis distance for the lamp's emissive surface",
     )
     cols[1].number_input(
-        "Source height",
-        key=f"height_{lamp.lamp_id}",
+        "Source length",
+        min_value=0.0,
+        key=f"length_{lamp.lamp_id}",
         on_change=update_source_parameters,
         help="Y-axis distance of the lamp's emissive surface",
         args=[lamp],
     )
 
     cols[2].number_input(
-        "Fixture depth",
+        "Source depth",
+        min_value=0.0,
         key=f"depth_{lamp.lamp_id}",
         on_change=update_source_parameters,
         args=[lamp],

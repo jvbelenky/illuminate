@@ -9,10 +9,6 @@ from ._widget import initialize_zone
 
 SELECT_LOCAL = "Select local file..."
 ss = st.session_state
-"""
-TODO: get rid of ss.wavelength and ss.guv_type entirely, 
-should be set from lamps only
-"""
 
 
 def initialize():

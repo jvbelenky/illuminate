@@ -138,6 +138,8 @@ def make_lamp_name(fname):
             name = fname + " - " + str(max(idexs) + 1)
         except ValueError:
             name = fname + " - 2"
+    elif fname is None:
+        name = "Lamp" + str(len(ss.room.lamps))
     else:
         name = fname
     return name
@@ -313,109 +315,6 @@ def spectra_upload_widget(lamp):
     )
 
 
-def lamp_x_widget(lamp):
-    return st.number_input(
-        "Position X",
-        min_value=0.0,
-        step=0.1,
-        key=f"pos_x_{lamp.lamp_id}",
-        on_change=update_lamp_position,
-        args=[lamp],
-    )
-
-
-def lamp_y_widget(lamp):
-    return st.number_input(
-        "Position Y",
-        min_value=0.0,
-        step=0.1,
-        key=f"pos_y_{lamp.lamp_id}",
-        on_change=update_lamp_position,
-        args=[lamp],
-    )
-
-
-def lamp_z_widget(lamp):
-    return st.number_input(
-        "Position Z",
-        min_value=0.0,
-        step=0.1,
-        key=f"pos_z_{lamp.lamp_id}",
-        on_change=update_lamp_position,
-        args=[lamp],
-    )
-
-
-def lamp_angle_widget(lamp):
-    return st.number_input(
-        "Rotation",
-        min_value=0.0,
-        max_value=360.0,
-        step=1.0,
-        key=f"rotation_{lamp.lamp_id}",
-        on_change=update_lamp_rotation,
-        args=[lamp],
-    )
-
-
-def lamp_aimx_widget(lamp):
-    return st.number_input(
-        "Aim X",
-        key=f"aim_x_{lamp.lamp_id}",
-        on_change=update_lamp_orientation,
-        args=[lamp],
-    )
-
-
-def lamp_aimy_widget(lamp):
-    return st.number_input(
-        "Aim Y",
-        key=f"aim_y_{lamp.lamp_id}",
-        on_change=update_lamp_orientation,
-        args=[lamp],
-    )
-
-
-def lamp_aimz_widget(lamp):
-    return st.number_input(
-        "Aim Z",
-        key=f"aim_z_{lamp.lamp_id}",
-        on_change=update_lamp_orientation,
-        args=[lamp],
-    )
-
-
-def lamp_tilt_widget(lamp):
-    return st.number_input(
-        "Tilt",
-        format="%.1f",
-        step=1.0,
-        key=f"tilt_{lamp.lamp_id}",
-        on_change=update_from_tilt,
-        args=[lamp],
-    )
-
-
-def lamp_orientation_widget(lamp):
-    return st.number_input(
-        "Orientation",
-        format="%.1f",
-        step=1.0,
-        key=f"orientation_{lamp.lamp_id}",
-        on_change=update_from_orientation,
-        args=[lamp],
-    )
-
-
-def lamp_enabled_widget(lamp):
-    return st.checkbox(
-        "Enabled",
-        on_change=update_lamp_visibility,
-        args=[lamp],
-        key=f"enabled_{lamp.lamp_id}",
-    )
-
-
 # widget callbacks
 
 
@@ -505,8 +404,8 @@ def update_lamp_aim_point(lamp):
 def update_source_parameters(lamp):
     """Update source dimensions and units"""
     lamp.width = set_val(f"width_{lamp.lamp_id}", lamp.width)
-    lamp.length = set_val(f"height_{lamp.lamp_id}", lamp.length)
-    lamp.height = set_val(f"depth_{lamp.lamp_id}", lamp.height)
+    lamp.length = set_val(f"length_{lamp.lamp_id}", lamp.length)
+    lamp.depth = set_val(f"depth_{lamp.lamp_id}", lamp.depth)
     lamp.units = set_val(f"units_{lamp.lamp_id}", lamp.units)
 
 
