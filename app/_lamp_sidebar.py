@@ -16,6 +16,8 @@ from ._lamp_utils import (
     update_from_tilt,
     update_from_orientation,
     update_source_parameters,
+    update_source_density,
+    update_relmap,
     update_lamp_visibility,
 )
 
@@ -336,9 +338,14 @@ def lamp_position_options(lamp):
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 
+    st.header(
+        "Near-field lamp options",
+        help="These options are only used for calculation's inside a lamp's photometric distance",
+    )
+
     st.markdown(
-        "Source dimensions (for near-field calculations)",
-        help="These values were set automatically from your .ies file. They only matter for near-field calculations. If they are incorrect, you can change them and download the corrected .ies file.",
+        "Source dimensions",
+        help="These values were set automatically from your .ies file. If they are incorrect, you can change them and download the corrected .ies file.",
     )
 
     cols = st.columns([1, 1, 1, 0.8])
@@ -377,3 +384,35 @@ def lamp_source_options(lamp):
         args=[lamp],
         help="Units for all source parameters",
     )
+    if lamp.photometric_distance is not None:
+        st.markdown(
+            f"**Photometric distance:** {lamp.photometric_distance} {lamp.units}",
+            help="Near-field specific calculations are only performed within this distance from the lamp.",
+        )
+
+    cols = st.columns(2)
+
+    cols[0].number_input(
+        "Source point density",
+        min_value=0,
+        step=1,
+        on_change=update_source_density,
+        args=[lamp],
+        key=f"source_density_{lamp.lamp_id}",
+        help="This parameter determined the fineness of the source discretization.",
+    )
+
+    cols[1].file_uploader(
+        "Upload relative intensity map",
+        type="csv",
+        on_change=update_relmap,
+        args=[lamp],
+        key=f"relmap_{lamp.lamp_id}",
+        help="Upload a relative intensity map of the source's surface. Otherwise, source is assumed to be a uniform radiator.",
+    )
+    
+    fig, ax = plt.subplots()
+    cols[0].pyplot(lamp.plot_grid_points()[0], use_container_width=True)
+
+    if lamp.relative_map is not None:
+        cols[1].pyplot(lamp.plot_relative_map()[0], use_container_width=True)

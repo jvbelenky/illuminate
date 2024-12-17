@@ -237,7 +237,7 @@ def zone_sidebar():
                 min_value=1,
                 key=f"x_num_points_{selected_zone.zone_id}",
                 on_change=update_vol_points,
-                args=[selected_zone]
+                args=[selected_zone],
             )
             st.number_input(
                 "X spacing",
@@ -245,7 +245,7 @@ def zone_sidebar():
                 # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
                 key=f"x_spacing_{selected_zone.zone_id}",
                 on_change=update_vol_spacing,
-                args=[selected_zone]
+                args=[selected_zone],
             )
         with col2:
             st.number_input(

@@ -82,6 +82,7 @@ def initialize_lamp(lamp):
         f"length_{lamp.lamp_id}",
         f"depth_{lamp.lamp_id}",
         f"units_{lamp.lamp_id}",
+        f"source_density{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
     ]
     vals = [
@@ -101,6 +102,7 @@ def initialize_lamp(lamp):
         lamp.length,
         lamp.depth,
         lamp.units,
+        lamp.source_density,
         lamp.enabled,
     ]
     add_keys(keys, vals)
@@ -387,7 +389,7 @@ def update_plane_points(zone):
     zone.set_num_points(num_x, num_y)
     ss[f"x_spacing_{zone.zone_id}"] = zone.x_spacing
     ss[f"y_spacing_{zone.zone_id}"] = zone.y_spacing
-    
+
 
 def update_plane_spacing(zone):
     """update spacing of calculation plane from widgets"""
@@ -396,7 +398,7 @@ def update_plane_spacing(zone):
     zone.set_spacing(x_spacing, y_spacing)
     ss[f"x_num_points_{zone.zone_id}"] = zone.num_x
     ss[f"y_num_points_{zone.zone_id}"] = zone.num_y
-    
+
 
 def update_vol_dimensions(zone):
     """update dimensions of calculation volume from widgets"""
@@ -429,7 +431,6 @@ def update_vol_points(zone):
     ss[f"x_spacing_{zone.zone_id}"] = zone.x_spacing
     ss[f"y_spacing_{zone.zone_id}"] = zone.y_spacing
     ss[f"z_spacing_{zone.zone_id}"] = zone.z_spacing
-    
 
 
 def update_fov(zone):

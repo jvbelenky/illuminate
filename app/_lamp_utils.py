@@ -407,6 +407,20 @@ def update_source_parameters(lamp):
     lamp.length = set_val(f"length_{lamp.lamp_id}", lamp.length)
     lamp.depth = set_val(f"depth_{lamp.lamp_id}", lamp.depth)
     lamp.units = set_val(f"units_{lamp.lamp_id}", lamp.units)
+    lamp.photometric_distance = max(lamp.width, lamp.length)
+    lamp._generate_source_points()
+
+
+def update_source_density(lamp):
+    """update the lamp's source density parameter"""
+    sd = set_val(f"source_density_{lamp.lamp_id}", lamp.source_density)
+    lamp.set_source_density(sd)
+
+
+def update_relmap(lamp):
+    """update the lamp's relative intensity map"""
+    uploaded_file = set_val(f"relmap_{lamp.lamp_id}", None)
+    lamp.load_relmap(uploaded_file.read())
 
 
 def update_lamp_visibility(lamp):
