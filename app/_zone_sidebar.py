@@ -98,15 +98,15 @@ def zone_sidebar():
                 args=[selected_zone],
                 disabled=False,
             )
-            st.number_input(
-                "X spacing",
-                # min_value=0.01,
-                # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
-                key=f"x_spacing_{selected_zone.zone_id}",
-                on_change=update_plane_spacing,
-                args=[selected_zone],
-                disabled=False,
-            )
+            # st.number_input(
+            # "X spacing",
+            # # min_value=0.01,
+            # # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
+            # key=f"x_spacing_{selected_zone.zone_id}",
+            # on_change=update_plane_spacing,
+            # args=[selected_zone],
+            # disabled=False,
+            # )
 
         with col3:
             st.number_input(
@@ -133,15 +133,15 @@ def zone_sidebar():
                 args=[selected_zone],
                 disabled=False,
             )
-            st.number_input(
-                "Y spacing",
-                # min_value=0.01,
-                # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
-                key=f"y_spacing_{selected_zone.zone_id}",
-                on_change=update_plane_spacing,
-                args=[selected_zone],
-                disabled=False,
-            )
+            # st.number_input(
+            # "Y spacing",
+            # # min_value=0.01,
+            # # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
+            # key=f"y_spacing_{selected_zone.zone_id}",
+            # on_change=update_plane_spacing,
+            # args=[selected_zone],
+            # disabled=False,
+            # )
 
         # Set calculation type (vertical / horizontal / all angles)
         options = ["All angles", "Horizontal irradiance", "Vertical irradiance"]
@@ -237,16 +237,16 @@ def zone_sidebar():
                 min_value=1,
                 key=f"x_num_points_{selected_zone.zone_id}",
                 on_change=update_vol_points,
-                args=[selected_zone]
+                args=[selected_zone],
             )
-            st.number_input(
-                "X spacing",
-                # min_value=0.01,
-                # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
-                key=f"x_spacing_{selected_zone.zone_id}",
-                on_change=update_vol_spacing,
-                args=[selected_zone]
-            )
+            # st.number_input(
+            # "X spacing",
+            # # min_value=0.01,
+            # # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
+            # key=f"x_spacing_{selected_zone.zone_id}",
+            # on_change=update_vol_spacing,
+            # args=[selected_zone]
+            # )
         with col2:
             st.number_input(
                 "Y1",
@@ -271,14 +271,14 @@ def zone_sidebar():
                 on_change=update_vol_points,
                 args=[selected_zone],
             )
-            st.number_input(
-                "Y spacing",
-                # min_value=0.01,
-                # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
-                key=f"y_spacing_{selected_zone.zone_id}",
-                on_change=update_vol_spacing,
-                args=[selected_zone],
-            )
+            # st.number_input(
+            # "Y spacing",
+            # # min_value=0.01,
+            # # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
+            # key=f"y_spacing_{selected_zone.zone_id}",
+            # on_change=update_vol_spacing,
+            # args=[selected_zone],
+            # )
         with col3:
             st.number_input(
                 "Z1",
@@ -303,14 +303,14 @@ def zone_sidebar():
                 on_change=update_vol_points,
                 args=[selected_zone],
             )
-            st.number_input(
-                "Z spacing",
-                # min_value=0.01,
-                # max_value=float(abs(selected_zone.z2 - selected_zone.z1)),
-                key=f"z_spacing_{selected_zone.zone_id}",
-                on_change=update_vol_spacing,
-                args=[selected_zone],
-            )
+            # st.number_input(
+            # "Z spacing",
+            # # min_value=0.01,
+            # # max_value=float(abs(selected_zone.z2 - selected_zone.z1)),
+            # key=f"z_spacing_{selected_zone.zone_id}",
+            # on_change=update_vol_spacing,
+            # args=[selected_zone],
+            # )
 
         st.checkbox(
             "Offset",
