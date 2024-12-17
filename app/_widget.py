@@ -380,19 +380,23 @@ def update_plane_dimensions(zone):
     zone.set_dimensions(x1, x2, y1, y2)
 
 
-def update_plane_spacing(zone):
-    """update spacing of calculation plane from widgets"""
-    x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
-    y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
-    zone.set_spacing(x_spacing, y_spacing)
-
-
 def update_plane_points(zone):
     """update number of points in the calculation plane from widgets"""
     num_x = set_val(f"x_num_points_{zone.zone_id}", zone.num_x)
     num_y = set_val(f"y_num_points_{zone.zone_id}", zone.num_y)
     zone.set_num_points(num_x, num_y)
+    ss[f"x_spacing_{zone.zone_id}"] = zone.x_spacing
+    ss[f"y_spacing_{zone.zone_id}"] = zone.y_spacing
+    
 
+def update_plane_spacing(zone):
+    """update spacing of calculation plane from widgets"""
+    x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
+    y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
+    zone.set_spacing(x_spacing, y_spacing)
+    ss[f"x_num_points_{zone.zone_id}"] = zone.num_x
+    ss[f"y_num_points_{zone.zone_id}"] = zone.num_y
+    
 
 def update_vol_dimensions(zone):
     """update dimensions of calculation volume from widgets"""
@@ -411,6 +415,9 @@ def update_vol_spacing(zone):
     y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
     z_spacing = set_val(f"z_spacing_{zone.zone_id}", zone.z_spacing)
     zone.set_spacing(x_spacing, y_spacing, z_spacing)
+    ss[f"x_num_points_{zone.zone_id}"] = zone.num_x
+    ss[f"y_num_points_{zone.zone_id}"] = zone.num_y
+    ss[f"z_num_points_{zone.zone_id}"] = zone.num_z
 
 
 def update_vol_points(zone):
@@ -419,6 +426,10 @@ def update_vol_points(zone):
     numy = set_val(f"y_num_points_{zone.zone_id}", zone.num_y)
     numz = set_val(f"z_num_points_{zone.zone_id}", zone.num_z)
     zone.set_num_points(numx, numy, numz)
+    ss[f"x_spacing_{zone.zone_id}"] = zone.x_spacing
+    ss[f"y_spacing_{zone.zone_id}"] = zone.y_spacing
+    ss[f"z_spacing_{zone.zone_id}"] = zone.z_spacing
+    
 
 
 def update_fov(zone):
