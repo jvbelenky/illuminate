@@ -13,7 +13,7 @@ ss = st.session_state
 
 def initialize():
 
-    ss.online = True#is_internet_available()
+    ss.online = False#is_internet_available()
 
     ss.editing = "about"  # determines what displays in the sidebar
     ss.show_results = False
