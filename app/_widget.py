@@ -82,7 +82,7 @@ def initialize_lamp(lamp):
         f"length_{lamp.lamp_id}",
         f"depth_{lamp.lamp_id}",
         f"units_{lamp.lamp_id}",
-        f"source_density{lamp.lamp_id}",
+        f"source_density_{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
     ]
     vals = [
@@ -478,13 +478,13 @@ def update_calc_zones():
     if "UL8802" in ss.room.standard:
         ss.room.calc_zones["SkinLimits"].set_height(1.9)
         ss.room.calc_zones["EyeLimits"].set_height(1.9)
-        ss.room.calc_zones["EyeLimits"].fov80 = False
+        ss.room.calc_zones["EyeLimits"].fov_vert = 180
         ss.room.calc_zones["EyeLimits"].vert = False
         ss.room.calc_zones["SkinLimits"].horiz = False
     else:
         ss.room.calc_zones["SkinLimits"].set_height(1.8)
         ss.room.calc_zones["EyeLimits"].set_height(1.8)
-        ss.room.calc_zones["EyeLimits"].fov80 = True
+        ss.room.calc_zones["EyeLimits"].fov80 = 80
         ss.room.calc_zones["EyeLimits"].vert = True
         ss.room.calc_zones["SkinLimits"].horiz = True
 

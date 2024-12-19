@@ -203,6 +203,7 @@ def get_local_ies_files():
 
 
 def get_index():
+    """get all the lamp data, either from the online page or locally"""
     if ss.online:
         index_data = requests.get(f"{BASE_URL}/index.json").json()
     else:
@@ -212,6 +213,7 @@ def get_index():
 
 
 def get_defaults(name):
+    """default properties of a lamp by name; position, tilt, etc"""
     index_data = get_index()
     vals = index_data.values()
     return [x for x in vals if x["reporting_name"] == name]
@@ -331,26 +333,38 @@ def update_lamp_intensity_units(lamp):
 
 
 def update_wavelength(lamp):
+    """update the primary lamp wavelength / lamp type"""
     lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
     lamp.wavelength = ss.guv_dict[lamp.guv_type]
-    lamp.reload()
+    if lamp.filename not in ss.uploaded_files:
+        lamp.reload()  # deload filedata only if it was a prepopulated lamp
     if ss.show_results:
         show_results()
 
 
 def update_wavelength_select(lamp):
+    """
+    not currently used
+    update lamp wavelength from dropdown menu (populated by UVC inactivation
+    data) if the `Other` lamp type is selected
+    """
     lamp.wavelength = set_val("wavelength_select", lamp.wavelength)
     if ss.show_results:
         show_results()
 
 
 def update_custom_wavelength(lamp):
+    """
+    not currently used
+    update lamp wavelength by number input if the `Other` lamp type is selected
+    """
     lamp.wavelength = set_val("custom_wavelength_input", lamp.wavelength)
     if ss.show_results:
         show_results()
 
 
 def update_custom_wavelength_check():
+    """toggle between using the number input or dropdown menu"""
     ss.custom_wavelength = set_val("custom_wavelength_check", ss.custom_wavelength)
 
 
@@ -366,6 +380,7 @@ def update_lamp_position(lamp):
 
 
 def update_lamp_rotation(lamp):
+    """update the lamp's rotation about its z axis"""
     angle = set_val(f"rotation_{lamp.lamp_id}", lamp.angle)
     lamp.rotate(angle)
 
@@ -407,8 +422,7 @@ def update_source_parameters(lamp):
     lamp.length = set_val(f"length_{lamp.lamp_id}", lamp.length)
     lamp.depth = set_val(f"depth_{lamp.lamp_id}", lamp.depth)
     lamp.units = set_val(f"units_{lamp.lamp_id}", lamp.units)
-    lamp.photometric_distance = max(lamp.width, lamp.length)
-    lamp._generate_source_points()
+    lamp._update_surface_params()
 
 
 def update_source_density(lamp):
@@ -417,11 +431,13 @@ def update_source_density(lamp):
     lamp.set_source_density(sd)
 
 
-def update_relmap(lamp):
+def update_intensity_map(lamp):
     """update the lamp's relative intensity map"""
-    uploaded_file = set_val(f"relmap_{lamp.lamp_id}", None)
-    lamp.load_relmap(uploaded_file.read())
-
+    uploaded_file = set_val(f"intensity_map_{lamp.lamp_id}", None)
+    if uploaded_file is not None:
+        lamp.load_intensity_map(uploaded_file.read())
+    else:
+        lamp.load_intensity_map(None)
 
 def update_lamp_visibility(lamp):
     """update whether lamp shows in plot or not from widget"""

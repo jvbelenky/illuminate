@@ -17,7 +17,7 @@ from ._lamp_utils import (
     update_from_orientation,
     update_source_parameters,
     update_source_density,
-    update_relmap,
+    update_intensity_map,
     update_lamp_visibility,
 )
 
@@ -248,7 +248,7 @@ def lamp_info(lamp):
 def lamp_position_options(lamp):
 
     # Position inputs
-    st.markdown("Set lamp position")
+    st.subheader("Position and orientation options")
 
     col1, col2, col3 = st.columns(3)
     col1.number_input(
@@ -338,7 +338,7 @@ def lamp_position_options(lamp):
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 
-    st.header(
+    st.subheader(
         "Near-field lamp options",
         help="These options are only used for calculation's inside a lamp's photometric distance",
     )
@@ -385,8 +385,12 @@ def lamp_source_options(lamp):
         help="Units for all source parameters",
     )
     if lamp.photometric_distance is not None:
+        if lamp.units == "meters":
+            val = round(lamp.photometric_distance,4)
+        else:
+            val = round(lamp.photometric_distance * 0.3048, 4)
         st.markdown(
-            f"**Photometric distance:** {lamp.photometric_distance} {lamp.units}",
+            f"**Photometric distance:** {val} meters",
             help="Near-field specific calculations are only performed within this distance from the lamp.",
         )
 
@@ -405,14 +409,11 @@ def lamp_source_options(lamp):
     cols[1].file_uploader(
         "Upload relative intensity map",
         type="csv",
-        on_change=update_relmap,
+        on_change=update_intensity_map,
         args=[lamp],
-        key=f"relmap_{lamp.lamp_id}",
+        key=f"intensity_map_{lamp.lamp_id}",
         help="Upload a relative intensity map of the source's surface. Otherwise, source is assumed to be a uniform radiator.",
     )
-    
-    fig, ax = plt.subplots()
-    cols[0].pyplot(lamp.plot_grid_points()[0], use_container_width=True)
 
-    if lamp.relative_map is not None:
-        cols[1].pyplot(lamp.plot_relative_map()[0], use_container_width=True)
+    if lamp.width is not None and lamp.length is not None:
+        st.pyplot(lamp.plot_surface(), use_container_width=True)
