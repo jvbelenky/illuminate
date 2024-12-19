@@ -272,12 +272,12 @@ def zone_sidebar():
                 args=[selected_zone],
             )
             st.number_input(
-                "Y spacing",
-                # min_value=0.01,
-                # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
-                key=f"y_spacing_{selected_zone.zone_id}",
-                on_change=update_vol_spacing,
-                args=[selected_zone],
+            "Y spacing",
+            # min_value=0.01,
+            # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
+            key=f"y_spacing_{selected_zone.zone_id}",
+            on_change=update_vol_spacing,
+            args=[selected_zone],
             )
         with col3:
             st.number_input(
