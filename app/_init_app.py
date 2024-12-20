@@ -63,7 +63,12 @@ def initialize():
     ss.kdf = None
 
     # initialize room object and add zones to it
-    ss.room = Room(standard="ANSI IES RP 27.1-22 (America)")
+    ss.standards = [
+        "ANSI IES RP 27.1-22 (ACGIH Limits)",
+        "ANSI IES RP 27.1-22 (ACGIH Limits) - UL8802",
+        "IEC 62471-6:2022 (ICNIRP Limits)",
+    ]
+    ss.room = Room(standard=ss.standards[0])
     ss.room.add_standard_zones()
     for zone_id, zone in ss.room.calc_zones.items():
         initialize_zone(zone)

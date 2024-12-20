@@ -6,16 +6,34 @@ from guv_calcs import CalcPlane, CalcVol, get_disinfection_table, plot_disinfect
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 
-# initialize
+OLD_STANDARDS = [
+        "ANSI IES RP 27.1-22 (America)",
+        "ANSI IES RP 27.1-22 (America) - UL8802",
+        "IEC 62471-6:2022 (International)",
+    ]
 
+# initialize
 
 def add_keys(keys, vals):
     """initialize widgets with parameters"""
     for key, val in zip(keys, vals):
         ss[key] = val
 
-
+def fix_room_standard():
+    """
+    older versions of illuminate had the standard options named differently; 
+    this function allows for compatibility with older save files
+    """
+    
+    if ss.room.standard in ss.standards:
+        pass
+    elif ss.room.standard in OLD_STANDARDS:
+        ss.room.standard = ss.standards[OLD_STANDARDS.index(ss.room.standard)]
+    else:
+        ss.room.standard = "ANSI IES RP 27.1-22 (ACGIH Limits)"
+        
 def initialize_results():
+    fix_room_standard()
     keys = [
         "air_changes_results",
         "ozone_decay_constant_results",
@@ -24,8 +42,10 @@ def initialize_results():
     vals = [ss.room.air_changes, ss.room.ozone_decay_constant, ss.room.standard]
     add_keys(keys, vals)
 
-
 def initialize_room():
+    
+    fix_room_standard()
+    
     keys = [
         "room_x",
         "room_y",
@@ -460,6 +480,7 @@ def update_standard():
 def update_standard_results():
     """update what standard is used based on results page, recalculate if necessary"""
     # store whether recalculation is necessary
+    print(ss.room.standard)
     RECALCULATE = False
     if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard_results"]):
         RECALCULATE = True
