@@ -418,18 +418,16 @@ def update_lamp_aim_point(lamp):
 
 def update_source_parameters(lamp):
     """Update source dimensions and units"""
-    lamp.width = set_val(f"width_{lamp.lamp_id}", lamp.width)
-    lamp.length = set_val(f"length_{lamp.lamp_id}", lamp.length)
-    lamp.depth = set_val(f"depth_{lamp.lamp_id}", lamp.depth)
-    lamp.units = set_val(f"units_{lamp.lamp_id}", lamp.units)
-    lamp._update_surface_params()
-
+    lamp.surface.width = set_val(f"width_{lamp.lamp_id}", lamp.surface.width)
+    lamp.surface.length = set_val(f"length_{lamp.lamp_id}", lamp.surface.length)
+    lamp.surface.depth = set_val(f"depth_{lamp.lamp_id}", lamp.surface.depth)
+    lamp.surface.units = set_val(f"units_{lamp.lamp_id}", lamp.surface.units)
+    lamp.surface.update()
 
 def update_source_density(lamp):
     """update the lamp's source density parameter"""
-    sd = set_val(f"source_density_{lamp.lamp_id}", lamp.source_density)
+    sd = set_val(f"source_density_{lamp.lamp_id}", lamp.surface.source_density)
     lamp.set_source_density(sd)
-
 
 def update_intensity_map(lamp):
     """update the lamp's relative intensity map"""

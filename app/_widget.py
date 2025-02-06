@@ -118,11 +118,11 @@ def initialize_lamp(lamp):
         lamp.bank,
         lamp.guv_type,
         lamp.wavelength,
-        lamp.width,
-        lamp.length,
-        lamp.depth,
-        lamp.units,
-        lamp.source_density,
+        lamp.surface.width,
+        lamp.surface.length,
+        lamp.surface.depth,
+        lamp.surface.units,
+        lamp.surface.source_density,
         lamp.enabled,
     ]
     add_keys(keys, vals)
@@ -204,9 +204,14 @@ def remove_lamp(lamp):
         f"rotation_{lamp.lamp_id}",
         f"orientation_{lamp.lamp_id}",
         f"tilt_{lamp.lamp_id}",
-        f"enabled_{lamp.lamp_id}",
         f"guv_type_{lamp.lamp_id}",
         f"wavelength_{lamp.lamp_id}",
+        f"width_{lamp.lamp_id}",
+        f"length_{lamp.lamp_id}",
+        f"depth_{lamp.lamp_id}",
+        f"units_{lamp.lamp_id}",
+        f"source_density_{lamp.lamp_id}",
+        f"enabled_{lamp.lamp_id}",
     ]
     remove_keys(keys)
 
@@ -216,19 +221,29 @@ def remove_zone(zone):
 
     keys = [
         f"name_{zone.zone_id}",
-        f"x_{zone.zone_id}",
-        f"y_{zone.zone_id}",
+        f"x1_{zone.zone_id}",
+        f"y1_{zone.zone_id}",
+        f"x2_{zone.zone_id}",
+        f"y2_{zone.zone_id}",
         f"x_spacing_{zone.zone_id}",
         f"y_spacing_{zone.zone_id}",
+        f"x_num_points_{zone.zone_id}",
+        f"y_num_points_{zone.zone_id}",
         f"offset_{zone.zone_id}",
         f"enabled_{zone.zone_id}",
+        f"show_values_{zone.zone_id}",
     ]
+    
     if isinstance(zone, CalcPlane):
         keys.append(f"height_{zone.zone_id}")
+        keys.append(f"fov_vert_{zone.zone_id}")
+        keys.append(f"fov_horiz_{zone.zone_id}")
         remove_keys(keys)
     elif isinstance(zone, CalcVol):
-        keys.append(f"zdim_{zone.zone_id}")
-        keys.append(f"zspace_{zone.zone_id}")
+        keys.append(f"z1_{zone.zone_id}")
+        keys.append(f"z2_{zone.zone_id}")
+        keys.append(f"z_spacing_{zone.zone_id}")
+        keys.append(f"z_num_points_{zone.zone_id}")
         remove_keys(keys)
 
 
