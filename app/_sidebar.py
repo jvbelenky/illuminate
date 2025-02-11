@@ -48,9 +48,67 @@ def room_sidebar():
         key="room_z",
         on_change=update_room,
     )
-
-    st.subheader("Standards", divider="grey")
     
+    st.subheader("Reflectance", divider="grey")
+    # st.write("Coming soon")
+    col1, col2, col3 = st.columns(3)
+    col1.number_input(
+        "Ceiling",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.1,
+        key="reflectance_ceiling",
+        on_change=update_room,
+        # disabled=True,
+    )
+    col2.number_input(
+        "North Wall",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.1,
+        key="reflectance_north",
+        on_change=update_room,
+        # disabled=True,
+    )
+    col3.number_input(
+        "East Wall",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.1,
+        key="reflectance_east",
+        on_change=update_room,
+        # disabled=True,
+    )
+    col1.number_input(
+        "South Wall",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.1,
+        key="reflectance_south",
+        on_change=update_room,
+        # disabled=True,
+    )
+    col2.number_input(
+        "West Wall",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.1,
+        key="reflectance_west",
+        on_change=update_room,
+        # disabled=True,
+    )
+    col3.number_input(
+        "Floor",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.1,
+        key="reflectance_floor",
+        on_change=update_room,
+        # disabled=True,
+    )
+
+
+    st.subheader("Standards", divider="grey")    
     st.selectbox(
         "Select photobiological safety standard",
         options=ss.standards,
@@ -92,58 +150,7 @@ def room_sidebar():
         disabled=True,
     )
 
-    st.subheader("Reflectance", divider="grey")
-    st.write("Coming soon")
-    col1, col2, col3 = st.columns(3)
-    col1.number_input(
-        "Ceiling",
-        min_value=0,
-        max_value=1,
-        key="reflectance_ceiling",
-        on_change=update_room,
-        disabled=True,
-    )
-    col2.number_input(
-        "North Wall",
-        min_value=0,
-        max_value=1,
-        key="reflectance_north",
-        on_change=update_room,
-        disabled=True,
-    )
-    col3.number_input(
-        "East Wall",
-        min_value=0,
-        max_value=1,
-        key="reflectance_east",
-        on_change=update_room,
-        disabled=True,
-    )
-    col1.number_input(
-        "South Wall",
-        min_value=0,
-        max_value=1,
-        key="reflectance_south",
-        on_change=update_room,
-        disabled=True,
-    )
-    col2.number_input(
-        "West Wall",
-        min_value=0,
-        max_value=1,
-        key="reflectance_west",
-        on_change=update_room,
-        disabled=True,
-    )
-    col3.number_input(
-        "Floor",
-        min_value=0,
-        max_value=1,
-        key="reflectance_floor",
-        on_change=update_room,
-        disabled=True,
-    )
-
+    
     st.button(
         "Close",
         on_click=close_sidebar,

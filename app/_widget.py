@@ -68,12 +68,12 @@ def initialize_room():
         ss.room.y,
         ss.room.z,
         ss.room.standard,
-        ss.room.reflectance_ceiling,
-        ss.room.reflectance_north,
-        ss.room.reflectance_east,
-        ss.room.reflectance_south,
-        ss.room.reflectance_west,
-        ss.room.reflectance_floor,
+        ss.room.ref_manager.reflectances['ceiling'],
+        ss.room.ref_manager.reflectances['north'],
+        ss.room.ref_manager.reflectances['east'],
+        ss.room.ref_manager.reflectances['south'],
+        ss.room.ref_manager.reflectances['west'],
+        ss.room.ref_manager.reflectances['floor'],
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
         ss.room.air_changes,
@@ -302,7 +302,11 @@ def update_room():
         x2=ss.room.x,
         y2=ss.room.y,
     )
-
+    
+    keys = ["floor", "ceiling", "south", "north", "east", "west"]
+    for key in keys:
+        val = set_val("reflectance_"+key,ss.room.ref_manager.reflectances[key])
+        ss.room.set_reflectance(val, key)
 
 def show_results():
     """show results in right panel"""

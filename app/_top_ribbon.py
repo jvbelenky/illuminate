@@ -75,7 +75,8 @@ def top_ribbon():
     # if ss.room.calc_state != {}:
     # button_type = "primary"
     if any([v.enabled and v.filedata is not None for v in ss.room.lamps.values()]):
-        if ss.room.calc_state != ss.room.get_calc_state():
+        new_calc_state = ss.room.get_calc_state()
+        if ss.room.calc_state != new_calc_state:
             button_type = "primary"
 
     c[5].button(
