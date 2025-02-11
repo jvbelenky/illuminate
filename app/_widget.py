@@ -303,10 +303,17 @@ def update_room():
         y2=ss.room.y,
     )
     
-    keys = ["floor", "ceiling", "south", "north", "east", "west"]
-    for key in keys:
-        val = set_val("reflectance_"+key,ss.room.ref_manager.reflectances[key])
-        ss.room.set_reflectance(val, key)
+
+def update_reflections():
+    keys = ss.room.ref_manager.reflectances.keys()
+    if ss["reflection_checkbox"]:        
+        for key in keys:
+            ss.room.set_reflectance(0, key)
+    else:
+        for key in keys:
+            val = set_val("reflectance_"+key,ss.room.ref_manager.reflectances[key])
+            ss.room.set_reflectance(val, key)
+    
 
 def show_results():
     """show results in right panel"""

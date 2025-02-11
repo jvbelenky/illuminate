@@ -8,6 +8,7 @@ from ._widget import (
     initialize_lamp,
     update_calc_zones,
     update_room,
+    update_reflections,
     update_standard,
     update_ozone,
     close_sidebar,
@@ -50,7 +51,7 @@ def room_sidebar():
     )
     
     st.subheader("Reflectance", divider="grey")
-    # st.write("Coming soon")
+    disable_ref = st.checkbox("Disable Reflections",on_change=update_reflections,key="reflection_checkbox")
     col1, col2, col3 = st.columns(3)
     col1.number_input(
         "Ceiling",
@@ -58,8 +59,8 @@ def room_sidebar():
         max_value=1.0,
         step=0.1,
         key="reflectance_ceiling",
-        on_change=update_room,
-        # disabled=True,
+        on_change=update_reflections,
+        disabled=disable_ref,
     )
     col2.number_input(
         "North Wall",
@@ -67,8 +68,8 @@ def room_sidebar():
         max_value=1.0,
         step=0.1,
         key="reflectance_north",
-        on_change=update_room,
-        # disabled=True,
+        on_change=update_reflections,
+        disabled=disable_ref,
     )
     col3.number_input(
         "East Wall",
@@ -76,8 +77,8 @@ def room_sidebar():
         max_value=1.0,
         step=0.1,
         key="reflectance_east",
-        on_change=update_room,
-        # disabled=True,
+        on_change=update_reflections,
+        disabled=disable_ref,
     )
     col1.number_input(
         "South Wall",
@@ -85,8 +86,8 @@ def room_sidebar():
         max_value=1.0,
         step=0.1,
         key="reflectance_south",
-        on_change=update_room,
-        # disabled=True,
+        on_change=update_reflections,
+        disabled=disable_ref,
     )
     col2.number_input(
         "West Wall",
@@ -94,8 +95,8 @@ def room_sidebar():
         max_value=1.0,
         step=0.1,
         key="reflectance_west",
-        on_change=update_room,
-        # disabled=True,
+        on_change=update_reflections,
+        disabled=disable_ref,
     )
     col3.number_input(
         "Floor",
@@ -103,10 +104,9 @@ def room_sidebar():
         max_value=1.0,
         step=0.1,
         key="reflectance_floor",
-        on_change=update_room,
-        # disabled=True,
+        on_change=update_reflections,
+        disabled=disable_ref,
     )
-
 
     st.subheader("Standards", divider="grey")    
     st.selectbox(
