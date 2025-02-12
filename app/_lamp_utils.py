@@ -424,18 +424,23 @@ def update_source_parameters(lamp):
     lamp.surface.units = set_val(f"units_{lamp.lamp_id}", lamp.surface.units)
     lamp.surface.update()
 
+
 def update_source_density(lamp):
     """update the lamp's source density parameter"""
     sd = set_val(f"source_density_{lamp.lamp_id}", lamp.surface.source_density)
     lamp.set_source_density(sd)
+
 
 def update_intensity_map(lamp):
     """update the lamp's relative intensity map"""
     uploaded_file = set_val(f"intensity_map_{lamp.lamp_id}", None)
     if uploaded_file is not None:
         lamp.load_intensity_map(uploaded_file.read())
+        if lamp.surface.intensity_map_orig is None:
+            ss.warning_message = "There was a problem with your relative intensity map file. Intensity map will not be used."
     else:
         lamp.load_intensity_map(None)
+
 
 def update_lamp_visibility(lamp):
     """update whether lamp shows in plot or not from widget"""

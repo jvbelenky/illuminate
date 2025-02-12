@@ -12,8 +12,9 @@ from ._widget import (
     update_standard,
     update_ozone,
     close_sidebar,
+    close_results,
+    show_results,
 )
-from ._top_ribbon import show_results
 
 SELECT_LOCAL = "Select local file..."
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
@@ -49,9 +50,11 @@ def room_sidebar():
         key="room_z",
         on_change=update_room,
     )
-    
+
     st.subheader("Reflectance", divider="grey")
-    disable_ref = st.checkbox("Disable Reflections",on_change=update_reflections,key="reflection_checkbox")
+    disable_ref = st.checkbox(
+        "Disable Reflections", on_change=update_reflections, key="reflection_checkbox"
+    )
     col1, col2, col3 = st.columns(3)
     col1.number_input(
         "Ceiling",
@@ -108,7 +111,7 @@ def room_sidebar():
         disabled=disable_ref,
     )
 
-    st.subheader("Standards", divider="grey")    
+    st.subheader("Standards", divider="grey")
     st.selectbox(
         "Select photobiological safety standard",
         options=ss.standards,
@@ -150,7 +153,6 @@ def room_sidebar():
         disabled=True,
     )
 
-    
     st.button(
         "Close",
         on_click=close_sidebar,
@@ -162,7 +164,7 @@ def project_sidebar():
     """sidebar content for saving and loading files"""
 
     cols = st.columns([10, 1])
-    cols[0].header("Project", divider="grey")
+    cols[0].header("Save", divider="grey", help="Save your project as a .guv file")
     cols[1].button(
         "X",
         on_click=close_sidebar,
@@ -170,38 +172,34 @@ def project_sidebar():
         use_container_width=True,
     )
 
-    st.subheader
-    col1, col2 = st.columns(2)
-
-    col1.download_button(
+    st.download_button(
         label="Save Project",
         data=ss.room.save(),
         file_name="illuminate.guv",
         use_container_width=True,
         key="download_project",
     )
-    load = col2.button(
+    st.header("Load", divider="grey", help="Load a previously created .guv file")
+    
+    st.file_uploader(
         "Load Project",
-        use_container_width=True,
+        type="guv",
+        on_change=upload,
+        key="upload_project",
+        label_visibility="collapsed",
     )
+    st.checkbox("Calculate after loading", key="calculate_after_loading")
+    st.checkbox("Visualize after loading", key="visualize_after_loading")
 
-    if load:
-        st.file_uploader(
-            "Load Project",
-            type="guv",
-            on_change=upload,
-            key="upload_project",
-            label_visibility="collapsed",
-        )
     if ss.error_message is not None:
         st.error(ss.error_message)
     if ss.warning_message is not None:
         st.warning(ss.warning_message)
 
-    st.header("Export", divider="grey")
+    st.header("Export", divider="grey",help="Export all project configurations, results, and (optionally) resources and plots.")
     col3, col4 = st.columns(2)
     plots = st.checkbox("Include plots")
-    lampfiles = st.checkbox("Include lamp .ies and spectrum files")
+    lampfiles = st.checkbox("Include lamp photometric (.ies) and spectrum (.csv) files")
     col3.download_button(
         "Export All",
         data=ss.room.export_zip(
@@ -219,9 +217,37 @@ def upload():
     """
     callback for uploading a .guv file
     """
-    file_ok = False
-    file = ss["upload_project"]
-    if file is not None:
+
+    file_ok, string = check_file(ss["upload_project"])
+
+    if file_ok:
+        # string = file.read().decode("utf-8")
+        ss.room = Room.load(string)
+        initialize_room()
+        for zone_id, zone in ss.room.calc_zones.items():
+            initialize_zone(zone)
+
+        for lamp_id, lamp in ss.room.lamps.items():
+            initialize_lamp(lamp)
+            # make lampfile options
+            if lamp.filename not in ss.vendored_lamps.keys():
+                ss.uploaded_files[lamp.filename] = lamp.filedata
+
+        update_calc_zones()
+        if ss["calculate_after_loading"]:
+            ss.room.calculate()
+            show_results()
+        else:
+            close_results()
+
+        if ss["visualize_after_loading"]:
+            ss.show_room = True  # show the uploaded file
+
+
+def check_file(file):
+    if file is None:
+        file_ok = False
+    else:
         try:
             string = file.read().decode("utf-8")
             # this just checks that the json is valid
@@ -235,25 +261,7 @@ def upload():
         except ValueError:
             ss.error_message = "Something is wrong with your .guv file. Please verify that it is valid json."
             file_ok = False
-            st.error(ss.error_message)
-    if file_ok:
-        ss.room = Room.load(string)
-        initialize_room()
-        for zone_id, zone in ss.room.calc_zones.items():
-            initialize_zone(zone)
-
-        for lamp_id, lamp in ss.room.lamps.items():
-            initialize_lamp(lamp)
-            # make lampfile options
-            if lamp.filename not in ss.vendored_lamps.keys():
-                ss.uploaded_files[lamp.filename] = lamp.filedata
-
-        update_calc_zones()
-        if ss.show_results:
-            ss.room.calculate()
-            show_results()
-
-        ss.show_room = True  # show the uploaded file
+    return file_ok, string
 
 
 def default_sidebar():

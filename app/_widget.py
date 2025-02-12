@@ -7,31 +7,34 @@ ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 
 OLD_STANDARDS = [
-        "ANSI IES RP 27.1-22 (America)",
-        "ANSI IES RP 27.1-22 (America) - UL8802",
-        "IEC 62471-6:2022 (International)",
-    ]
+    "ANSI IES RP 27.1-22 (America)",
+    "ANSI IES RP 27.1-22 (America) - UL8802",
+    "IEC 62471-6:2022 (International)",
+]
 
 # initialize
+
 
 def add_keys(keys, vals):
     """initialize widgets with parameters"""
     for key, val in zip(keys, vals):
         ss[key] = val
 
+
 def fix_room_standard():
     """
-    older versions of illuminate had the standard options named differently; 
+    older versions of illuminate had the standard options named differently;
     this function allows for compatibility with older save files
     """
-    
+
     if ss.room.standard in ss.standards:
         pass
     elif ss.room.standard in OLD_STANDARDS:
         ss.room.standard = ss.standards[OLD_STANDARDS.index(ss.room.standard)]
     else:
         ss.room.standard = "ANSI IES RP 27.1-22 (ACGIH Limits)"
-        
+
+
 def initialize_results():
     fix_room_standard()
     keys = [
@@ -42,10 +45,17 @@ def initialize_results():
     vals = [ss.room.air_changes, ss.room.ozone_decay_constant, ss.room.standard]
     add_keys(keys, vals)
 
+
+def initialize_project():
+    keys = ["calculate_after_loading", "visualize_after_loading"]
+    vals = [False, True]
+    add_keys(keys, vals)
+
+
 def initialize_room():
-    
+
     fix_room_standard()
-    
+
     keys = [
         "room_x",
         "room_y",
@@ -68,12 +78,12 @@ def initialize_room():
         ss.room.y,
         ss.room.z,
         ss.room.standard,
-        ss.room.ref_manager.reflectances['ceiling'],
-        ss.room.ref_manager.reflectances['north'],
-        ss.room.ref_manager.reflectances['east'],
-        ss.room.ref_manager.reflectances['south'],
-        ss.room.ref_manager.reflectances['west'],
-        ss.room.ref_manager.reflectances['floor'],
+        ss.room.ref_manager.reflectances["ceiling"],
+        ss.room.ref_manager.reflectances["north"],
+        ss.room.ref_manager.reflectances["east"],
+        ss.room.ref_manager.reflectances["south"],
+        ss.room.ref_manager.reflectances["west"],
+        ss.room.ref_manager.reflectances["floor"],
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
         ss.room.air_changes,
@@ -233,7 +243,7 @@ def remove_zone(zone):
         f"enabled_{zone.zone_id}",
         f"show_values_{zone.zone_id}",
     ]
-    
+
     if isinstance(zone, CalcPlane):
         keys.append(f"height_{zone.zone_id}")
         keys.append(f"fov_vert_{zone.zone_id}")
@@ -317,18 +327,18 @@ def update_room():
         x2=ss.room.x,
         y2=ss.room.y,
     )
-    
+
 
 def update_reflections():
     keys = ss.room.ref_manager.reflectances.keys()
-    if ss["reflection_checkbox"]:        
+    if ss["reflection_checkbox"]:
         for key in keys:
             ss.room.set_reflectance(0, key)
     else:
         for key in keys:
-            val = set_val("reflectance_"+key,ss.room.ref_manager.reflectances[key])
+            val = set_val("reflectance_" + key, ss.room.ref_manager.reflectances[key])
             ss.room.set_reflectance(val, key)
-    
+
 
 def show_results():
     """show results in right panel"""

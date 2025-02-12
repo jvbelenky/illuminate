@@ -6,6 +6,7 @@ from ._widget import (
     initialize_zone,
     initialize_room,
     # initialize_results,
+    initialize_project,
     clear_lamp_cache,
     clear_zone_cache,
     show_results,
@@ -97,6 +98,7 @@ def show_about():
 def show_project():
     """update sidebar to show save/load options"""
     ss.editing = "project"
+    initialize_project()
     clear_lamp_cache()
     clear_zone_cache()
 
