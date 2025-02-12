@@ -180,7 +180,7 @@ def project_sidebar():
         key="download_project",
     )
     st.header("Load", divider="grey", help="Load a previously created .guv file")
-    
+
     st.file_uploader(
         "Load Project",
         type="guv",
@@ -196,7 +196,11 @@ def project_sidebar():
     if ss.warning_message is not None:
         st.warning(ss.warning_message)
 
-    st.header("Export", divider="grey",help="Export all project configurations, results, and (optionally) resources and plots.")
+    st.header(
+        "Export",
+        divider="grey",
+        help="Export all project configurations, results, and (optionally) resources and plots.",
+    )
     col3, col4 = st.columns(2)
     plots = st.checkbox("Include plots")
     lampfiles = st.checkbox("Include lamp photometric (.ies) and spectrum (.csv) files")

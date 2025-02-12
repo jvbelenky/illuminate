@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 from ._widget import close_results, update_ozone_results, update_standard_results
 
+# from ._top_ribbon import check_recalculation
+
 ss = st.session_state
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 
@@ -43,26 +45,7 @@ def results_page():
     if all(["Krypton chloride" in lamp.guv_type for lamp in lamps.values()]):
         print_airchem()
 
-    st.subheader("Export Results", divider="grey")
-    col, col2 = st.columns(2)
-    include_plots = col2.checkbox("Include result plots")
-    col.download_button(
-        "Export All Results",
-        data=ss.room.export_zip(include_plots=include_plots),
-        file_name="illuminate.zip",
-        use_container_width=True,
-        type="primary",
-        key="export_all_results",
-    )
-
-    for zone_id, zone in ss.room.calc_zones.items():
-        col.download_button(
-            zone.name,
-            data=zone.export(),
-            file_name=zone.name + ".csv",
-            use_container_width=True,
-            disabled=True if zone.values is None else False,
-        )
+    export_options()
 
 
 def print_summary():
@@ -418,3 +401,32 @@ def calculate_ozone_increase():
     ozone_decay = ss.room.ozone_decay_constant
     ozone_increase = avg_fluence * ozone_gen / (ach + ozone_decay)
     return ozone_increase
+
+
+def export_options():
+    """
+    a results-page option for exporting all results
+    """
+
+    st.subheader("Export Results", divider="grey")
+    col, col2 = st.columns(2)
+    include_plots = col2.checkbox("Include result plots")
+
+    col.download_button(
+        "Export All Results",
+        data=ss.room.export_zip(include_plots=include_plots),
+        file_name="illuminate.zip",
+        use_container_width=True,
+        type="primary",
+        key="export_all_results",
+    )
+
+    for zone_id, zone in ss.room.calc_zones.items():
+
+        col.download_button(
+            zone.name,
+            data=zone.export(),
+            file_name=zone.name + ".csv",
+            use_container_width=True,
+            disabled=True if zone.values is None else False,
+        )

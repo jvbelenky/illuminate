@@ -15,6 +15,8 @@ from ._widget import (
     close_sidebar,
 )
 
+# from ._top_ribbon import check_recalculation
+
 SELECT_LOCAL = "Select local file..."
 WEIGHTS_URL = "data/UV Spectral Weighting Curves.csv"
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
@@ -343,7 +345,8 @@ def zone_sidebar():
             key=f"enabled_{selected_zone.zone_id}",
         )
 
-        disable_download = True if selected_zone.values is None else False
+        disable_download = False  # True selected_zone.values is None else False
+
         st.download_button(
             "Export Solution",
             data=selected_zone.export(),
