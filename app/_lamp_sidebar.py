@@ -279,8 +279,8 @@ def lamp_position_options(lamp):
     # Rotation input
     st.number_input(
         "Rotation",
-        min_value=0.0,
-        max_value=360.0,
+        # min_value=0.0,
+        # max_value=360.0,
         step=1.0,
         key=f"rotation_{lamp.lamp_id}",
         on_change=update_lamp_rotation,
