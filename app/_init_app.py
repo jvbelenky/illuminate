@@ -20,7 +20,6 @@ def initialize():
     ss.show_room = True  # show the room plot once on load
     ss.error_message = None  # dynamic holder
     ss.warning_message = None
-    ss.needs_recalculation = False
 
     ss.selected_lamp_id = None  # no lamp initially selected
     ss.selected_zone_id = None  # no zone initially selected

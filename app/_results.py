@@ -233,10 +233,17 @@ def check_lamps(room, warn=True):
     # check if any individual lamp exceeds the limits
     for lampid, lamp in room.lamps.items():
         if lampid in eye.lamp_values.keys() and lampid in skin.lamp_values.keys():
+            # fetch the limits for this specific lamp
             skinmax, eyemax = room.lamps[lampid].get_limits(room.standard)
-            skinvals, eyevals = skin.lamp_values[lampid], eye.lamp_values[lampid]
+            # these are irradiance values, not dose
+            skinrad, eyerad = skin.lamp_values[lampid], eye.lamp_values[lampid]
+            # to dose
+            skinvals, eyevals = skinrad * 3.6 * skin.hours, eyerad * 3.6 * eye.hours
+            # weighting function for this specific lamp
             skinweight, eyeweight = 3 / skinmax, 3 / eyemax
+            # % dimming required to be compliant
             skindim, eyedim = skinmax / skinvals.max(), eyemax / eyevals.max()
+            # add to total dose
             weighted_skin_dose += skinvals * skinweight
             weighted_eye_dose += eyevals * eyeweight
 

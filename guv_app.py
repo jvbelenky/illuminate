@@ -9,7 +9,7 @@ from app._sidebar import (
     default_sidebar,
     project_sidebar,
 )
-from app._widget import show_results
+# from app._widget import show_results
 
 # layout / page setup
 st.set_page_config(
@@ -84,8 +84,7 @@ with left_pane:
 
 with right_pane:
     cols = st.columns(2)
-    show_room = cols[0].button("Show Updated Room", use_container_width=True)
-    cols[1].button("Show Results", on_click=show_results, use_container_width=True)
+    show_room = st.button("Show Updated Room", use_container_width=True)
     if ss.show_results:
         if show_room and ss.editing is not None:
             room_plot()

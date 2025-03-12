@@ -516,7 +516,6 @@ def update_standard():
 def update_standard_results():
     """update what standard is used based on results page, recalculate if necessary"""
     # store whether recalculation is necessary
-    print(ss.room.standard)
     RECALCULATE = False
     if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard_results"]):
         RECALCULATE = True

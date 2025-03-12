@@ -49,6 +49,7 @@ def zone_sidebar():
         colb.write("")
         colb.write("")
         colb.button("Go", on_click=create_zone, use_container_width=True)
+
     elif ss.editing in ["planes", "volumes"]:
         selected_zone = ss.room.calc_zones[ss.selected_zone_id]
         initialize_zone(selected_zone)
@@ -377,9 +378,19 @@ def zone_sidebar():
 
 def create_zone():
     if ss["select_zone_type"] == "Plane":
-        new_zone = CalcPlane(zone_id=ss.selected_zone_id)
+        new_zone = CalcPlane(
+            zone_id=ss.selected_zone_id, x1=0, x2=ss.room.x, y1=0, y2=ss.room.y
+        )
         ss.editing = "planes"
     elif ss["select_zone_type"] == "Volume":
-        new_zone = CalcVol(zone_id=ss.selected_zone_id)
+        new_zone = CalcVol(
+            zone_id=ss.selected_zone_id,
+            x1=0,
+            x2=ss.room.x,
+            y1=0,
+            y2=ss.room.y,
+            z1=0,
+            z2=ss.room.z,
+        )
         ss.editing = "volumes"
     ss.room.add_calc_zone(new_zone)

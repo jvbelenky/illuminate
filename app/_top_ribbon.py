@@ -66,18 +66,11 @@ def top_ribbon():
         key="zone_select",
     )
 
-    # c[5].button(
-    # "Show Results",
-    # on_click=show_results,
-    # use_container_width=True,
-    # )
-
-    button_type = "secondary"
-    # if ss.room.calc_state != {}:
-    # button_type = "primary"
     check_recalculation()
-    if ss.needs_recalculation:
+    if check_recalculation():
         button_type = "primary"
+    else:
+        button_type = "secondary"
 
     c[5].button(
         "Calculate!",
@@ -88,10 +81,13 @@ def top_ribbon():
 
 
 def check_recalculation():
+    recalculate = False
     if any([v.enabled and v.filedata is not None for v in ss.room.lamps.values()]):
-        new_calc_state = ss.room.get_calc_state()
-        if ss.room.calc_state != new_calc_state:
-            ss.needs_recalculation = True
+        CALC = ss.room.calc_state != ss.room.get_calc_state()
+        UPDATE = ss.room.update_state != ss.room.get_update_state()
+        if CALC or UPDATE:
+            recalculate = True
+    return recalculate
 
 
 def show_about():
@@ -167,7 +163,6 @@ def update_zone_select(zone_ids):
 def calculate():
     """calculate and show results in right pane"""
     ss.room.calculate()
-    ss.needs_recalculation = False
     show_results()
 
 

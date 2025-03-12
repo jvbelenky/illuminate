@@ -32,7 +32,7 @@ def room_sidebar():
         key="close_room",
     )
 
-    st.subheader("Dimensions", divider="grey")
+    st.subheader("Dimensions (meters)", divider="grey")
     col_a, col_b, col_c = st.columns(3)
 
     col_a.number_input(
