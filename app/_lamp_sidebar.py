@@ -1,6 +1,6 @@
 import streamlit as st
-from ._widget import initialize_lamp, close_sidebar
-from ._lamp_utils import (
+from app._widget import initialize_lamp, close_sidebar
+from app._lamp_utils import (
     load_uploaded_spectra,
     lamp_select_widget,
     update_wavelength_select,
@@ -15,7 +15,9 @@ from ._lamp_utils import (
     update_lamp_orientation,
     update_from_tilt,
     update_from_orientation,
-    update_source_parameters,
+    update_lamp_width,
+    update_lamp_length,
+    update_lamp_depth,
     update_source_density,
     update_intensity_map,
     update_lamp_visibility,
@@ -344,17 +346,16 @@ def lamp_source_options(lamp):
     )
 
     st.markdown(
-        "Source dimensions",
+        f"Source dimensions ({lamp.surface.units})",
         help="These values were set automatically from your .ies file. If they are incorrect, you can change them and download the corrected .ies file.",
     )
 
-    cols = st.columns([1, 1, 1, 0.8])
-
+    cols = st.columns(3)
     cols[0].number_input(
         "Source width",
         min_value=0.0,
         key=f"width_{lamp.lamp_id}",
-        on_change=update_source_parameters,
+        on_change=update_lamp_width,
         args=[lamp],
         help="X-axis distance for the lamp's emissive surface",
     )
@@ -362,7 +363,7 @@ def lamp_source_options(lamp):
         "Source length",
         min_value=0.0,
         key=f"length_{lamp.lamp_id}",
-        on_change=update_source_parameters,
+        on_change=update_lamp_length,
         help="Y-axis distance of the lamp's emissive surface",
         args=[lamp],
     )
@@ -371,26 +372,26 @@ def lamp_source_options(lamp):
         "Source depth",
         min_value=0.0,
         key=f"depth_{lamp.lamp_id}",
-        on_change=update_source_parameters,
+        on_change=update_lamp_depth,
         args=[lamp],
         help="Determines the minimum mounting distance of the luminaire.",
     )
 
-    cols[3].selectbox(
-        "Source units",
-        options=["feet", "meters"],
-        key=f"units_{lamp.lamp_id}",
-        on_change=update_source_parameters,
-        args=[lamp],
-        help="Units for all source parameters",
-    )
+    # cols[3].selectbox(
+    # "Source units",
+    # options=["feet", "meters"],
+    # key=f"units_{lamp.lamp_id}",
+    # on_change=update_source_parameters,
+    # args=[lamp],
+    # help="Units for all source parameters",
+    # )
     if lamp.surface.photometric_distance is not None:
         if lamp.surface.units == "meters":
             val = round(lamp.surface.photometric_distance, 4)
         else:
             val = round(lamp.surface.photometric_distance * 0.3048, 4)
         st.markdown(
-            f"**Photometric distance:** {val} meters",
+            f"**Photometric distance:** {val} {lamp.surface.units}",
             help="Near-field specific calculations are only performed within this distance from the lamp.",
         )
 

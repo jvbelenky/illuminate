@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from ._widget import close_results, update_ozone_results, update_standard_results
+from ._widget import close_results, set_val
 
 # from ._top_ribbon import check_recalculation
 
@@ -437,3 +437,31 @@ def export_options():
             use_container_width=True,
             disabled=True if zone.values is None else False,
         )
+
+
+def update_standard_results():
+    """update what standard is used based on results page, recalculate if necessary"""
+    # store whether recalculation is necessary
+    RECALCULATE = False
+    if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard_results"]):
+        RECALCULATE = True
+    # update room standard
+    standard = set_val("room_standard_results", ss.room.standard)
+    ss.room.set_standard(standard)  # this will also update the standard calc zones
+    # update other widget
+    ss["room_standard"] = ss.room.standard
+    # recalculate if necessary eg: if value has changed
+    if RECALCULATE:
+        ss.room.calculate_by_id("EyeLimits")
+        ss.room.calculate_by_id("SkinLimits")
+
+
+def update_ozone_results():
+    ss.room.air_changes = set_val("air_changes_results", ss.room.air_changes)
+    ss.room.ozone_decay_constant = set_val(
+        "ozone_decay_constant_results", ss.room.ozone_decay_constant
+    )
+    ss["air_changes"] = set_val("air_changes_results", ss.room.air_changes)
+    ss["ozone_decay_constant"] = set_val(
+        "ozone_decay_constant_results", ss.room.ozone_decay_constant
+    )

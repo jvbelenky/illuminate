@@ -1,7 +1,6 @@
 import streamlit as st
 import warnings
-import numpy as np
-from guv_calcs import CalcPlane, CalcVol, get_disinfection_table, plot_disinfection_data
+from guv_calcs import CalcPlane, CalcVol
 
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
@@ -73,10 +72,11 @@ def initialize_room():
         "ozone_decay_constant_results",
         "room_standard_results",
     ]
+    x, y, z = ss.room.get_dimensions()
     vals = [
-        ss.room.x,
-        ss.room.y,
-        ss.room.z,
+        x,
+        y,
+        z,
         ss.room.standard,
         ss.room.ref_manager.reflectances["ceiling"],
         ss.room.ref_manager.reflectances["north"],
@@ -111,10 +111,10 @@ def initialize_lamp(lamp):
         f"width_{lamp.lamp_id}",
         f"length_{lamp.lamp_id}",
         f"depth_{lamp.lamp_id}",
-        f"units_{lamp.lamp_id}",
         f"source_density_{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
     ]
+
     vals = [
         lamp.name,
         lamp.x,
@@ -131,7 +131,6 @@ def initialize_lamp(lamp):
         lamp.surface.width,
         lamp.surface.length,
         lamp.surface.depth,
-        lamp.surface.units,
         lamp.surface.source_density,
         lamp.enabled,
     ]
@@ -307,39 +306,6 @@ def set_val(key, default):
     return val
 
 
-def update_room():
-    """update the room dimensions and the special calc zones that live in it"""
-    ss.room.x = set_val("room_x", ss.room.x)
-    ss.room.y = set_val("room_y", ss.room.y)
-    ss.room.z = set_val("room_z", ss.room.z)
-    ss.room.set_dimensions()
-
-    ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
-        x2=ss.room.x,
-        y2=ss.room.y,
-        z2=ss.room.z,
-    )
-    ss.room.calc_zones["SkinLimits"].set_dimensions(
-        x2=ss.room.x,
-        y2=ss.room.y,
-    )
-    ss.room.calc_zones["EyeLimits"].set_dimensions(
-        x2=ss.room.x,
-        y2=ss.room.y,
-    )
-
-
-def update_reflections():
-    keys = ss.room.ref_manager.reflectances.keys()
-    if ss["reflection_checkbox"]:
-        for key in keys:
-            ss.room.set_reflectance(0, key)
-    else:
-        for key in keys:
-            val = set_val("reflectance_" + key, ss.room.ref_manager.reflectances[key])
-            ss.room.set_reflectance(val, key)
-
-
 def show_results():
     """show results in right panel"""
     initialize_results()
@@ -347,223 +313,6 @@ def show_results():
     # format the figure and disinfection table now so we don't redo it later
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
-        fluence_dict = get_fluence_dict(ss.room)
-        if len(fluence_dict) > 0:
-            df = get_disinfection_table(fluence_dict, room=ss.room)
-            if len(fluence_dict) == 1:
-                df = df.drop(columns="wavelength [nm]")
-            # move some keys arounds
-            new_keys = ["Link"] + [key for key in df.keys() if "Link" not in key]
-            ss.kdf = df[new_keys]
-            ss.kfig = plot_disinfection_data(
-                ss.kdf, fluence_dict=fluence_dict, room=ss.room
-            )
-
-
-def get_fluence_dict(room):
-    """
-    get a dict of all the wavelengths and the fluences they contribute
-    to the Whole Room Fluence
-    """
-
-    lamp_types = np.unique([(lamp.wavelength) for lamp in room.lamps.values()], axis=0)
-    zone = room.calc_zones["WholeRoomFluence"]
-    lamp_wavelengths = {}
-    for wavelength in lamp_types:
-        val = [
-            lamp.lamp_id
-            for lamp in room.lamps.values()
-            if lamp.wavelength == float(wavelength)
-        ]
-        lamp_wavelengths[wavelength] = val
-    fluence_dict = {}
-    for label, lamp_ids in lamp_wavelengths.items():
-        vals = np.zeros(zone.values.shape)
-        for lamp_id in lamp_ids:
-            if lamp_id in zone.lamp_values.keys():
-                vals += zone.lamp_values[lamp_id].mean()
-        fluence_dict[label] = vals.mean()
-    return fluence_dict
-
-
-def get_lamp_types():
-    """
-    retrive a dict of all lamp types currently present in the room and the lamp_ids
-    for those lamp types
-    """
-    all_lamp_types = [
-        (lamp.guv_type, lamp.wavelength) for lamp in ss.room.lamps.values()
-    ]
-    lamp_types = np.unique(all_lamp_types, axis=0)
-    lamp_labels = {}
-    lamps = ss.room.lamps.values()
-    for guv_type, wavelength in lamp_types:
-        if guv_type in ss.guv_types:
-            key = guv_type
-            val = [lamp.lamp_id for lamp in lamps if lamp.guv_type == guv_type]
-        else:
-            key = guv_type + " (" + str(wavelength) + " nm)"
-            val = [
-                lamp.lamp_id
-                for lamp in lamps
-                if (lamp.guv_type == guv_type and lamp.wavelength == float(wavelength))
-            ]
-        lamp_labels[key] = val
-    return lamp_labels
-
-
-def update_zone_name(zone):
-    """update zone name from widget"""
-    zone.name = set_val(f"name_{zone.zone_id}", zone.name)
-
-
-def update_zone_visibility(zone):
-    """update whether calculation zone shows up in plot or not from widget"""
-    zone.enabled = set_val(f"enabled_{zone.zone_id}", zone.enabled)
-    zone.show_values = set_val(f"show_values_{zone.zone_id}", zone.show_values)
-
-
-def update_offset(zone):
-    zone.offset = set_val(f"offset_{zone.zone_id}", zone.offset)
-    zone._update()
-
-
-def update_plane_dimensions(zone):
-    """update dimensions of calculation plane from widgets"""
-    x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
-    x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
-    y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
-    y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
-    zone.height = set_val(f"height_{zone.zone_id}", zone.height)
-    zone.set_dimensions(x1, x2, y1, y2)
-
-
-def update_plane_points(zone):
-    """update number of points in the calculation plane from widgets"""
-    num_x = set_val(f"x_num_points_{zone.zone_id}", zone.num_x)
-    num_y = set_val(f"y_num_points_{zone.zone_id}", zone.num_y)
-    zone.set_num_points(num_x, num_y)
-    ss[f"x_spacing_{zone.zone_id}"] = zone.x_spacing
-    ss[f"y_spacing_{zone.zone_id}"] = zone.y_spacing
-
-
-def update_plane_spacing(zone):
-    """update spacing of calculation plane from widgets"""
-    x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
-    y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
-    zone.set_spacing(x_spacing, y_spacing)
-    ss[f"x_num_points_{zone.zone_id}"] = zone.num_x
-    ss[f"y_num_points_{zone.zone_id}"] = zone.num_y
-
-
-def update_vol_dimensions(zone):
-    """update dimensions of calculation volume from widgets"""
-    x1 = set_val(f"x1_{zone.zone_id}", zone.x1)
-    x2 = set_val(f"x2_{zone.zone_id}", zone.x2)
-    y1 = set_val(f"y1_{zone.zone_id}", zone.y1)
-    y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
-    z1 = set_val(f"z1_{zone.zone_id}", zone.z1)
-    z2 = set_val(f"z2_{zone.zone_id}", zone.z2)
-    zone.set_dimensions(x1, x2, y1, y2, z1, z2)
-
-
-def update_vol_spacing(zone):
-    """update spacing of calculation volumr from widgets"""
-    x_spacing = set_val(f"x_spacing_{zone.zone_id}", zone.x_spacing)
-    y_spacing = set_val(f"y_spacing_{zone.zone_id}", zone.y_spacing)
-    z_spacing = set_val(f"z_spacing_{zone.zone_id}", zone.z_spacing)
-    zone.set_spacing(x_spacing, y_spacing, z_spacing)
-    ss[f"x_num_points_{zone.zone_id}"] = zone.num_x
-    ss[f"y_num_points_{zone.zone_id}"] = zone.num_y
-    ss[f"z_num_points_{zone.zone_id}"] = zone.num_z
-
-
-def update_vol_points(zone):
-    """update number of points in the calculation volume from widgets"""
-    numx = set_val(f"x_num_points_{zone.zone_id}", zone.num_x)
-    numy = set_val(f"y_num_points_{zone.zone_id}", zone.num_y)
-    numz = set_val(f"z_num_points_{zone.zone_id}", zone.num_z)
-    zone.set_num_points(numx, numy, numz)
-    ss[f"x_spacing_{zone.zone_id}"] = zone.x_spacing
-    ss[f"y_spacing_{zone.zone_id}"] = zone.y_spacing
-    ss[f"z_spacing_{zone.zone_id}"] = zone.z_spacing
-
-
-def update_fov(zone):
-    """update the vertical or horizontal field of view ="""
-    zone.fov_vert = set_val(f"fov_vert_{zone.zone_id}", zone.fov_vert)
-    zone.fov_horiz = set_val(f"fov_horiz_{zone.zone_id}", zone.fov_horiz)
-
-
-def update_standard():
-    """update what standard is used, recalculate if necessary"""
-    # store whether recalculation is necessary
-    RECALCULATE = False
-    if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard"]):
-        RECALCULATE = True
-    # update room standard
-    ss.room.standard = set_val("room_standard", ss.room.standard)
-    # update other widget
-    ss["room_standard_results"] = ss.room.standard
-    # update calc zones
-    update_calc_zones()
-    # recalculate if necessary eg: if value has changed
-    if RECALCULATE:
-        ss.room.calculate_by_id("EyeLimits")
-        ss.room.calculate_by_id("SkinLimits")
-
-
-def update_standard_results():
-    """update what standard is used based on results page, recalculate if necessary"""
-    # store whether recalculation is necessary
-    RECALCULATE = False
-    if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard_results"]):
-        RECALCULATE = True
-    # update room standard
-    ss.room.standard = set_val("room_standard_results", ss.room.standard)
-    # update other widget
-    ss["room_standard"] = ss.room.standard
-    # update calc zones
-    update_calc_zones()
-    # recalculate if necessary eg: if value has changed
-    if RECALCULATE:
-        ss.room.calculate()
-
-
-def update_calc_zones():
-    if "UL8802" in ss.room.standard:
-        ss.room.calc_zones["SkinLimits"].set_height(1.9)
-        ss.room.calc_zones["EyeLimits"].set_height(1.9)
-        ss.room.calc_zones["EyeLimits"].fov_vert = 180
-        ss.room.calc_zones["EyeLimits"].vert = False
-        ss.room.calc_zones["SkinLimits"].horiz = False
-    else:
-        ss.room.calc_zones["SkinLimits"].set_height(1.8)
-        ss.room.calc_zones["EyeLimits"].set_height(1.8)
-        ss.room.calc_zones["EyeLimits"].fov80 = 80
-        ss.room.calc_zones["EyeLimits"].vert = True
-        ss.room.calc_zones["SkinLimits"].horiz = True
-
-
-def update_ozone_results():
-    ss.room.air_changes = set_val("air_changes_results", ss.room.air_changes)
-    ss.room.ozone_decay_constant = set_val(
-        "ozone_decay_constant_results", ss.room.ozone_decay_constant
-    )
-    ss["air_changes"] = set_val("air_changes_results", ss.room.air_changes)
-    ss["ozone_decay_constant"] = set_val(
-        "ozone_decay_constant_results", ss.room.ozone_decay_constant
-    )
-
-
-def update_ozone():
-
-    ss.room.air_changes = set_val("air_changes", ss.room.air_changes)
-    ss.room.ozone_decay_constant = set_val(
-        "ozone_decay_constant", ss.room.ozone_decay_constant
-    )
-
-    ss["air_changes_results"] = set_val("air_changes", ss.room.air_changes)
-    ss["ozone_decay_constant_results"] = set_val(
-        "ozone_decay_constant", ss.room.ozone_decay_constant
-    )
+        df, fig = ss.room.get_disinfection_data(zone_id="WholeRoomFluence")
+        ss.kdf = df
+        ss.kfig = fig
