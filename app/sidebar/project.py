@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import guv_calcs
 from guv_calcs import Room
-from app._widget import (
+from app.widget import (
     initialize_room,
     initialize_zone,
     initialize_lamp,

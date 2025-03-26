@@ -1,7 +1,8 @@
 import streamlit as st
-from app._widget import close_sidebar, set_val
+from app.widget import close_sidebar, set_val
 
 ss = st.session_state
+
 
 def room_sidebar():
     """display room editing panel in sidebar"""
@@ -215,7 +216,7 @@ def update_standard():
         RECALCULATE = True
     # update room standard
     standard = set_val("room_standard", ss.room.standard)
-    ss.room.set_standard(standard) # also updates calc zones
+    ss.room.set_standard(standard)  # also updates calc zones
     # update other widget
     ss["room_standard_results"] = ss.room.standard
     # recalculate if necessary eg: if value has changed

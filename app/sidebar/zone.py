@@ -1,6 +1,6 @@
 import streamlit as st
 from guv_calcs import CalcPlane, CalcVol
-from app._widget import initialize_zone, close_sidebar, set_val
+from app.widget import initialize_zone, close_sidebar, set_val
 
 SPECIAL_ZONES = ["WholeRoomFluence", "SkinLimits", "EyeLimits"]
 ss = st.session_state

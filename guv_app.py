@@ -1,14 +1,13 @@
 import streamlit as st
-from app._init_app import initialize, room_plot
-from app._top_ribbon import top_ribbon
-from app._results import results_page
-from app._lamp_sidebar import lamp_sidebar
-from app._zone_sidebar import zone_sidebar
-from app._sidebar import (
-    room_sidebar,
-    default_sidebar,
-    project_sidebar,
-)
+from app.init_app import initialize, room_plot
+from app.top_ribbon import top_ribbon
+from app.results import results_page
+from app.sidebar.lamp import lamp_sidebar
+from app.sidebar.zone import zone_sidebar
+from app.sidebar.room import room_sidebar
+from app.sidebar.project import project_sidebar
+from app.sidebar.default import default_sidebar
+
 # from app._widget import show_results
 
 # layout / page setup

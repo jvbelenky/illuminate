@@ -1,5 +1,5 @@
 import streamlit as st
-from ._widget import close_sidebar
+from app.widget import close_sidebar
 
 ss = st.session_state
 

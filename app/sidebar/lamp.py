@@ -1,6 +1,6 @@
 import streamlit as st
-from app._widget import initialize_lamp, close_sidebar
-from app._lamp_utils import (
+from app.widget import initialize_lamp, close_sidebar
+from app.lamp_utils import (
     load_uploaded_spectra,
     lamp_select_widget,
     update_wavelength_select,

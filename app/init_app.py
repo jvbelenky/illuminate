@@ -3,9 +3,9 @@ import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from guv_calcs import Room, get_full_disinfection_table
-from ._lamp_utils import add_new_lamp, get_ies_files, get_defaults
-from ._top_ribbon import calculate
-from ._widget import initialize_zone
+from app.lamp_utils import add_new_lamp, get_ies_files, get_defaults
+from app.top_ribbon import calculate
+from app.widget import initialize_zone
 
 SELECT_LOCAL = "Select local file..."
 ss = st.session_state

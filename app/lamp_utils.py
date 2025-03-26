@@ -4,7 +4,7 @@ import requests
 import json
 import matplotlib.pyplot as plt
 from guv_calcs import Lamp, Spectrum, new_lamp_position
-from ._widget import (
+from app.widget import (
     set_val,
     initialize_lamp,
     clear_zone_cache,

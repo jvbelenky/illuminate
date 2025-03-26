@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from ._widget import close_results, set_val
+from app.widget import close_results, set_val
 
 # from ._top_ribbon import check_recalculation
 
