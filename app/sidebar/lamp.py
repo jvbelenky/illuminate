@@ -21,7 +21,8 @@ from app.lamp_utils import (
     update_source_density,
     update_intensity_map,
     update_lamp_visibility,
-    update_lamp_intensity_units
+    update_lamp_intensity_units,
+    adjust_yscale
 )
 
 SELECT_LOCAL = "Select local file..."
@@ -58,30 +59,30 @@ def lamp_sidebar():
     
     # download files
     
-    # cols = st.columns([1.5, 2, 2])
-    # show_info = cols[0].checkbox("Show lamp info")
-    # if lamp.filedata is not None:
-        # fname = str(lamp.filename)
-        # fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
-        # cols[1].download_button(
-            # "Download .ies file",
-            # data=lamp.save_ies(original=True),
-            # file_name=fname,
-            # use_container_width=True,
-            # key=f"download_ies_{lamp.lamp_id}",
-        # )
-    # if lamp.spectra is not None:
-        # fname = str(lamp.filename)
-        # fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
-        # cols[2].download_button(
-            # "Download spectrum .csv",
-            # data=lamp.spectra.to_csv(),
-            # file_name=fname,
-            # use_container_width=True,
-            # key=f"download_spectrum_{lamp.lamp_id}",
-        # )
-    # if show_info:
-    lamp_info(lamp)  # plot and display other info if file has been selected
+    cols = st.columns([1.5, 2, 2])
+    show_info = cols[0].checkbox("Show lamp info")
+    if lamp.filedata is not None:
+        fname = str(lamp.filename)
+        fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        cols[1].download_button(
+            "Download .ies file",
+            data=lamp.save_ies(original=True),
+            file_name=fname,
+            use_container_width=True,
+            key=f"download_ies_{lamp.lamp_id}",
+        )
+    if lamp.spectra is not None:
+        fname = str(lamp.filename)
+        fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
+        cols[2].download_button(
+            "Download spectrum .csv",
+            data=lamp.spectra.to_csv(),
+            file_name=fname,
+            use_container_width=True,
+            key=f"download_spectrum_{lamp.lamp_id}",
+        )
+    if show_info:
+        lamp_info(lamp)  # plot and display other info if file has been selected
     lamp_position_options(lamp)  # position, orientation, etc
 
     st.header("Advanced settings")
@@ -194,89 +195,7 @@ def lamp_file_options(lamp):
                 else:
                     spectra_upload_widget(lamp)
 
-
-def lamp_info_new(lamp):
-    """display info and plot if there is data to plot with"""
-
-    cols = st.columns(2)
-    if lamp.filedata is not None:
-        
-        skinmax, eyemax = lamp.get_limits(ss.room.standard)
-        cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
-        cols[1].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
-
-    # PLOT_IES, PLOT_SPECTRA = False, False
-    
-        # PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=False)
-
-    
-        # fname = str(lamp.filename)
-        # fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
-        # cols[1].download_button(
-            # "Download spectrum .csv",
-            # data=lamp.spectra.to_csv(),
-            # file_name=fname,
-            # use_container_width=True,
-            # key=f"download_spectrum_{lamp.lamp_id}",
-        # )
-        # PLOT_SPECTRA = cols[1].checkbox(
-            # "Show spectra plot", key="show_spectra", value=False
-        # )
-        # if PLOT_SPECTRA:
-        # cols[1].write("")
-        # cols[1].write("")
-        # cols[1].write("")
-        
-        # else:
-            # yscale = "linear"  # kludgey default value setting
-
-    # if PLOT_IES and PLOT_SPECTRA:
-        # plot both charts side by side
-    
-    
-    # fig, ax = plt.subplots()
-    if lamp.spectra is not None:
-        spectrafig, _ = lamp.spectra.plot(
-            # fig=fig, ax=ax,
-            title="",
-            weights=True,
-            label=True,
-        )
-        spectrafig.set_size_inches(5, 6, forward=True)
-        spectrafig.axes[0].set_yscale(yscale)
-        cols[1].pyplot(spectrafig, use_container_width=True)
-        yscale = cols[1].selectbox(
-                "Spectra y-scale",
-                options=["linear", "log"],
-                # label_visibility="collapsed",
-                key="spectra_yscale",
-            )
-    # cols = st.columns(2)
-    if lamp.filedata is not None:
-        cols[0].pyplot(iesfig, use_container_width=True)
-        iesfig, iesax = lamp.plot_ies()
-    
-    # elif PLOT_IES and not PLOT_SPECTRA:
-        # # just display the ies file plot
-        # iesfig, iesax = lamp.plot_ies()
-        # st.pyplot(iesfig, use_container_width=True)
-    # elif PLOT_SPECTRA and not PLOT_IES:
-        # # display just the spectra
-        # spectrafig, _ = lamp.spectra.plot(
-            # # fig=fig, ax=ax,
-            # title="",
-            # weights=True,
-            # label=True,
-        # )
-        # spectrafig.set_size_inches(6, 4, forward=True)
-        # spectrafig.axes[0].set_yscale(yscale)
-        # st.pyplot(spectrafig, use_container_width=True)
-
-    if lamp.filename in ss.vendored_spectra.keys():
-
-        if "PRERELEASE" not in lamp.filename:
-            link = ss.reports[lamp.filename].replace(" ", "%20")
-            cols[0].markdown(f"[View Full Report]({link})")
+  
 
 def lamp_info(lamp):
     """display info and plot if there is data to plot with"""
@@ -287,83 +206,34 @@ def lamp_info(lamp):
         cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
         cols[1].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
 
-    PLOT_IES, PLOT_SPECTRA = False, False
-    cols = st.columns([2, 2, 1])
+    cols = st.columns([2,1])
     if lamp.filedata is not None:
-        fname = str(lamp.filename)
-        fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
-        cols[0].download_button(
-            "Download .ies file",
-            data=lamp.save_ies(original=True),
-            file_name=fname,
-            use_container_width=True,
-            key=f"download_ies_{lamp.lamp_id}",
-        )
-        PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=False)
-
+        
+        iesfig, iesax = lamp.plot_ies()
+        cols[0].pyplot(iesfig)#, use_container_width=True)
+    
+    cols = st.columns([2.8,0.7])
     if lamp.spectra is not None:
-        fname = str(lamp.filename)
-        fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
-        cols[1].download_button(
-            "Download spectrum .csv",
-            data=lamp.spectra.to_csv(),
-            file_name=fname,
-            use_container_width=True,
-            key=f"download_spectrum_{lamp.lamp_id}",
+        yscale = cols[1].selectbox(
+            "y-scale",
+            options=["linear", "log"],
+            key="spectra_yscale",
         )
-        PLOT_SPECTRA = cols[1].checkbox(
-            "Show spectra plot", key="show_spectra", value=False
-        )
-        if PLOT_SPECTRA:
-            cols[2].write("")
-            cols[2].write("")
-            cols[2].write("")
-            yscale = cols[2].selectbox(
-                "Spectra y-scale",
-                options=["linear", "log"],
-                label_visibility="collapsed",
-                key="spectra_yscale",
-            )
-        else:
-            yscale = "linear"  # kludgey default value setting
-
-    if PLOT_IES and PLOT_SPECTRA:
-        # plot both charts side by side
-        iesfig, iesax = lamp.plot_ies()
-        # fig, ax = plt.subplots()
         spectrafig, _ = lamp.spectra.plot(
-            # fig=fig, ax=ax,
             title="",
             weights=True,
             label=True,
         )
-        spectrafig.set_size_inches(5, 6, forward=True)
+        spectrafig.set_size_inches(6, 4.5, forward=True)
         spectrafig.axes[0].set_yscale(yscale)
-        cols = st.columns(2)
-        cols[1].pyplot(spectrafig, use_container_width=True)
-        cols[0].pyplot(iesfig, use_container_width=True)
-    elif PLOT_IES and not PLOT_SPECTRA:
-        # just display the ies file plot
-        iesfig, iesax = lamp.plot_ies()
-        st.pyplot(iesfig, use_container_width=True)
-    elif PLOT_SPECTRA and not PLOT_IES:
-        # display just the spectra
-        spectrafig, _ = lamp.spectra.plot(
-            # fig=fig, ax=ax,
-            title="",
-            weights=True,
-            label=True,
-        )
-        spectrafig.set_size_inches(6, 4, forward=True)
-        spectrafig.axes[0].set_yscale(yscale)
-        st.pyplot(spectrafig, use_container_width=True)
+        cols[0].pyplot(spectrafig, use_container_width=True)
 
     if lamp.filename in ss.vendored_spectra.keys():
 
         if "PRERELEASE" not in lamp.filename:
             link = ss.reports[lamp.filename].replace(" ", "%20")
             st.markdown(f"[View Full Report]({link})")
-
+            
 def lamp_position_options(lamp):
 
     # Position inputs
@@ -562,3 +432,4 @@ def lamp_advanced_options(lamp):
     )
     st.write("Most photometric files are in units of mW/Sr, but some GUV photometric files may be in uW/cm². If your calculation seems suspiciously off by a factor of 10, try changing this option.")
     
+  

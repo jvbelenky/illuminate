@@ -114,6 +114,7 @@ def initialize_lamp(lamp):
         f"depth_{lamp.lamp_id}",
         f"source_density_{lamp.lamp_id}",
         f"enabled_{lamp.lamp_id}",
+        f"{lamp.lamp_id}_spectra_yscale",
     ]
 
     vals = [
@@ -134,6 +135,7 @@ def initialize_lamp(lamp):
         lamp.surface.depth,
         lamp.surface.source_density,
         lamp.enabled,
+        "linear",
     ]
     add_keys(keys, vals)
 

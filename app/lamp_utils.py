@@ -319,12 +319,10 @@ def update_lamp_name(lamp):
     """update lamp name from widget"""
     lamp.name = set_val(f"name_{lamp.lamp_id}", lamp.name)
 
-
-def update_lamp_intensity_units(lamp):
-    """update the lamp intensity units of the photometric file; generally either mW/Sr or uW/cm2"""
-    lamp.intensity_units = set_val(
-        f"intensity_units_{lamp.lamp_id}", lamp.intensity_units
-    )
+def adjust_yscale(lamp):#,spectrafig):
+    """adjust the spectra figure yscale"""
+    yscale = ss[f"{lamp.lamp_id}_spectra_yscale"]#set_val(f"{lamp.lamp_id}_spectra_yscale", "linear")
+    ss.spectrafig.axes[0].set_yscale(yscale)
 
 
 def update_wavelength(lamp):
@@ -442,6 +440,11 @@ def update_intensity_map(lamp):
     else:
         lamp.load_intensity_map(None)
 
+def update_lamp_intensity_units(lamp):
+    """update the lamp intensity units of the photometric file; generally either mW/Sr or uW/cm2"""
+    lamp.intensity_units = set_val(
+        f"intensity_units_{lamp.lamp_id}", lamp.intensity_units
+    )
 
 def update_lamp_visibility(lamp):
     """update whether lamp shows in plot or not from widget"""
