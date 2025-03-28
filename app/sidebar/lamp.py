@@ -334,7 +334,7 @@ def lamp_position_options(lamp):
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 
-    cols = st.columns([2,1])
+    cols = st.columns([0.75,0.25])
     cols[0].subheader(
         "Near-field lamp options",
         help="These options are only used for calculation's inside a lamp's photometric distance",
@@ -377,13 +377,24 @@ def lamp_source_options(lamp):
         help="Determines the minimum mounting distance of the luminaire.",
     )
     if lamp.surface.photometric_distance is not None:
-        if lamp.surface.units == "meters":
-            val = round(lamp.surface.photometric_distance, 4)
-        else:
-            val = round(lamp.surface.photometric_distance * 0.3048, 4)
+        val = round(lamp.surface.photometric_distance, 4)
         st.markdown(
             f"**Photometric distance:** {val} {lamp.surface.units}",
             help="Near-field specific calculations are only performed within this distance from the lamp.",
+        )
+    
+    if lamp.filedata is not None:
+        old_ies=lamp.save_ies(original=True) 
+        new_ies=lamp.save_ies(original=False)    
+        fname = str(lamp.filename)
+        fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        st.download_button(
+            "Download updated .ies file",
+            data=new_ies,#lamp.save_ies(original=False),
+            file_name=fname,
+            use_container_width=True,
+            type="secondary" if new_ies==old_ies else "primary",
+            key=f"download_updated_ies_{lamp.lamp_id}",
         )
 
     cols = st.columns(2)
