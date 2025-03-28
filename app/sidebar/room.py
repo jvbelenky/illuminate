@@ -20,16 +20,19 @@ def room_sidebar():
 
     col1.number_input(
         "Room length (x)",
+        format="%0.3f",
         key="room_x",
         on_change=update_room_x,
     )
     col2.number_input(
         "Room width (y)",
+        format="%0.3f",
         key="room_y",
         on_change=update_room_y,
     )
     col3.number_input(
         "Room height (z)",
+        format="%0.3f",
         key="room_z",
         on_change=update_room_z,
     )

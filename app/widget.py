@@ -59,6 +59,7 @@ def initialize_room():
         "room_x",
         "room_y",
         "room_z",
+        "units",
         "room_standard",
         "reflectance_ceiling",
         "reflectance_north",
@@ -72,11 +73,11 @@ def initialize_room():
         "ozone_decay_constant_results",
         "room_standard_results",
     ]
-    x, y, z = ss.room.get_dimensions()
     vals = [
-        x,
-        y,
-        z,
+        ss.room.x,
+        ss.room.y,
+        ss.room.z,
+        ss.room.units,
         ss.room.standard,
         ss.room.ref_manager.reflectances["ceiling"],
         ss.room.ref_manager.reflectances["north"],

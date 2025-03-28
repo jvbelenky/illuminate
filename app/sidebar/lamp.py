@@ -21,6 +21,7 @@ from app.lamp_utils import (
     update_source_density,
     update_intensity_map,
     update_lamp_visibility,
+    update_lamp_intensity_units
 )
 
 SELECT_LOCAL = "Select local file..."
@@ -44,19 +45,50 @@ def lamp_sidebar():
         )
 
     ss.selected_lamp = ss.room.lamps[ss.selected_lamp_id]
-    initialize_lamp(ss.selected_lamp)  # initialize widgets
-    lamp_name_widget(ss.selected_lamp)  # name
+    lamp = ss.selected_lamp
+    
+    initialize_lamp(lamp)  # initialize widgets
+    lamp_name_widget(lamp)  # name
 
-    lamp_type_widget(ss.selected_lamp)
-    if ss.selected_lamp.guv_type == "Other":
-        lamp_wavelength_options(ss.selected_lamp)
+    lamp_type_widget(lamp)
+    if lamp.guv_type == "Other":
+        lamp_wavelength_options(lamp)
 
-    lamp_file_options(ss.selected_lamp)  # file input
-    lamp_info(ss.selected_lamp)  # plot and display other info if file has been selected
-    lamp_position_options(ss.selected_lamp)  # position, orientation, etc
+    lamp_file_options(lamp)  # file input
+    
+    # download files
+    
+    # cols = st.columns([1.5, 2, 2])
+    # show_info = cols[0].checkbox("Show lamp info")
+    # if lamp.filedata is not None:
+        # fname = str(lamp.filename)
+        # fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        # cols[1].download_button(
+            # "Download .ies file",
+            # data=lamp.save_ies(original=True),
+            # file_name=fname,
+            # use_container_width=True,
+            # key=f"download_ies_{lamp.lamp_id}",
+        # )
+    # if lamp.spectra is not None:
+        # fname = str(lamp.filename)
+        # fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
+        # cols[2].download_button(
+            # "Download spectrum .csv",
+            # data=lamp.spectra.to_csv(),
+            # file_name=fname,
+            # use_container_width=True,
+            # key=f"download_spectrum_{lamp.lamp_id}",
+        # )
+    # if show_info:
+    lamp_info(lamp)  # plot and display other info if file has been selected
+    lamp_position_options(lamp)  # position, orientation, etc
 
-    # if ss.selected_lamp.filedata is not None:
-    lamp_source_options(ss.selected_lamp)  # specify source  properties
+    st.header("Advanced settings")
+    lamp_source_options(lamp)  # specify source  properties
+    
+    lamp_advanced_options(lamp)
+
 
     col3, col4 = st.columns(2)
     with col3:
@@ -80,15 +112,18 @@ def lamp_sidebar():
         )
 
     # prevent lamp from participating in calculations
-    ss.selected_lamp.enabled = st.checkbox(
+    lamp.enabled = st.checkbox(
         "Enabled",
         on_change=update_lamp_visibility,
-        args=[ss.selected_lamp],
-        key=f"enabled_{ss.selected_lamp.lamp_id}",
+        args=[lamp],
+        key=f"enabled_{lamp.lamp_id}",
     )
 
 
 def lamp_wavelength_options(lamp):
+    """
+    NOTE: Currently not used
+    """
     if lamp.wavelength in ss.wavelength_options:
         wv_idx = ss.wavelength_options.index(lamp.wavelength)
     else:
@@ -159,6 +194,89 @@ def lamp_file_options(lamp):
                 else:
                     spectra_upload_widget(lamp)
 
+
+def lamp_info_new(lamp):
+    """display info and plot if there is data to plot with"""
+
+    cols = st.columns(2)
+    if lamp.filedata is not None:
+        
+        skinmax, eyemax = lamp.get_limits(ss.room.standard)
+        cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
+        cols[1].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
+
+    # PLOT_IES, PLOT_SPECTRA = False, False
+    
+        # PLOT_IES = cols[0].checkbox("Show polar plot", key="show_polar", value=False)
+
+    
+        # fname = str(lamp.filename)
+        # fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
+        # cols[1].download_button(
+            # "Download spectrum .csv",
+            # data=lamp.spectra.to_csv(),
+            # file_name=fname,
+            # use_container_width=True,
+            # key=f"download_spectrum_{lamp.lamp_id}",
+        # )
+        # PLOT_SPECTRA = cols[1].checkbox(
+            # "Show spectra plot", key="show_spectra", value=False
+        # )
+        # if PLOT_SPECTRA:
+        # cols[1].write("")
+        # cols[1].write("")
+        # cols[1].write("")
+        
+        # else:
+            # yscale = "linear"  # kludgey default value setting
+
+    # if PLOT_IES and PLOT_SPECTRA:
+        # plot both charts side by side
+    
+    
+    # fig, ax = plt.subplots()
+    if lamp.spectra is not None:
+        spectrafig, _ = lamp.spectra.plot(
+            # fig=fig, ax=ax,
+            title="",
+            weights=True,
+            label=True,
+        )
+        spectrafig.set_size_inches(5, 6, forward=True)
+        spectrafig.axes[0].set_yscale(yscale)
+        cols[1].pyplot(spectrafig, use_container_width=True)
+        yscale = cols[1].selectbox(
+                "Spectra y-scale",
+                options=["linear", "log"],
+                # label_visibility="collapsed",
+                key="spectra_yscale",
+            )
+    # cols = st.columns(2)
+    if lamp.filedata is not None:
+        cols[0].pyplot(iesfig, use_container_width=True)
+        iesfig, iesax = lamp.plot_ies()
+    
+    # elif PLOT_IES and not PLOT_SPECTRA:
+        # # just display the ies file plot
+        # iesfig, iesax = lamp.plot_ies()
+        # st.pyplot(iesfig, use_container_width=True)
+    # elif PLOT_SPECTRA and not PLOT_IES:
+        # # display just the spectra
+        # spectrafig, _ = lamp.spectra.plot(
+            # # fig=fig, ax=ax,
+            # title="",
+            # weights=True,
+            # label=True,
+        # )
+        # spectrafig.set_size_inches(6, 4, forward=True)
+        # spectrafig.axes[0].set_yscale(yscale)
+        # st.pyplot(spectrafig, use_container_width=True)
+
+    if lamp.filename in ss.vendored_spectra.keys():
+
+        if "PRERELEASE" not in lamp.filename:
+            link = ss.reports[lamp.filename].replace(" ", "%20")
+            cols[0].markdown(f"[View Full Report]({link})")
 
 def lamp_info(lamp):
     """display info and plot if there is data to plot with"""
@@ -246,17 +364,20 @@ def lamp_info(lamp):
             link = ss.reports[lamp.filename].replace(" ", "%20")
             st.markdown(f"[View Full Report]({link})")
 
-
 def lamp_position_options(lamp):
 
     # Position inputs
-    st.subheader("Position and orientation options")
+    cola, colb = st.columns([0.75,0.25])
+    cola.subheader("Position and orientation options")
+    colb.write("")
+    colb.write(f"Units: {ss.room.units}")
 
     col1, col2, col3 = st.columns(3)
     col1.number_input(
         "Position X",
         min_value=0.0,
         step=0.1,
+        format="%0.3f",
         key=f"pos_x_{lamp.lamp_id}",
         on_change=update_lamp_position,
         args=[lamp],
@@ -265,6 +386,7 @@ def lamp_position_options(lamp):
         "Position Y",
         min_value=0.0,
         step=0.1,
+        format="%0.3f",
         key=f"pos_y_{lamp.lamp_id}",
         on_change=update_lamp_position,
         args=[lamp],
@@ -273,6 +395,7 @@ def lamp_position_options(lamp):
         "Position Z",
         min_value=0.0,
         step=0.1,
+        format="%0.3f",
         key=f"pos_z_{lamp.lamp_id}",
         on_change=update_lamp_position,
         args=[lamp],
@@ -281,8 +404,6 @@ def lamp_position_options(lamp):
     # Rotation input
     st.number_input(
         "Rotation",
-        # min_value=0.0,
-        # max_value=360.0,
         step=1.0,
         key=f"rotation_{lamp.lamp_id}",
         on_change=update_lamp_rotation,
@@ -297,18 +418,21 @@ def lamp_position_options(lamp):
     col4, col5, col6 = st.columns(3)
     col4.number_input(
         "Aim X",
+        format="%0.3f",
         key=f"aim_x_{lamp.lamp_id}",
         on_change=update_lamp_orientation,
         args=[lamp],
     )
     col5.number_input(
         "Aim Y",
+        format="%0.3f",
         key=f"aim_y_{lamp.lamp_id}",
         on_change=update_lamp_orientation,
         args=[lamp],
     )
     col6.number_input(
         "Aim Z",
+        format="%0.3f",
         key=f"aim_z_{lamp.lamp_id}",
         on_change=update_lamp_orientation,
         args=[lamp],
@@ -321,7 +445,7 @@ def lamp_position_options(lamp):
     col7, col8 = st.columns(2)
     col7.number_input(
         "Tilt",
-        format="%.1f",
+        format="%0.2f",
         step=1.0,
         key=f"tilt_{lamp.lamp_id}",
         on_change=update_from_tilt,
@@ -329,7 +453,7 @@ def lamp_position_options(lamp):
     )
     col8.number_input(
         "Orientation",
-        format="%.1f",
+        format="%0.2f",
         step=1.0,
         key=f"orientation_{lamp.lamp_id}",
         on_change=update_from_orientation,
@@ -340,20 +464,24 @@ def lamp_position_options(lamp):
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 
-    st.subheader(
+    cols = st.columns([2,1])
+    cols[0].subheader(
         "Near-field lamp options",
         help="These options are only used for calculation's inside a lamp's photometric distance",
     )
+    cols[1].write("")
+    cols[1].write(f"Units: {lamp.surface.units}")
 
-    st.markdown(
-        f"Source dimensions ({lamp.surface.units})",
-        help="These values were set automatically from your .ies file. If they are incorrect, you can change them and download the corrected .ies file.",
-    )
+    # st.markdown(
+        # f"Source dimensions ({lamp.surface.units})",
+        # help="These values were set automatically from your .ies file. If they are incorrect, you can change them and download the corrected .ies file.",
+    # )
 
     cols = st.columns(3)
     cols[0].number_input(
         "Source width",
         min_value=0.0,
+        format="%0.3f",
         key=f"width_{lamp.lamp_id}",
         on_change=update_lamp_width,
         args=[lamp],
@@ -362,29 +490,22 @@ def lamp_source_options(lamp):
     cols[1].number_input(
         "Source length",
         min_value=0.0,
+        format="%0.3f",
         key=f"length_{lamp.lamp_id}",
         on_change=update_lamp_length,
-        help="Y-axis distance of the lamp's emissive surface",
         args=[lamp],
+        help="Y-axis distance of the lamp's emissive surface",
     )
 
     cols[2].number_input(
         "Source depth",
         min_value=0.0,
+        format="%0.3f",
         key=f"depth_{lamp.lamp_id}",
         on_change=update_lamp_depth,
         args=[lamp],
         help="Determines the minimum mounting distance of the luminaire.",
     )
-
-    # cols[3].selectbox(
-    # "Source units",
-    # options=["feet", "meters"],
-    # key=f"units_{lamp.lamp_id}",
-    # on_change=update_source_parameters,
-    # args=[lamp],
-    # help="Units for all source parameters",
-    # )
     if lamp.surface.photometric_distance is not None:
         if lamp.surface.units == "meters":
             val = round(lamp.surface.photometric_distance, 4)
@@ -427,3 +548,17 @@ def lamp_source_options(lamp):
     if ss.warning_message is not None:
         st.warning(ss.warning_message)
         ss.warning_message = None
+
+def lamp_advanced_options(lamp):
+    st.subheader("Lamp intensity units")
+    st.selectbox(
+        "Intensity units",
+        options=["mW/sr", "uW/cm²"],
+        index=0 if lamp.intensity_units.lower() == "mw/sr" else 1,
+        label_visibility="collapsed",
+        on_change=update_lamp_intensity_units,
+        args=[lamp],
+        key=f"intensity_units_{lamp.lamp_id}",
+    )
+    st.write("Most photometric files are in units of mW/Sr, but some GUV photometric files may be in uW/cm². If your calculation seems suspiciously off by a factor of 10, try changing this option.")
+    

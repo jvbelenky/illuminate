@@ -121,6 +121,9 @@ def load_uploaded_lamp(lamp):
         lamp.reload(filename=fname, filedata=fdata)
         # load spectra if present
         load_uploaded_spectra(lamp)
+        # harmonize units
+        if lamp.surface.units != ss.room.units:
+            lamp.set_units(ss.room.units)
 
 
 def make_lamp_name(fname):
@@ -170,6 +173,8 @@ def load_uploaded_spectra(lamp):
 
 def _load_lamp(lamp, fname=None, fdata=None, spectra_data=None):
     lamp.reload(filename=fname, filedata=fdata)
+    if lamp.surface.units != ss.room.units:
+            lamp.set_units(ss.room.units)
     _load_spectra(lamp, spectra_data)
 
 
@@ -275,8 +280,8 @@ def lamp_select_widget(lamp):
     else:
         helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."
 
-    cols = st.columns([3, 1])
-    cols[0].selectbox(
+    # cols = st.columns([3, 1])
+    st.selectbox(
         "Select lamp",
         ss.lamp_options,
         index=fname_idx,
@@ -284,15 +289,6 @@ def lamp_select_widget(lamp):
         args=[lamp],
         key=f"file_{lamp.lamp_id}",
         help=helptext,
-    )
-    cols[1].selectbox(
-        "Intensity units",
-        options=["mW/sr", "uW/cm²"],
-        index=0 if lamp.intensity_units.lower() == "mw/sr" else 1,
-        on_change=update_lamp_intensity_units,
-        args=[lamp],
-        key=f"intensity_units_{lamp.lamp_id}",
-        help="Most photometric files are in units of mW/Sr, but some GUV photometric files may be in uW/cm². If your calculation seems suspiciously off by a large factor, try changing this option.",
     )
 
 
@@ -315,8 +311,7 @@ def spectra_upload_widget(lamp):
         key=f"spectra_upload_{lamp.lamp_id}",
         help="A valid spectra file is a .csv where the first column is a list of wavelengths, and the second column is a list of corresponding relative intensities.",
     )
-
-
+    
 # widget callbacks
 
 
