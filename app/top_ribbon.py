@@ -35,6 +35,8 @@ def top_ribbon():
     lamp_names += [ADD_LAMP]
     lamp_ids = [None] + [lamp_id for lamp_id in ss.room.lamps.keys()] + [ADD_LAMP]
     lamp_sel_idx = lamp_ids.index(ss.selected_lamp_id)
+    # if 'lamp_select' not in ss:
+    # ss['lamp_select']=lamp_sel_idx
     c[3].selectbox(
         "Select luminaire to edit",
         options=range(len(lamp_names)),
@@ -66,7 +68,6 @@ def top_ribbon():
         key="zone_select",
     )
 
-    check_recalculation()
     if check_recalculation():
         button_type = "primary"
     else:
@@ -162,7 +163,8 @@ def update_zone_select(zone_ids):
 
 def calculate():
     """calculate and show results in right pane"""
-    ss.room.calculate()
+    with st.spinner("Calculating...", show_time=True):
+        ss.room.calculate()
     show_results()
 
 

@@ -22,7 +22,7 @@ from app.lamp_utils import (
     update_intensity_map,
     update_lamp_visibility,
     update_lamp_intensity_units,
-    adjust_yscale
+    # adjust_yscale,
 )
 
 SELECT_LOCAL = "Select local file..."
@@ -47,7 +47,7 @@ def lamp_sidebar():
 
     ss.selected_lamp = ss.room.lamps[ss.selected_lamp_id]
     lamp = ss.selected_lamp
-    
+
     initialize_lamp(lamp)  # initialize widgets
     lamp_name_widget(lamp)  # name
 
@@ -56,9 +56,9 @@ def lamp_sidebar():
         lamp_wavelength_options(lamp)
 
     lamp_file_options(lamp)  # file input
-    
+
     # download files
-    
+
     cols = st.columns([1.5, 2, 2])
     show_info = cols[0].checkbox("Show lamp info")
     if lamp.filedata is not None:
@@ -87,9 +87,8 @@ def lamp_sidebar():
 
     st.header("Advanced settings")
     lamp_source_options(lamp)  # specify source  properties
-    
-    lamp_advanced_options(lamp)
 
+    lamp_advanced_options(lamp)
 
     col3, col4 = st.columns(2)
     with col3:
@@ -195,7 +194,6 @@ def lamp_file_options(lamp):
                 else:
                     spectra_upload_widget(lamp)
 
-  
 
 def lamp_info(lamp):
     """display info and plot if there is data to plot with"""
@@ -206,13 +204,21 @@ def lamp_info(lamp):
         cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
         cols[1].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
 
-    cols = st.columns([2,1])
+    # cols = st.columns([1,3, 1])
+
     if lamp.filedata is not None:
-        
         iesfig, iesax = lamp.plot_ies()
-        cols[0].pyplot(iesfig)#, use_container_width=True)
-    
-    cols = st.columns([2.8,0.7])
+        handles, labels = iesax.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        iesax.legend(
+                by_label.values(),
+                by_label.keys(),
+                loc="upper center",
+                bbox_to_anchor=[1.6, -0.1, 0, 1.1],
+            )
+        st.pyplot(iesfig)  # , use_container_width=True)
+
+    cols = st.columns([2.8, 0.7])
     if lamp.spectra is not None:
         yscale = cols[1].selectbox(
             "y-scale",
@@ -233,11 +239,12 @@ def lamp_info(lamp):
         if "PRERELEASE" not in lamp.filename:
             link = ss.reports[lamp.filename].replace(" ", "%20")
             st.markdown(f"[View Full Report]({link})")
-            
+
+
 def lamp_position_options(lamp):
 
     # Position inputs
-    cola, colb = st.columns([0.75,0.25])
+    cola, colb = st.columns([0.75, 0.25])
     cola.subheader("Position and orientation options")
     colb.write("")
     colb.write(f"Units: {ss.room.units}")
@@ -334,7 +341,7 @@ def lamp_position_options(lamp):
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 
-    cols = st.columns([0.75,0.25])
+    cols = st.columns([0.75, 0.25])
     cols[0].subheader(
         "Near-field lamp options",
         help="These options are only used for calculation's inside a lamp's photometric distance",
@@ -343,8 +350,8 @@ def lamp_source_options(lamp):
     cols[1].write(f"Units: {lamp.surface.units}")
 
     # st.markdown(
-        # f"Source dimensions ({lamp.surface.units})",
-        # help="These values were set automatically from your .ies file. If they are incorrect, you can change them and download the corrected .ies file.",
+    # f"Source dimensions ({lamp.surface.units})",
+    # help="These values were set automatically from your .ies file. If they are incorrect, you can change them and download the corrected .ies file.",
     # )
 
     cols = st.columns(3)
@@ -382,18 +389,18 @@ def lamp_source_options(lamp):
             f"**Photometric distance:** {val} {lamp.surface.units}",
             help="Near-field specific calculations are only performed within this distance from the lamp.",
         )
-    
+
     if lamp.filedata is not None:
-        old_ies=lamp.save_ies(original=True) 
-        new_ies=lamp.save_ies(original=False)    
+        old_ies = lamp.save_ies(original=True)
+        new_ies = lamp.save_ies(original=False)
         fname = str(lamp.filename)
         fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
         st.download_button(
             "Download updated .ies file",
-            data=new_ies,#lamp.save_ies(original=False),
+            data=new_ies,  # lamp.save_ies(original=False),
             file_name=fname,
             use_container_width=True,
-            type="secondary" if new_ies==old_ies else "primary",
+            type="secondary" if new_ies == old_ies else "primary",
             key=f"download_updated_ies_{lamp.lamp_id}",
         )
 
@@ -430,6 +437,7 @@ def lamp_source_options(lamp):
         st.warning(ss.warning_message)
         ss.warning_message = None
 
+
 def lamp_advanced_options(lamp):
     st.subheader("Lamp intensity units")
     st.selectbox(
@@ -441,6 +449,6 @@ def lamp_advanced_options(lamp):
         args=[lamp],
         key=f"intensity_units_{lamp.lamp_id}",
     )
-    st.write("Most photometric files are in units of mW/Sr, but some GUV photometric files may be in uW/cm². If your calculation seems suspiciously off by a factor of 10, try changing this option.")
-    
-  
+    st.write(
+        "Most photometric files are in units of mW/sr, but some GUV photometric files may be in uW/cm². If your calculation seems suspiciously off by a factor of 10, try changing this option."
+    )

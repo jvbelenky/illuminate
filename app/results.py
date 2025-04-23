@@ -38,8 +38,11 @@ def results_page():
                 st.warning(msg)
     # if we're good print the results
     print_summary()
-    if any(key not in SPECIAL_ZONES for key in ss.room.calc_zones.keys()):
-        print_user_defined_zones()
+    zones = ss.room.calc_zones
+    user_zones = [key for key in zones.keys() if key not in SPECIAL_ZONES]
+    if len(user_zones)>0:
+        if any([zones[key].values is not None for key in user_zones]):
+            print_user_defined_zones()
     print_safety()
     print_efficacy()
     if all(["Krypton chloride" in lamp.guv_type for lamp in lamps.values()]):
@@ -50,17 +53,18 @@ def results_page():
 
 def print_summary():
     st.subheader("Summary", divider="grey")
-    fluence = ss.room.calc_zones["WholeRoomFluence"]
+    fluence_values = ss.room.calc_zones["WholeRoomFluence"].get_values()
     skin = ss.room.calc_zones["SkinLimits"]
     eye = ss.room.calc_zones["EyeLimits"]
+    skin_values = skin.get_values()
+    eye_values = eye.get_values()
 
     # avg fluence
-    if fluence.values is not None:
-        avg_fluence = round(fluence.values.mean(), 3)
-        fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm²"
+    if fluence_values is not None:
+        fluence_str = f"**:violet[{fluence_values.mean():.3f}]** μW/cm²"
         st.write("**Average fluence:** " + fluence_str)
 
-    if skin.values is not None and eye.values is not None:
+    if skin_values is not None and eye_values is not None:
 
         weighted_skin_dose, weighted_eye_dose = check_lamps(ss.room, warn=False)
 
@@ -71,12 +75,10 @@ def print_summary():
         if weighted_eye_dose.max() > 3:
             eyecolor = "red"
 
-        skin_max = round(skin.values.max(), 2)
-        skin_str = f"**:{skincolor}[{skin_max}]** {skin.units}"
+        skin_str = f"**:{skincolor}[{skin_values.max():.2f}]** {skin.units}"
         st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
 
-        eye_max = round(eye.values.max(), 2)
-        eye_str = f"**:{eyecolor}[{eye_max}]** {eye.units}"
+        eye_str = f"**:{eyecolor}[{eye_values.max():.2f}]** {eye.units}"
         st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
 
         if max(weighted_skin_dose.max(), weighted_eye_dose.max()) > 3:
@@ -88,7 +90,7 @@ def print_user_defined_zones():
     """all user-defined calc zones, basic stats and"""
     st.subheader("User Defined Calculation Zones", divider="grey")
     for zone_id, zone in ss.room.calc_zones.items():
-        vals = zone.values
+        vals = zone.get_values()
         if vals is not None and zone.zone_id not in SPECIAL_ZONES:
             cols = st.columns(2)
             if zone.calctype == "Plane":
@@ -103,13 +105,17 @@ def print_user_defined_zones():
             unitstr = zone.units
             if zone.dose:
                 unitstr = f"mJ/cm² over {zone.hours} hours"
-                roundval = 1
+                avgstr = f"**Average:** \t{vals.mean():.1f} {unitstr}"
+                maxstr = f"**Max:** \t{vals.max():.1f} {unitstr}"
+                minstr = f"**Min:** \t{vals.min():.1f} {unitstr}"
             else:
                 unitstr = "uW/cm²"
-                roundval = 3
-            cols[1].write(f"**Average:** \t{round(vals.mean(), roundval)} {unitstr}")
-            cols[1].write(f"**Min:** \t{round(vals.min(), roundval)} {unitstr}")
-            cols[1].write(f"**Max:** \t{round(vals.max(), roundval)} {unitstr}")
+                avgstr = f"**Average:** \t{vals.mean():.3f} {unitstr}"
+                maxstr = f"**Max:** \t{vals.max():.3f} {unitstr}"
+                minstr = f"**Min:** \t{vals.min():.3f} {unitstr}"
+            cols[1].write(avgstr)
+            cols[1].write(maxstr)
+            cols[1].write(minstr)
             cols[1].write("")
             cols[1].write("")
             try:
@@ -138,21 +144,24 @@ def print_safety():
         key="room_standard_results",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH). The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP). Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
     )
+
     skin = ss.room.calc_zones["SkinLimits"]
     eye = ss.room.calc_zones["EyeLimits"]
+    skin_values = skin.get_values()
+    eye_values = eye.get_values()
 
-    SHOW_SKIN = True if skin.values is not None else False
-    SHOW_EYES = True if eye.values is not None else False
+    SHOW_SKIN = True if skin_values is not None else False
+    SHOW_EYES = True if eye_values is not None else False
     if SHOW_SKIN and SHOW_EYES:
         cols = st.columns(2)
 
         weighted_skin_dose, weighted_eye_dose = check_lamps(ss.room, warn=True)
 
-        skinmax = skin.values.max().round(1)
+        skinmax = skin_values.max().round(1)
         skinmax_w = weighted_skin_dose.max().round(2)
         skin_hrs = round(3 * 8 / weighted_skin_dose.max(), 1)
 
-        eyemax = eye.values.max().round(1)
+        eyemax = eye_values.max().round(1)
         eyemax_w = weighted_eye_dose.max().round(2)
         eye_hrs = round(3 * 8 / weighted_eye_dose.max(), 1)
 
@@ -169,9 +178,9 @@ def print_safety():
                 f"\tHours to skin TLV: **:{skincolor}[Indefinite]** ({skin_hrs} hours)"
             )
         cols[0].write(skin_hours_str)
-        cols[0].write(f"\tMax 8-hour skin dose: **:{skincolor}[{skinmax}]** mJ/cm²")
+        cols[0].write(f"\tMax 8-hour skin dose: **:{skincolor}[{skinmax:.1f}]** mJ/cm²")
         cols[0].write(
-            f"\tMax 8-hour *weighted* skin dose: **:{skincolor}[{skinmax_w}]** mJ/cm²"
+            f"\tMax 8-hour *weighted* skin dose: **:{skincolor}[{skinmax_w:.2f}]** mJ/cm²"
         )
 
         if eye_hrs < 8:
@@ -181,16 +190,16 @@ def print_safety():
                 f"\tHours to eye TLV: **:{eyecolor}[Indefinite]** ({eye_hrs} hours)"
             )
         cols[1].write(eye_hours_str)
-        cols[1].write(f"\tMax 8-hour eye dose: **:{eyecolor}[{eyemax}]** mJ/cm²")
+        cols[1].write(f"\tMax 8-hour eye dose: **:{eyecolor}[{eyemax:.1f}]** mJ/cm²")
         cols[1].write(
-            f"\tMax 8-hour *weighted* eye dose: **:{eyecolor}[{eyemax_w}]** mJ/cm²"
+            f"\tMax 8-hour *weighted* eye dose: **:{eyecolor}[{eyemax_w:.2f}]** mJ/cm²"
         )
 
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
-            skintitle = f"8-Hour Skin Dose (Max: {skinmax} {skin.units})"
-            eyetitle = f"8-Hour Eye Dose (Max: {eyemax} {eye.units})"
+            skintitle = f"8-Hour Skin Dose (Max: {skinmax:.1f} {skin.units})"
+            eyetitle = f"8-Hour Eye Dose (Max: {eyemax:.1f} {eye.units})"
 
             cols[0].pyplot(
                 skin.plot_plane(title=skintitle)[0],
@@ -222,13 +231,15 @@ def check_lamps(room, warn=True):
 
     skin = room.calc_zones["SkinLimits"]
     eye = room.calc_zones["EyeLimits"]
+    skin_values = skin.get_values()
+    eye_values = eye.get_values()
 
     skindims, eyedims = {}, {}
-    weighted_skin_dose = np.zeros(skin.values.shape)
-    weighted_eye_dose = np.zeros(eye.values.shape)
+    weighted_skin_dose = np.zeros(skin_values.shape)
+    weighted_eye_dose = np.zeros(eye_values.shape)
 
-    dimmed_weighted_skin_dose = np.zeros(skin.values.shape)
-    dimmed_weighted_eye_dose = np.zeros(eye.values.shape)
+    dimmed_weighted_skin_dose = np.zeros(skin_values.shape)
+    dimmed_weighted_eye_dose = np.zeros(eye_values.shape)
 
     # check if any individual lamp exceeds the limits
     for lampid, lamp in room.lamps.items():
@@ -332,15 +343,15 @@ def print_efficacy():
         help="Equivalent air changes from UV (eACH-UV) in a *well-mixed room* is determined by the average fluence [mW/cm2] multiplied by the susceptibility value k [cm2/mW] multiplied by the number of seconds in an hour (3600). **Note that values of k are highly uncertain and should be considered preliminary.**",
     )
     fluence = ss.room.calc_zones["WholeRoomFluence"]
-    if fluence.values is not None:
-        fluence.values
-        avg_fluence = round(fluence.values.mean(), 3)
+    fluence_values = fluence.get_values()
+    if fluence_values is not None:
+        avg_fluence = round(fluence_values.mean(), 3)
         fluence_str = "**:violet[" + str(avg_fluence) + "]** μW/cm2"
     else:
         fluence_str = None
     st.write("**Average fluence:** ", fluence_str)
 
-    if fluence.values is not None:
+    if fluence_values is not None:
         SHOW_KPLOT = st.checkbox("Show Plot", value=True)
         if SHOW_KPLOT:
             st.pyplot(ss.kfig)
@@ -386,8 +397,8 @@ def print_airchem():
         key="ozone_decay_constant_results",
         help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
     )
-    fluence = ss.room.calc_zones["WholeRoomFluence"]
-    if fluence.values is not None:
+    fluence_values = ss.room.calc_zones["WholeRoomFluence"].get_values()
+    if fluence_values is not None:
         ozone_ppb = calculate_ozone_increase()
         ozone_color = "red" if ozone_ppb > 5 else "blue"
         ozone_str = f":{ozone_color}[**{round(ozone_ppb,2)} ppb**]"
@@ -429,14 +440,14 @@ def export_options():
     )
 
     for zone_id, zone in ss.room.calc_zones.items():
-
-        col.download_button(
-            zone.name,
-            data=zone.export(),
-            file_name=zone.name + ".csv",
-            use_container_width=True,
-            disabled=True if zone.values is None else False,
-        )
+        if zone.calctype in ["Plane","Volume"]:
+            col.download_button(
+                zone.name,
+                data=zone.export(),
+                file_name=zone.name + ".csv",
+                use_container_width=True,
+                disabled=True if zone.values is None else False,
+            )
 
 
 def update_standard_results():

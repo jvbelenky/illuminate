@@ -21,7 +21,7 @@ def zone_sidebar():
         DISABLED = True
     else:
         DISABLED = False
-    selected_zone = ss.room.calc_zones[ss.selected_zone_id]
+    zone = ss.room.calc_zones[ss.selected_zone_id]
 
     if ss.editing == "zones":
         cola, colb = st.columns([3, 1])
@@ -34,146 +34,185 @@ def zone_sidebar():
         colb.button("Go", on_click=create_zone, use_container_width=True)
 
     elif ss.editing in ["planes", "volumes"]:
-        selected_zone = ss.room.calc_zones[ss.selected_zone_id]
-        initialize_zone(selected_zone)
+        zone = ss.room.calc_zones[ss.selected_zone_id]
+        initialize_zone(zone)
         st.text_input(
             "Name",
-            key=f"name_{selected_zone.zone_id}",
+            key=f"name_{zone.zone_id}",
             on_change=update_zone_name,
-            args=[selected_zone],
+            args=[zone],
             disabled=DISABLED,
         )
 
     if ss.editing == "planes":
+        # Set calculation type (vertical / horizontal / all angles)
+        options = [
+            "Planar Normal (Horizontal irradiance, directional)",
+            "Planar Maximum (All angles, directional)",
+            "Fluence Rate (All angles)",
+            "Vertical irradiance (Directional)",
+            "Vertical irradiance",
+        ]
+        if zone.direction == 0:
+            if zone.vert:
+                calc_idx = 4
+            else:
+                calc_idx = 2
+        else:
+            if not zone.horiz and not zone.vert:
+                calc_idx = 1
+            elif zone.horiz and not zone.vert:
+                calc_idx = 0
+            elif not zone.horiz and zone.vert:
+                calc_idx = 3
+
+        st.selectbox(
+            "Calculation type",
+            options,
+            index=calc_idx,
+            on_change=update_calc_type,
+            args=[zone, options],
+            disabled=DISABLED,
+            key="calc_type",
+        )
+
+        col1, col2 = st.columns([2, 2])
+        col1.selectbox(
+            "Reference surface",
+            options=["xy", "xz", "yz"],
+            key=f"ref_surface_{zone.zone_id}",
+            on_change=update_ref_surface,
+            args=[zone],
+            disabled=DISABLED,
+        )
+
+        if zone.direction == 0:
+            col2.selectbox(
+                "Normal direction",
+                options=[None],
+                key=f"direction_{zone.zone_id}",
+                disabled=True,
+            )
+        else:
+            col2.selectbox(
+                "Normal direction",
+                options=[1, -1],
+                key=f"direction_{zone.zone_id}",
+                on_change=update_direction,
+                args=[zone],
+                disabled=DISABLED,
+            )
         col1, col2 = st.columns([2, 1])
-        # xy dimensions and height
+        # height, dimensions
         col1.number_input(
             "Height",
             min_value=0.0,
-            key=f"height_{selected_zone.zone_id}",
+            key=f"height_{zone.zone_id}",
             on_change=update_plane_height,
-            args=[selected_zone],
+            args=[zone],
             disabled=DISABLED,
         )
         col2.write("")
         col2.write("")
         col2.write(ss.room.units)
+
+        x = zone.ref_surface[0].upper()
+        y = zone.ref_surface[1].upper()
         col2, col3 = st.columns(2)
         with col2:
             st.number_input(
-                "X1",
+                f"{x}1",
                 # min_value=0.0,
-                key=f"x1_{selected_zone.zone_id}",
+                key=f"x1_{zone.zone_id}",
                 on_change=update_plane_x1,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "X2",
+                f"{x}2",
                 # min_value=0.0,
-                key=f"x2_{selected_zone.zone_id}",
+                key=f"x2_{zone.zone_id}",
                 on_change=update_plane_x2,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "Number of X points",
+                f"Number of columns ({x} points)",
                 min_value=1,
-                key=f"x_num_points_{selected_zone.zone_id}",
+                key=f"x_num_points_{zone.zone_id}",
                 on_change=update_plane_points,
-                args=[selected_zone],
+                args=[zone],
                 disabled=False,
             )
             st.number_input(
-                "X spacing",
+                f"Column ({x}) spacing",
                 # min_value=0.01,
-                # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
-                key=f"x_spacing_{selected_zone.zone_id}",
+                # max_value=float(abs(zone.x2 - zone.x1)),
+                key=f"x_spacing_{zone.zone_id}",
                 on_change=update_plane_x_spacing,
-                args=[selected_zone],
+                args=[zone],
                 disabled=False,
             )
 
         with col3:
             st.number_input(
-                "Y1",
+                f"{y}1",
                 # min_value=0.0,
-                key=f"y1_{selected_zone.zone_id}",
+                key=f"y1_{zone.zone_id}",
                 on_change=update_plane_y1,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "Y2",
+                f"{y}2",
                 # min_value=0.0,
-                key=f"y2_{selected_zone.zone_id}",
+                key=f"y2_{zone.zone_id}",
                 on_change=update_plane_y2,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "Number of Y points",
+                f"Number of rows ({y} points)",
                 min_value=1,
-                key=f"y_num_points_{selected_zone.zone_id}",
+                key=f"y_num_points_{zone.zone_id}",
                 on_change=update_plane_points,
-                args=[selected_zone],
+                args=[zone],
                 disabled=False,
             )
             st.number_input(
-                "Y spacing",
+                f"Row ({y}) spacing",
                 # min_value=0.01,
-                # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
-                key=f"y_spacing_{selected_zone.zone_id}",
+                # max_value=float(abs(zone.y2 - zone.y1)),
+                key=f"y_spacing_{zone.zone_id}",
                 on_change=update_plane_y_spacing,
-                args=[selected_zone],
+                args=[zone],
                 disabled=False,
             )
-
-        # Set calculation type (vertical / horizontal / all angles)
-        options = ["All angles", "Horizontal irradiance", "Vertical irradiance"]
-        if not selected_zone.vert and not selected_zone.horiz:
-            calc_type_index = 0
-        if selected_zone.horiz and not selected_zone.vert:
-            calc_type_index = 1
-        if not selected_zone.horiz and selected_zone.vert:
-            calc_type_index = 2
-        calc_type = st.selectbox(
-            "Calculation type", options, index=calc_type_index, disabled=DISABLED
-        )
-        if calc_type == "All angles":
-            selected_zone.horiz = False
-            selected_zone.vert = False
-        elif calc_type == "Horizontal irradiance":
-            selected_zone.horiz = True
-            selected_zone.vert = False
-        elif calc_type == "Vertical irradiance":
-            selected_zone.horiz = False
-            selected_zone.vert = True
 
         # Toggle 80 degree field of view
         cols = st.columns(2)
         cols[0].number_input(
-            "Vertical Field of View",
+            "Normal (Vertical) Field of View",
             step=1,
-            key=f"fov_vert_{selected_zone.zone_id}",
+            key=f"fov_vert_{zone.zone_id}",
             on_change=update_fov,
-            args=[selected_zone],
+            args=[zone],
             disabled=DISABLED,
             help="For calculating eye-dose. 80° per ANSI/IES RP 27.1-22. Max value: 180°",
         )
         cols[1].number_input(
-            "Horizontal Field of View",
+            "In-Plane Field of View",
             step=1,
-            key=f"fov_horiz_{selected_zone.zone_id}",
+            key=f"fov_horiz_{zone.zone_id}",
             on_change=update_fov,
-            args=[selected_zone],
+            args=[zone],
             disabled=DISABLED,
             help="For calculating eye-dose, given that most people do not have eyes in the back of their head. Values will be calculated as the largest value possible within the provided field of view. Max value: 360°",
         )
 
         # Set dose vs irradiance
         value_options = ["Irradiance (uW/cm2)", "Dose (mJ/cm2)"]
-        value_index = 1 if selected_zone.dose else 0
+        value_index = 1 if zone.dose else 0
         value_type = st.selectbox(
             "Value display type",
             options=value_options,
@@ -181,21 +220,21 @@ def zone_sidebar():
             disabled=DISABLED,
         )
         if value_type == "Dose (mJ/cm2)":
-            selected_zone.set_value_type(dose=True)
+            zone.set_value_type(dose=True)
             dose_time = st.number_input(
                 "Exposure time (hours)",
-                value=selected_zone.hours,
+                value=zone.hours,
                 disabled=DISABLED,
             )
-            selected_zone.set_dose_time(dose_time)
+            zone.set_dose_time(dose_time)
         elif value_type == "Irradiance (uW/cm2)":
-            selected_zone.set_value_type(dose=False)
+            zone.set_value_type(dose=False)
 
         st.checkbox(
             "Offset",
-            key=f"offset_{selected_zone.zone_id}",
+            key=f"offset_{zone.zone_id}",
             on_change=update_offset,
-            args=[selected_zone],
+            args=[zone],
             disabled=False,
         )
 
@@ -205,111 +244,111 @@ def zone_sidebar():
             st.number_input(
                 "X1",
                 # min_value=0.0,
-                key=f"x1_{selected_zone.zone_id}",
+                key=f"x1_{zone.zone_id}",
                 on_change=update_vol_x1,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
                 "X2",
                 # min_value=0.0,
-                key=f"x2_{selected_zone.zone_id}",
+                key=f"x2_{zone.zone_id}",
                 on_change=update_vol_x2,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "Number of X points",
+                "Number of columns (X points)",
                 min_value=1,
-                key=f"x_num_points_{selected_zone.zone_id}",
+                key=f"x_num_points_{zone.zone_id}",
                 on_change=update_vol_points,
-                args=[selected_zone],
+                args=[zone],
             )
             st.number_input(
-                "X spacing",
+                "Column (X) spacing",
                 # min_value=0.01,
-                # max_value=float(abs(selected_zone.x2 - selected_zone.x1)),
-                key=f"x_spacing_{selected_zone.zone_id}",
+                # max_value=float(abs(zone.x2 - zone.x1)),
+                key=f"x_spacing_{zone.zone_id}",
                 on_change=update_vol_x_spacing,
-                args=[selected_zone],
+                args=[zone],
             )
         with col2:
             st.number_input(
                 "Y1",
                 # min_value=0.0,
-                key=f"y1_{selected_zone.zone_id}",
+                key=f"y1_{zone.zone_id}",
                 on_change=update_vol_y1,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
                 "Y2",
                 # min_value=0.0,
-                key=f"y2_{selected_zone.zone_id}",
+                key=f"y2_{zone.zone_id}",
                 on_change=update_vol_y2,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "Number of Y points",
+                "Number of rows (Y points)",
                 min_value=1,
-                key=f"y_num_points_{selected_zone.zone_id}",
+                key=f"y_num_points_{zone.zone_id}",
                 on_change=update_vol_points,
-                args=[selected_zone],
+                args=[zone],
             )
             st.number_input(
-                "Y spacing",
+                "Row (Y) spacing",
                 # min_value=0.01,
-                # max_value=float(abs(selected_zone.y2 - selected_zone.y1)),
-                key=f"y_spacing_{selected_zone.zone_id}",
+                # max_value=float(abs(zone.y2 - zone.y1)),
+                key=f"y_spacing_{zone.zone_id}",
                 on_change=update_vol_y_spacing,
-                args=[selected_zone],
+                args=[zone],
             )
         with col3:
             st.number_input(
                 "Z1",
                 # min_value=0.0,
-                key=f"z1_{selected_zone.zone_id}",
+                key=f"z1_{zone.zone_id}",
                 on_change=update_vol_z1,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
                 "Z2",
                 # min_value=0.0,
-                key=f"z2_{selected_zone.zone_id}",
+                key=f"z2_{zone.zone_id}",
                 on_change=update_vol_z2,
-                args=[selected_zone],
+                args=[zone],
                 disabled=DISABLED,
             )
             st.number_input(
-                "Number of Z points",
+                "Number of vertical stacks (Z points)",
                 min_value=1,
-                key=f"z_num_points_{selected_zone.zone_id}",
+                key=f"z_num_points_{zone.zone_id}",
                 on_change=update_vol_points,
-                args=[selected_zone],
+                args=[zone],
             )
             st.number_input(
-                "Z spacing",
+                "Vertical (Z) spacing",
                 # min_value=0.01,
-                # max_value=float(abs(selected_zone.z2 - selected_zone.z1)),
-                key=f"z_spacing_{selected_zone.zone_id}",
+                # max_value=float(abs(zone.z2 - zone.z1)),
+                key=f"z_spacing_{zone.zone_id}",
                 on_change=update_vol_z_spacing,
-                args=[selected_zone],
+                args=[zone],
             )
 
         st.checkbox(
             "Offset",
-            key=f"offset_{selected_zone.zone_id}",
+            key=f"offset_{zone.zone_id}",
             on_change=update_offset,
-            args=[selected_zone],
+            args=[zone],
             disabled=False,
         )
         st.checkbox(
             "Show fluence isosurface",
             on_change=update_zone_visibility,
-            args=[selected_zone],
-            key=f"show_values_{selected_zone.zone_id}",
+            args=[zone],
+            key=f"show_values_{zone.zone_id}",
         )
     if ss.editing == "zones":
         st.button(
@@ -325,16 +364,16 @@ def zone_sidebar():
         st.checkbox(
             "Enabled",
             on_change=update_zone_visibility,
-            args=[selected_zone],
-            key=f"enabled_{selected_zone.zone_id}",
+            args=[zone],
+            key=f"enabled_{zone.zone_id}",
         )
 
-        disable_download = False  # True selected_zone.values is None else False
+        disable_download = False  # True zone.values is None else False
 
         st.download_button(
             "Export Solution",
-            data=selected_zone.export(),
-            file_name=selected_zone.name + ".csv",
+            data=zone.export(),
+            file_name=zone.name + ".csv",
             use_container_width=True,
             disabled=disable_download,
         )
@@ -402,6 +441,46 @@ def update_plane_y1(zone):
 def update_plane_y2(zone):
     y2 = set_val(f"y2_{zone.zone_id}", zone.y2)
     zone.set_dimensions(y2=y2)
+
+
+def update_calc_type(zone, options):
+    calc_type = ss["calc_type"]
+    if calc_type == options[0]:
+        zone.horiz = True
+        zone.vert = False
+    elif calc_type in [options[1], options[2]]:
+        zone.horiz = False
+        zone.vert = False
+    elif calc_type in [options[3], options[4]]:
+        zone.horiz = False
+        zone.vert = True
+    if calc_type in [options[2], options[4]]:
+        zone.set_direction(0)
+    else:
+        zone.set_direction(1)
+        ss[f"direction_{zone.zone_id}"] = 1
+
+
+def update_ref_surface(zone):
+    ref_surface = set_val(f"ref_surface_{zone.zone_id}", zone.ref_surface)
+    update_dims = True if ref_surface != zone.ref_surface else False
+    zone.set_ref_surface(ref_surface)
+    if update_dims:
+        if ref_surface == "xy":
+            zone.set_dimensions(0, ss.room.x, 0, ss.room.y)
+        elif ref_surface == "xz":
+            zone.set_dimensions(0, ss.room.x, 0, ss.room.z)
+        elif ref_surface == "yz":
+            zone.set_dimensions(0, ss.room.y, 0, ss.room.z)
+        ss[f"x1_{zone.zone_id}"] = zone.x1
+        ss[f"x2_{zone.zone_id}"] = zone.x2
+        ss[f"y1_{zone.zone_id}"] = zone.y1
+        ss[f"y2_{zone.zone_id}"] = zone.y2
+
+
+def update_direction(zone):
+    direction = set_val(f"direction_{zone.zone_id}", zone.direction)
+    zone.set_direction(direction)
 
 
 def update_plane_height(zone):

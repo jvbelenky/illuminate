@@ -39,7 +39,7 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
     # set initial position
     new_lamp_id = f"Lamp{new_lamp_idx}"
     name = new_lamp_id if name is None else name
-
+    
     x, y = new_lamp_position(lamp_idx=new_lamp_idx, x=ss.room.x, y=ss.room.y)
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
@@ -71,9 +71,9 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
 def load_lamp(lamp):
     """update lamp filename from widget"""
     fname = set_val(f"file_{lamp.lamp_id}", lamp.filename)
-    if fname is not SELECT_LOCAL:
-        lamp.name = make_lamp_name(fname)
-        ss[f"name_{lamp.lamp_id}"] = lamp.name
+    # if fname is not SELECT_LOCAL:
+        # lamp.name = make_lamp_name(fname)
+        # ss[f"name_{lamp.lamp_id}"] = lamp.name
 
     fdata = None
     spectra_data = None
@@ -174,7 +174,7 @@ def load_uploaded_spectra(lamp):
 def _load_lamp(lamp, fname=None, fdata=None, spectra_data=None):
     lamp.reload(filename=fname, filedata=fdata)
     if lamp.surface.units != ss.room.units:
-            lamp.set_units(ss.room.units)
+        lamp.set_units(ss.room.units)
     _load_spectra(lamp, spectra_data)
 
 
@@ -311,7 +311,8 @@ def spectra_upload_widget(lamp):
         key=f"spectra_upload_{lamp.lamp_id}",
         help="A valid spectra file is a .csv where the first column is a list of wavelengths, and the second column is a list of corresponding relative intensities.",
     )
-    
+
+
 # widget callbacks
 
 
@@ -319,9 +320,12 @@ def update_lamp_name(lamp):
     """update lamp name from widget"""
     lamp.name = set_val(f"name_{lamp.lamp_id}", lamp.name)
 
-def adjust_yscale(lamp):#,spectrafig):
+
+def adjust_yscale(lamp):  # ,spectrafig):
     """adjust the spectra figure yscale"""
-    yscale = ss[f"{lamp.lamp_id}_spectra_yscale"]#set_val(f"{lamp.lamp_id}_spectra_yscale", "linear")
+    yscale = ss[
+        f"{lamp.lamp_id}_spectra_yscale"
+    ]  # set_val(f"{lamp.lamp_id}_spectra_yscale", "linear")
     ss.spectrafig.axes[0].set_yscale(yscale)
 
 
@@ -440,11 +444,13 @@ def update_intensity_map(lamp):
     else:
         lamp.load_intensity_map(None)
 
+
 def update_lamp_intensity_units(lamp):
     """update the lamp intensity units of the photometric file; generally either mW/Sr or uW/cm2"""
     lamp.intensity_units = set_val(
         f"intensity_units_{lamp.lamp_id}", lamp.intensity_units
     )
+
 
 def update_lamp_visibility(lamp):
     """update whether lamp shows in plot or not from widget"""
