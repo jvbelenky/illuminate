@@ -98,8 +98,10 @@ def print_user_defined_zones():
                     zone.plot_plane(title=zone.name)[0],
                     **{"transparent": "True"},
                 )
-            else:
-                cols[0].write(f"**{zone.name}**")
+            elif zone.calctype=="Volume":
+                fig = zone.plot_volume(title=zone.name)
+                cols[0].plotly_chart(fig,use_container_width=True, height=450)
+                # cols[0].write(f"**{zone.name}**")
             cols[1].write("")
             cols[1].write("")
             unitstr = zone.units
@@ -355,7 +357,7 @@ def print_efficacy():
         SHOW_KPLOT = st.checkbox("Show Plot", value=True)
         if SHOW_KPLOT:
             st.pyplot(ss.kfig)
-        SHOW_KDATA = st.checkbox("Show Data", value=True)
+        SHOW_KDATA = st.checkbox("Show Data", value=False)
         if SHOW_KDATA:
             # st.dataframe(ss.kdf)#, hide_index=True)
             # st.markdown(ss.kdf.to_html(render_links=True),unsafe_allow_html=True)
