@@ -68,7 +68,9 @@ def initialize():
         "ANSI IES RP 27.1-22 (ACGIH Limits) - UL8802",
         "IEC 62471-6:2022 (ICNIRP Limits)",
     ]
-    ss.room = Room(standard=ss.standards[0])
+    walls = ["floor", "ceiling", "south", "north", "east", "west"]
+    reflectances = {surface: 0.078 for surface in walls}
+    ss.room = Room(standard=ss.standards[0], reflectances=reflectances,enable_reflectance=False)
     ss.room.add_standard_zones()
     for zone_id, zone in ss.room.calc_zones.items():
         initialize_zone(zone)

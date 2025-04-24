@@ -47,7 +47,7 @@ def initialize_results():
 
 def initialize_project():
     keys = ["calculate_after_loading", "visualize_after_loading"]
-    vals = [False, True]
+    vals = [True, False]
     add_keys(keys, vals)
 
 
@@ -72,6 +72,7 @@ def initialize_room():
         "air_changes_results",
         "ozone_decay_constant_results",
         "room_standard_results",
+        "enable_reflectance",
     ]
     vals = [
         ss.room.x,
@@ -90,6 +91,7 @@ def initialize_room():
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
         ss.room.standard,
+        ss.room.enable_reflectance,
     ]
     add_keys(keys, vals)
 
@@ -153,6 +155,8 @@ def initialize_zone(zone):
         f"x_num_points_{zone.zone_id}",
         f"y_num_points_{zone.zone_id}",
         f"offset_{zone.zone_id}",
+        f"dose_{zone.zone_id}",
+        f"hours_{zone.zone_id}",
         f"enabled_{zone.zone_id}",
         f"show_values_{zone.zone_id}",
     ]
@@ -179,7 +183,9 @@ def initialize_zone(zone):
         zone.y_spacing,
         zone.num_x,
         zone.num_y,
-        zone.offset,
+        int(zone.offset),
+        int(zone.dose),
+        zone.hours,
         zone.enabled,
         zone.show_values,
     ]

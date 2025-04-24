@@ -47,8 +47,8 @@ def room_sidebar():
     )
 
     st.subheader("Reflectance", divider="grey")
-    disable_ref = st.checkbox(
-        "Disable Reflections", on_change=update_reflections, key="reflection_checkbox"
+    enable_ref = st.checkbox(
+        "Enable Reflections", on_change=enable_reflectance, key="enable_reflectance"
     )
     col1, col2, col3 = st.columns(3)
     col1.number_input(
@@ -59,7 +59,7 @@ def room_sidebar():
         format="%0.3f",
         key="reflectance_ceiling",
         on_change=update_reflections,
-        disabled=disable_ref,
+        disabled=not enable_ref,
     )
     col2.number_input(
         "North Wall",
@@ -69,7 +69,7 @@ def room_sidebar():
         format="%0.3f",
         key="reflectance_north",
         on_change=update_reflections,
-        disabled=disable_ref,
+        disabled=not enable_ref,
     )
     col3.number_input(
         "East Wall",
@@ -79,7 +79,7 @@ def room_sidebar():
         format="%0.3f",
         key="reflectance_east",
         on_change=update_reflections,
-        disabled=disable_ref,
+        disabled=not enable_ref,
     )
     col1.number_input(
         "South Wall",
@@ -89,7 +89,7 @@ def room_sidebar():
         format="%0.3f",
         key="reflectance_south",
         on_change=update_reflections,
-        disabled=disable_ref,
+        disabled=not enable_ref,
     )
     col2.number_input(
         "West Wall",
@@ -99,7 +99,7 @@ def room_sidebar():
         format="%0.3f",
         key="reflectance_west",
         on_change=update_reflections,
-        disabled=disable_ref,
+        disabled=not enable_ref,
     )
     col3.number_input(
         "Floor",
@@ -109,7 +109,7 @@ def room_sidebar():
         format="%0.3f",
         key="reflectance_floor",
         on_change=update_reflections,
-        disabled=disable_ref,
+        disabled=not enable_ref,
     )
 
     st.subheader("Standards", divider="grey")
@@ -179,7 +179,6 @@ def update_room_z():
         z2=ss.room.z,
     )
 
-
 def update_units():
     """update room units"""
     units = set_val("room_units", ss.room.units)
@@ -189,14 +188,13 @@ def update_units():
 def update_reflections():
     """update room reflections"""
     keys = ss.room.ref_manager.reflectances.keys()
-    if ss["reflection_checkbox"]:
-        for key in keys:
-            ss.room.set_reflectance(0, key)
-    else:
-        for key in keys:
-            val = set_val("reflectance_" + key, ss.room.ref_manager.reflectances[key])
-            ss.room.set_reflectance(val, key)
+    for key in keys:
+        val = set_val("reflectance_" + key, ss.room.ref_manager.reflectances[key])
+        ss.room.set_reflectance(val, key)
 
+def enable_reflectance():    
+    """Enable reflectances"""
+    ss.room.enable_reflectance = True if ss["enable_reflectance"] else False
 
 def update_ozone():
     """update the air changes and ozone decay constant"""
