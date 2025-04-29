@@ -211,11 +211,11 @@ def lamp_info(lamp):
         handles, labels = iesax.get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         iesax.legend(
-                by_label.values(),
-                by_label.keys(),
-                loc="upper center",
-                bbox_to_anchor=[1.6, -0.1, 0, 1.1],
-            )
+            by_label.values(),
+            by_label.keys(),
+            loc="upper center",
+            bbox_to_anchor=[1.6, -0.1, 0, 1.1],
+        )
         st.pyplot(iesfig)  # , use_container_width=True)
 
     cols = st.columns([2.8, 0.7])

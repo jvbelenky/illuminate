@@ -40,7 +40,7 @@ def results_page():
     print_summary()
     zones = ss.room.calc_zones
     user_zones = [key for key in zones.keys() if key not in SPECIAL_ZONES]
-    if len(user_zones)>0:
+    if len(user_zones) > 0:
         if any([zones[key].values is not None for key in user_zones]):
             print_user_defined_zones()
     print_safety()
@@ -98,9 +98,9 @@ def print_user_defined_zones():
                     zone.plot_plane(title=zone.name)[0],
                     **{"transparent": "True"},
                 )
-            elif zone.calctype=="Volume":
+            elif zone.calctype == "Volume":
                 fig = zone.plot_volume(title=zone.name)
-                cols[0].plotly_chart(fig,use_container_width=True, height=450)
+                cols[0].plotly_chart(fig, use_container_width=True, height=450)
                 # cols[0].write(f"**{zone.name}**")
             cols[1].write("")
             cols[1].write("")
@@ -442,7 +442,7 @@ def export_options():
     )
 
     for zone_id, zone in ss.room.calc_zones.items():
-        if zone.calctype in ["Plane","Volume"]:
+        if zone.calctype in ["Plane", "Volume"]:
             col.download_button(
                 zone.name,
                 data=zone.export(),
