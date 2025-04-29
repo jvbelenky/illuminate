@@ -139,10 +139,9 @@ def zone_sidebar():
         plane_dimensions(zone, DISABLED)
         dose_and_offset_options(zone, DISABLED)
 
-        
     elif ss.editing == "volumes":
-        volume_dimensions(zone,DISABLED)
-        dose_and_offset_options(zone,DISABLED)
+        volume_dimensions(zone, DISABLED)
+        dose_and_offset_options(zone, DISABLED)
     if ss.editing == "zones":
         st.button(
             "Cancel",
@@ -167,7 +166,6 @@ def zone_sidebar():
             args=[zone],
             key=f"show_values_{zone.zone_id}",
         )
-
 
         disable_download = False  # True zone.values is None else False
 
@@ -197,7 +195,9 @@ def zone_sidebar():
             disabled=False,
             key="close_zone2",
         )
-def plane_dimensions(zone,DISABLED):
+
+
+def plane_dimensions(zone, DISABLED):
     x = zone.ref_surface[0].upper()
     y = zone.ref_surface[1].upper()
     col1, col2 = st.columns(2)
@@ -270,7 +270,8 @@ def plane_dimensions(zone,DISABLED):
             disabled=False,
         )
 
-def volume_dimensions(zone,DISABLED):
+
+def volume_dimensions(zone, DISABLED):
     col1, col2, col3 = st.columns(3)
     with col1:
         st.number_input(
@@ -357,17 +358,18 @@ def volume_dimensions(zone,DISABLED):
             args=[zone],
         )
 
+
 def dose_and_offset_options(zone, DISABLED):
     cols = st.columns(2)
     # Set dose vs irradiance
-    if zone.calctype=="Plane":
+    if zone.calctype == "Plane":
         value_options = ["Irradiance (uW/cm²)", "Dose (mJ/cm²)"]
     else:
         value_options = ["Fluence rate (uW/cm²)", "Dose (mJ/cm²)"]
     # value_index = 1 if zone.dose else 0
     cols[0].selectbox(
         "Value display type",
-        options=[0,1],
+        options=[0, 1],
         format_func=lambda x: value_options[x],
         disabled=DISABLED,
         on_change=update_value_type,
@@ -382,16 +384,17 @@ def dose_and_offset_options(zone, DISABLED):
             args=[zone],
             key=f"hours_{zone.zone_id}",
         )
-    boundary_options = ["On the Boundary","Offset from Boundary"]
+    boundary_options = ["On the Boundary", "Offset from Boundary"]
     st.selectbox(
         "Offset",
-        options=[0,1],
+        options=[0, 1],
         format_func=lambda x: boundary_options[x],
         on_change=update_offset,
         args=[zone],
         key=f"offset_{zone.zone_id}",
+        help="Offset from boundary: Points are generated at an offset from the calc zone dimensions. On the boundary: points are generated on the boundary of the calc zone dimensions.",
     )
-    
+
 
 def create_zone():
     if ss["select_zone_type"] == "Plane":
@@ -578,15 +581,18 @@ def update_offset(zone):
     offset = set_val(f"offset_{zone.zone_id}", zone.offset)
     zone.set_offset(bool(offset))
 
+
 def update_fov(zone):
     """update the vertical or horizontal field of view ="""
     zone.fov_vert = set_val(f"fov_vert_{zone.zone_id}", zone.fov_vert)
     zone.fov_horiz = set_val(f"fov_horiz_{zone.zone_id}", zone.fov_horiz)
 
+
 def update_value_type(zone):
     """set whether zone is dose or irradiance"""
-    dose = set_val(f"dose_{zone.zone_id}",zone.dose)
+    dose = set_val(f"dose_{zone.zone_id}", zone.dose)
     zone.set_value_type(dose)
+
 
 def update_dose_time(zone):
     """set the number of hours the zone dose is calculated over"""
