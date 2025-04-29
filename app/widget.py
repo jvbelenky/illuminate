@@ -19,6 +19,25 @@ def add_keys(keys, vals):
     for key, val in zip(keys, vals):
         ss[key] = val
 
+def persistent_checkbox(label, key=None, on_change=None, help=None, args=None, kwargs=None,disabled=False,label_visibility="visible"):
+    """variant of the """
+    if 'checklist_items' not in ss:
+        ss.checklist_items = {}
+    # print(ss.get('checklist_items', {}))
+    state = st.checkbox(
+        label, 
+        value=ss.checklist_items.get(key, False), 
+        key=key,
+        help=help,
+        on_change=on_change, 
+        args=args,
+        kwargs=kwargs,
+        disabled=disabled,
+        label_visibility=label_visibility,
+        )
+    ss.checklist_items[key] = state
+    # print(ss.get('checklist_items', {}))
+    return state
 
 def fix_room_standard():
     """
@@ -61,18 +80,14 @@ def initialize_room():
         "room_z",
         "units",
         "room_standard",
-        "reflectance_ceiling",
-        "reflectance_north",
-        "reflectance_east",
-        "reflectance_south",
-        "reflectance_west",
-        "reflectance_floor",
         "air_changes",
         "ozone_decay_constant",
         "air_changes_results",
         "ozone_decay_constant_results",
         "room_standard_results",
         "enable_reflectance",
+        "max_num_passes",
+        "threshold",
     ]
     vals = [
         ss.room.x,
@@ -80,19 +95,28 @@ def initialize_room():
         ss.room.z,
         ss.room.units,
         ss.room.standard,
-        ss.room.ref_manager.reflectances["ceiling"],
-        ss.room.ref_manager.reflectances["north"],
-        ss.room.ref_manager.reflectances["east"],
-        ss.room.ref_manager.reflectances["south"],
-        ss.room.ref_manager.reflectances["west"],
-        ss.room.ref_manager.reflectances["floor"],
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
         ss.room.standard,
         ss.room.enable_reflectance,
+        ss.room.ref_manager.max_num_passes, 
+        ss.room.ref_manager.threshold,
     ]
+
+    # reflection options
+    walls = ["floor", "ceiling", "south", "north", "east", "west"]
+    
+    keys += [f"{key}_reflectance" for key in walls]
+    vals += [ss.room.ref_manager.reflectances[key] for key in walls]
+
+    keys += [f"{key}_x_spacing" for key in walls]
+    vals += [ss.room.ref_manager.x_spacings[key] for key in walls]
+
+    keys += [f"{key}_y_spacing" for key in walls]
+    vals += [ss.room.ref_manager.y_spacings[key] for key in walls]
+
     add_keys(keys, vals)
 
 

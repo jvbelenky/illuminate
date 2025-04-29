@@ -1,5 +1,5 @@
 import streamlit as st
-from app.widget import close_sidebar, set_val
+from app.widget import close_sidebar, set_val, add_keys, persistent_checkbox
 
 ss = st.session_state
 
@@ -47,71 +47,35 @@ def room_sidebar():
     )
 
     st.subheader("Reflectance", divider="grey")
-    enable_ref = st.checkbox(
+    enable_ref = persistent_checkbox(
         "Enable Reflections", on_change=enable_reflectance, key="enable_reflectance"
     )
-    col1, col2, col3 = st.columns(3)
-    col1.number_input(
-        "Ceiling",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.1,
-        format="%0.3f",
-        key="reflectance_ceiling",
-        on_change=update_reflections,
-        disabled=not enable_ref,
-    )
-    col2.number_input(
-        "North Wall",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.1,
-        format="%0.3f",
-        key="reflectance_north",
-        on_change=update_reflections,
-        disabled=not enable_ref,
-    )
-    col3.number_input(
-        "East Wall",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.1,
-        format="%0.3f",
-        key="reflectance_east",
-        on_change=update_reflections,
-        disabled=not enable_ref,
-    )
-    col1.number_input(
-        "South Wall",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.1,
-        format="%0.3f",
-        key="reflectance_south",
-        on_change=update_reflections,
-        disabled=not enable_ref,
-    )
-    col2.number_input(
-        "West Wall",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.1,
-        format="%0.3f",
-        key="reflectance_west",
-        on_change=update_reflections,
-        disabled=not enable_ref,
-    )
-    col3.number_input(
-        "Floor",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.1,
-        format="%0.3f",
-        key="reflectance_floor",
-        on_change=update_reflections,
-        disabled=not enable_ref,
+    cols = st.columns(2)
+    allcols = cols + cols + cols
+
+    keys = ["floor", "ceiling", "south", "north", "east", "west"]
+    labels = ["Floor", "Ceiling", "South Wall", "North Wall", "East Wall", "West Wall"]
+
+    for col, key, label in zip(allcols, keys, labels):
+        col.number_input(
+            label,
+            min_value=0.0,
+            max_value=1.0,
+            format="%0.3f",
+            key=f"{key}_reflectance",
+            on_change="update_reflectance",
+            disabled=not enable_ref,
+        )
+    persistent_checkbox(
+        "Show advanced reflection options",
+        key="advanced_reflection",
+        on_change=enable_advanced_reflections,
+        args=[keys],
     )
 
+    if ss["advanced_reflection"]:
+        advanced_reflection_options(keys, labels)
+    
     st.subheader("Standards", divider="grey")
     st.selectbox(
         "Select photobiological safety standard",
@@ -147,6 +111,82 @@ def room_sidebar():
         use_container_width=True,
     )
 
+def enable_advanced_reflections(keys):
+    """if the advanced reflection option is enabled, initialize the keys with parameter values from the room object"""
+
+    if ss["advanced_reflection"]:
+        xkeys = [f"{key}_x_spacing" for key in keys]
+        ykeys = [f"{key}_y_spacing" for key in keys]
+        xvals = [ss.room.ref_manager.x_spacings[key] for key in keys]
+        yvals = [ss.room.ref_manager.y_spacings[key] for key in keys]
+        other_keys = ["max_num_passes", "threshold"]
+        other_vals = [ss.room.ref_manager.max_num_passes, ss.room.ref_manager.threshold]
+        keys = xkeys + ykeys + other_keys
+        vals = xvals + yvals + other_vals
+        add_keys(keys, vals)
+        
+
+def advanced_reflection_options(keys, labels):
+    """display the spacing and interreflection options for the reflectance module"""
+    st.subheader(
+        "Reflectance surface spacing",
+        help="Determine the fineness of the reflection surface discretization. Smaller values will cause the calculation to slow down, but may increase accuracy. Larger values will result in a faster calculation.",
+    )
+    cols = st.columns(3)
+    cols[0].write(f"Units: {ss.room.units}")
+    cols[1].write("Column (X) Spacing")
+    cols[2].write("Row (Y) Spacing")
+    with cols[0]:
+        for label in labels:
+            # st.write("")
+            st.write(label)
+            st.write("")
+    with cols[1]:
+        for key in keys:
+            st.number_input(
+                "Column Spacing",
+                min_value=0.0,
+                step=0.1,
+                on_change=update_reflectance_spacing,
+                args=[key],
+                key=f"{key}_x_spacing",
+                label_visibility="collapsed",
+            )
+    with cols[2]:
+        for key in keys:
+            st.number_input(
+                "Row Spacing",
+                min_value=0.0,
+                step=0.1,
+                on_change=update_reflectance_spacing,
+                args=[key],
+                key=f"{key}_y_spacing",
+                label_visibility="collapsed",
+            )
+
+    st.subheader("Interrflection Settings", help="These settings determine how many ")
+    cols = st.columns(2)
+    cols[0].number_input(
+        "Maximum number of iterations",
+        min_value=0,
+        key="max_num_passes",
+        help="Interreflection calculation will terminate after at most this number of loops",
+    )
+    cols[1].number_input(
+        "Percent threshold",
+        min_value=0.0,
+        max_value=1.0,
+        key="threshold",
+        help="Interreflection calculation will terminate if the contribution of each loop falls below this percentage of the initial value",
+    )
+
+
+def update_reflectance_spacing(key):
+    """update the reflectance spacing settings by wall key"""
+    xval = set_val(f"{key}_x_spacing", ss.room.ref_manager.x_spacings[key])
+    yval = set_val(f"{key}_y_spacing", ss.room.ref_manager.y_spacings[key])
+    ss.room.set_reflectance_spacing(xval, yval, key)
+
 
 def update_room_x():
     x = set_val("room_x", ss.room.x)
@@ -179,6 +219,7 @@ def update_room_z():
         z2=ss.room.z,
     )
 
+
 def update_units():
     """update room units"""
     units = set_val("room_units", ss.room.units)
@@ -189,12 +230,14 @@ def update_reflections():
     """update room reflections"""
     keys = ss.room.ref_manager.reflectances.keys()
     for key in keys:
-        val = set_val("reflectance_" + key, ss.room.ref_manager.reflectances[key])
+        val = set_val(f"{key}_reflectance", ss.room.ref_manager.reflectances[key])
         ss.room.set_reflectance(val, key)
 
-def enable_reflectance():    
+
+def enable_reflectance():
     """Enable reflectances"""
     ss.room.enable_reflectance = True if ss["enable_reflectance"] else False
+
 
 def update_ozone():
     """update the air changes and ozone decay constant"""
