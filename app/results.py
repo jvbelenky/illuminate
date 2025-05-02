@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from app.widget import close_results, set_val
+from app.widget import close_results, set_val, persistent_checkbox
 
 # from ._top_ribbon import check_recalculation
 
@@ -353,14 +353,12 @@ def print_efficacy():
         fluence_str = None
     st.write("**Average fluence:** ", fluence_str)
 
-    if fluence_values is not None:
+    if fluence_values is not None and fluence_values.sum() > 0:
         SHOW_KPLOT = st.checkbox("Show Plot", value=True)
         if SHOW_KPLOT:
             st.pyplot(ss.kfig)
         SHOW_KDATA = st.checkbox("Show Data", value=False)
         if SHOW_KDATA:
-            # st.dataframe(ss.kdf)#, hide_index=True)
-            # st.markdown(ss.kdf.to_html(render_links=True),unsafe_allow_html=True)
             st.data_editor(
                 ss.kdf,
                 disabled=True,

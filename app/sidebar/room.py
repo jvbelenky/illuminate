@@ -47,7 +47,7 @@ def room_sidebar():
     )
 
     st.subheader("Reflectance", divider="grey")
-    enable_ref = persistent_checkbox(
+    enable_ref = st.checkbox(
         "Enable Reflections", on_change=enable_reflectance, key="enable_reflectance"
     )
     cols = st.columns(2)
@@ -196,7 +196,6 @@ def update_room_x():
     ss.room.calc_zones["EyeLimits"].set_dimensions(
         x2=ss.room.x,
     )
-
 
 def update_room_y():
     y = set_val("room_y", ss.room.y)

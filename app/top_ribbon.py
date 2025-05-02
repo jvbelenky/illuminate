@@ -83,11 +83,11 @@ def top_ribbon():
 
 def check_recalculation():
     recalculate = False
-    if any([v.enabled and v.filedata is not None for v in ss.room.lamps.values()]):
-        CALC = ss.room.calc_state != ss.room.get_calc_state()
-        UPDATE = ss.room.update_state != ss.room.get_update_state()
-        if CALC or UPDATE:
-            recalculate = True
+    # if any([v.enabled and v.filedata is not None for v in ss.room.lamps.values()]):
+    CALC = ss.room.calc_state != ss.room.get_calc_state()
+    UPDATE = ss.room.update_state != ss.room.get_update_state()
+    if CALC or UPDATE:
+        recalculate = True
     return recalculate
 
 
