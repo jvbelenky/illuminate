@@ -63,7 +63,7 @@ def room_sidebar():
             max_value=1.0,
             format="%0.3f",
             key=f"{key}_reflectance",
-            on_change="update_reflectance",
+            on_change=update_reflectance,
             disabled=not enable_ref,
         )
     persistent_checkbox(
@@ -109,7 +109,7 @@ def room_sidebar():
         "Close",
         on_click=close_sidebar,
         use_container_width=True,
-    )
+    )   
 
 def enable_advanced_reflections(keys):
     """if the advanced reflection option is enabled, initialize the keys with parameter values from the room object"""
@@ -121,9 +121,9 @@ def enable_advanced_reflections(keys):
         yvals = [ss.room.ref_manager.y_spacings[key] for key in keys]
         other_keys = ["max_num_passes", "threshold"]
         other_vals = [ss.room.ref_manager.max_num_passes, ss.room.ref_manager.threshold]
-        keys = xkeys + ykeys + other_keys
-        vals = xvals + yvals + other_vals
-        add_keys(keys, vals)
+        allkeys = xkeys + ykeys + other_keys
+        allvals = xvals + yvals + other_vals
+        add_keys(allkeys, allvals)
         
 
 def advanced_reflection_options(keys, labels):
@@ -164,7 +164,7 @@ def advanced_reflection_options(keys, labels):
                 label_visibility="collapsed",
             )
 
-    st.subheader("Interrflection Settings", help="These settings determine how many ")
+    st.subheader("Interreflection Settings", help="These settings determine how many ")
     cols = st.columns(2)
     cols[0].number_input(
         "Maximum number of iterations",
