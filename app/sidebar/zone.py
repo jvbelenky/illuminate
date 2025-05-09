@@ -591,7 +591,7 @@ def update_fov(zone):
 def update_value_type(zone):
     """set whether zone is dose or irradiance"""
     dose = set_val(f"dose_{zone.zone_id}", zone.dose)
-    zone.set_value_type(dose)
+    zone.set_value_type(bool(dose))
 
 
 def update_dose_time(zone):
