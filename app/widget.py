@@ -19,25 +19,37 @@ def add_keys(keys, vals):
     for key, val in zip(keys, vals):
         ss[key] = val
 
-def persistent_checkbox(label, key=None, on_change=None, help=None, args=None, kwargs=None,disabled=False,label_visibility="visible"):
-    """variant of the """
-    if 'checklist_items' not in ss:
+
+def persistent_checkbox(
+    label,
+    value=False,
+    key=None,
+    on_change=None,
+    help=None,
+    args=None,
+    kwargs=None,
+    disabled=False,
+    label_visibility="visible",
+):
+    """variant of the"""
+    if "checklist_items" not in ss:
         ss.checklist_items = {}
     # print(ss.get('checklist_items', {}))
     state = st.checkbox(
-        label, 
-        value=ss.checklist_items.get(key, False), 
+        label,
+        value=ss.checklist_items.get(key, value),
         key=key,
         help=help,
-        on_change=on_change, 
+        on_change=on_change,
         args=args,
         kwargs=kwargs,
         disabled=disabled,
         label_visibility=label_visibility,
-        )
+    )
     ss.checklist_items[key] = state
     # print(ss.get('checklist_items', {}))
     return state
+
 
 def fix_room_standard():
     """
@@ -101,13 +113,13 @@ def initialize_room():
         ss.room.ozone_decay_constant,
         ss.room.standard,
         ss.room.enable_reflectance,
-        ss.room.ref_manager.max_num_passes, 
+        ss.room.ref_manager.max_num_passes,
         ss.room.ref_manager.threshold,
     ]
 
     # reflection options
     walls = ["floor", "ceiling", "south", "north", "east", "west"]
-    
+
     keys += [f"{key}_reflectance" for key in walls]
     vals += [ss.room.ref_manager.reflectances[key] for key in walls]
 

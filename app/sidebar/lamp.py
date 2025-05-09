@@ -1,5 +1,5 @@
 import streamlit as st
-from app.widget import initialize_lamp, close_sidebar
+from app.widget import initialize_lamp, close_sidebar, persistent_checkbox
 from app.lamp_utils import (
     load_uploaded_spectra,
     lamp_select_widget,
@@ -85,10 +85,20 @@ def lamp_sidebar():
         lamp_info(lamp)  # plot and display other info if file has been selected
     lamp_position_options(lamp)  # position, orientation, etc
 
-    st.header("Advanced settings")
-    lamp_source_options(lamp)  # specify source  properties
+    # prevent lamp from participating in calculations
+    lamp.enabled = st.checkbox(
+        "Luminaire enabled",
+        on_change=update_lamp_visibility,
+        args=[lamp],
+        key=f"enabled_{lamp.lamp_id}",
+        help="If this box is unchecked, the luminaire will remain in the room, but not participate in calculations.",
+    )
 
-    lamp_advanced_options(lamp)
+    st.checkbox("Show advanced lamp settings", key="advanced_lamp_settings")
+    if ss["advanced_lamp_settings"]:
+        # st.header("Advanced settings")
+        lamp_source_options(lamp)  # specify source  properties
+        lamp_advanced_options(lamp)
 
     col3, col4 = st.columns(2)
     with col3:
@@ -111,13 +121,7 @@ def lamp_sidebar():
             key="close_lamp_sidebar2",
         )
 
-    # prevent lamp from participating in calculations
-    lamp.enabled = st.checkbox(
-        "Enabled",
-        on_change=update_lamp_visibility,
-        args=[lamp],
-        key=f"enabled_{lamp.lamp_id}",
-    )
+    
 
 
 def lamp_wavelength_options(lamp):

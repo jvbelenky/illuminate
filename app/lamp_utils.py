@@ -33,7 +33,11 @@ LAMP_KEYS = {
 
 
 def add_new_lamp(name=None, interactive=True, defaults={}):
-    """necessary logic for adding new lamp to room and to state"""
+    """
+    TODO: maybe just use the place_lamp logic
+
+    necessary logic for adding new lamp to room and to state
+    """
     # initialize lamp
     new_lamp_idx = len(ss.room.lamps) + 1
     # set initial position
