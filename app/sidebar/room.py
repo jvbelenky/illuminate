@@ -64,6 +64,7 @@ def room_sidebar():
             format="%0.3f",
             key=f"{key}_reflectance",
             on_change=update_reflectance,
+            args=[key],
             disabled=not enable_ref,
         )
     persistent_checkbox(
@@ -180,6 +181,10 @@ def advanced_reflection_options(keys, labels):
         help="Interreflection calculation will terminate if the contribution of each loop falls below this percentage of the initial value",
     )
 
+def update_reflectance(key):
+    """update the reflectance by wall key"""
+    ref = set_val(f"{key}_reflectance", ss.room.ref_manager.reflectances[key])
+    ss.room.set_reflectance(ref, key)
 
 def update_reflectance_spacing(key):
     """update the reflectance spacing settings by wall key"""
