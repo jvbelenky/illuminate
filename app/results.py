@@ -85,9 +85,9 @@ def print_summary():
             st.error("This installation does not comply with selected TLVs.")
 
     st.download_button(
-            "GUV Report",
+            "Generate Report",
             data=ss.room.generate_report(),
-            file_name="room_report.csv",
+            file_name="guv_report.csv",
         )
     
 
