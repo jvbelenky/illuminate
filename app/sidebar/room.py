@@ -196,32 +196,32 @@ def update_reflectance_spacing(key):
 def update_room_x():
     x = set_val("room_x", ss.room.x)
     ss.room.set_dimensions(x=x)
-    ss.room.calc_zones["WholeRoomFluence"].set_dimensions(x2=ss.room.x)
-    ss.room.calc_zones["SkinLimits"].set_dimensions(x2=ss.room.x)
-    ss.room.calc_zones["EyeLimits"].set_dimensions(
-        x2=ss.room.x,
-    )
+    # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(x2=ss.room.x)
+    # ss.room.calc_zones["SkinLimits"].set_dimensions(x2=ss.room.x)
+    # ss.room.calc_zones["EyeLimits"].set_dimensions(
+        # x2=ss.room.x,
+    # )
 
 def update_room_y():
     y = set_val("room_y", ss.room.y)
     ss.room.set_dimensions(y=y)
-    ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
-        y2=ss.room.y,
-    )
-    ss.room.calc_zones["SkinLimits"].set_dimensions(
-        y2=ss.room.y,
-    )
-    ss.room.calc_zones["EyeLimits"].set_dimensions(
-        y2=ss.room.y,
-    )
+    # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
+        # y2=ss.room.y,
+    # )
+    # ss.room.calc_zones["SkinLimits"].set_dimensions(
+        # y2=ss.room.y,
+    # )
+    # ss.room.calc_zones["EyeLimits"].set_dimensions(
+        # y2=ss.room.y,
+    # )
 
 
 def update_room_z():
     z = set_val("room_z", ss.room.z)
     ss.room.set_dimensions(z=z)
-    ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
-        z2=ss.room.z,
-    )
+    # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
+        # z2=ss.room.z,
+    # )
 
 
 def update_units():
