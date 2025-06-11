@@ -17,6 +17,7 @@ SELECT_LOCAL = "Select local file..."
 BASE_URL = "https://assay.osluv.org/static/assay"
 
 LAMP_KEYS = {
+    "Aerolamp DevKit": "aerolamp",
     "Beacon (PRERELEASE DATA)": "beacon",
     "Beacon": "beacon",
     "Lumenizer Zone": "lumenizer_zone",
