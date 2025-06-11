@@ -86,7 +86,10 @@ def upload():
         for zone_id, zone in ss.room.calc_zones.items():
             initialize_zone(zone)
 
+        dct = json.loads(string)
         for lamp_id, lamp in ss.room.lamps.items():
+            # temporary kludge!!!
+            lamp.filename = dct["data"]["lamps"][lamp_id]["filename"]
             initialize_lamp(lamp)
             # make lampfile options
             if lamp.filename not in ss.vendored_lamps.keys():
