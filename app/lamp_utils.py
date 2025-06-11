@@ -126,7 +126,8 @@ def load_uploaded_lamp(lamp):
             ss.uploaded_files[fname] = fdata
             make_file_list()
         # load into lamp object
-        lamp.reload(filename=fname, filedata=fdata)
+        lamp.filename = fname  # tmp
+        lamp.load_ies(fdata)
         # load spectra if present
         load_uploaded_spectra(lamp)
         # harmonize units
@@ -180,7 +181,10 @@ def load_uploaded_spectra(lamp):
 
 
 def _load_lamp(lamp, fname=None, fdata=None, spectra_data=None):
-    lamp.reload(filename=fname, filedata=fdata)
+
+    lamp.filename = fname
+    lamp.load_ies(fdata)
+    # lamp.reload(filename=fname, filedata=fdata)
     if lamp.surface.units != ss.room.units:
         lamp.set_units(ss.room.units)
     _load_spectra(lamp, spectra_data)
@@ -281,7 +285,9 @@ def lamp_select_widget(lamp):
         fname_idx = ss.lamp_options.index(lamp.filename)
     else:
         fname_idx = 0
-        lamp.reload(filename=None, filedata=None)  # unload
+        lamp.filename = None  # tmp
+        lamp.load_ies(filedata=None)
+        # lamp.reload(filename=None, filedata=None)  # unload
         lamp.load_spectra(spectra_source=None)  # unload spectra if any
     if lamp.guv_type == "Krypton chloride (222 nm)":
         helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://reports.osluv.org/. You may also upload your own photometric and spectra files."
@@ -342,7 +348,10 @@ def update_wavelength(lamp):
     lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
     lamp.wavelength = ss.guv_dict[lamp.guv_type]
     if lamp.filename not in ss.uploaded_files:
-        lamp.reload()  # deload filedata only if it was a prepopulated lamp
+        # lamp.reload()
+        # deload filedata only if it was a prepopulated lamp
+        lamp.filename = None  # tmp
+        lamp.load_ies(None)
     if ss.show_results:
         show_results()
 

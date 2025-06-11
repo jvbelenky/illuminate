@@ -58,12 +58,12 @@ def lamp_sidebar():
     lamp_file_options(lamp)  # file input
 
     # download files
-
     cols = st.columns([1.5, 2, 2])
     show_info = cols[0].checkbox("Show lamp info")
     if lamp.filedata is not None:
-        fname = str(lamp.filename)
-        fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        # fname = str(lamp.filename)
+        # fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        fname = lamp.lamp_id + ".ies"
         cols[1].download_button(
             "Download .ies file",
             data=lamp.save_ies(original=True),
@@ -72,8 +72,9 @@ def lamp_sidebar():
             key=f"download_ies_{lamp.lamp_id}",
         )
     if lamp.spectra is not None:
-        fname = str(lamp.filename)
-        fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
+        # fname = str(lamp.filename)
+        # fname = fname.split(".csv")[0].replace(" ", "_") + "_spectrum.csv"
+        fname = lamp.lamp_id + "_spectrum.csv"
         cols[2].download_button(
             "Download spectrum .csv",
             data=lamp.spectra.to_csv(),
@@ -400,8 +401,9 @@ def lamp_source_options(lamp):
     if lamp.filedata is not None:
         old_ies = lamp.save_ies(original=True)
         new_ies = lamp.save_ies(original=False)
-        fname = str(lamp.filename)
-        fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
+        fname = lamp.lamp_id+".ies"
+        # fname = str(lamp.filename)
+        # fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
         st.download_button(
             "Download updated .ies file",
             data=new_ies,  # lamp.save_ies(original=False),
