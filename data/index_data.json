@@ -102,6 +102,12 @@
         ],
         "slug": "nukit torch r2 3v7--9b03c8ee-745b-467e-a152-e270217ae50b--R00"
     },
+	"dummy": {
+        "sketch": false,
+        "reporting_name": "Nukit Lantern",
+        "manufacturer_name": "Naomi Wu's Cyber Night-Market",
+        "slug": "nukit lantern--dummy"
+    },
     "e19b7def-1ae1-47ed-b847-44fb3c231b3f": {
         "sketch": false,
         "reporting_name": "UVPro222 B1",
