@@ -42,7 +42,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-CONTACT_STR = "Questions? Comments? Found a bug? Want a feature? E-mail contact-assay@osluv.org, or stay anonymous by using [this form](https://docs.google.com/forms/d/e/1FAIpQLSdDzLD3bJVmFvW_M3Pj9H5_91GL1RbTey_eXRSXO-ZBMyLJ-w/viewform)"
+CONTACT_STR = "Questions? Comments? Found a bug? Want a feature? E-mail contact@osluv.org, or stay anonymous by using [this form](https://docs.google.com/forms/d/e/1FAIpQLSdDzLD3bJVmFvW_M3Pj9H5_91GL1RbTey_eXRSXO-ZBMyLJ-w/viewform)"
 
 # Check and initialize session state variables
 ss = st.session_state

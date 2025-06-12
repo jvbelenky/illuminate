@@ -14,13 +14,15 @@ from app.widget import (
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 
-BASE_URL = "https://assay.osluv.org/static/assay"
+BASE_URL = "https://reports.osluv.org/static/assay"
 
 LAMP_KEYS = {
     "Aerolamp DevKit": "aerolamp",
     "Beacon (PRERELEASE DATA)": "beacon",
     "Beacon": "beacon",
     "Lumenizer Zone": "lumenizer_zone",
+    "Nukit Lantern":"nukit_lantern",
+    "Nukit Torch R2 3v7":"nukit_torch",
     "Sterilray GermBuster Sabre (PRERELEASE DATA)": "sterilray",
     "Sterilray GermBuster Sabre": "sterilray",
     "USHIO B1 (PRERELEASE DATA)": "ushio_b1",
@@ -194,7 +196,7 @@ def _load_spectra(lamp, data=None):
 
 
 def make_file_list():
-    """generate current list of lampfile options, both locally uploaded and from assays.osluv.org"""
+    """generate current list of lampfile options, both locally uploaded and from reports.osluv.org"""
     vendorfiles = list(ss.vendored_lamps.keys())
     uploadfiles = list(ss.uploaded_files.keys())
     if ss.selected_lamp.guv_type == "Krypton chloride (222 nm)":
@@ -281,7 +283,7 @@ def lamp_select_widget(lamp):
         lamp.reload(filename=None, filedata=None)  # unload
         lamp.load_spectra(spectra_source=None)  # unload spectra if any
     if lamp.guv_type == "Krypton chloride (222 nm)":
-        helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://assay.osluv.org/. You may also upload your own photometric and spectra files."
+        helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://reports.osluv.org/. You may also upload your own photometric and spectra files."
     else:
         helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."
 

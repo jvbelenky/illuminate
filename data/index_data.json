@@ -23,13 +23,13 @@
             "orientation": 0,
             "rotation": 0
         },
-        "slug": "apollo airtech aerolamp devkit v1.0--27c4ca60-0da7-4669-8cc7-36746a06fb62--R00"
+        "slug": "aerolamp devkit--27c4ca60-0da7-4669-8cc7-36746a06fb62--R00"
     },
     "b00e6efc-a325-414c-ac2d-85ece848746f": {
-        "sketch": true,
+        "sketch": false,
         "reporting_name": "Beacon",
         "manufacturer_name": "X",
-        "reporting_subtitle": "None",
+        "reporting_subtitle": null,
         "catalog_id": "b00e6efc-a325-414c-ac2d-85ece848746f",
         "total_uvc_power_mW": 22.820979445297738,
         "peak_1m_irradiance_uW_cm2": 0.9254265872710677,
@@ -47,7 +47,7 @@
         "sketch": false,
         "reporting_name": "Lumenizer Zone",
         "manufacturer_name": "Lumenlabs",
-        "reporting_subtitle": "None",
+        "reporting_subtitle": null,
         "catalog_id": "1e85a0e8-4704-4e11-afd2-8472ced14c89",
         "total_uvc_power_mW": 161.8881940100518,
         "peak_1m_irradiance_uW_cm2": 19.50051128625107,
@@ -84,70 +84,29 @@
         },
         "slug": "lumenizer zone--1e85a0e8-4704-4e11-afd2-8472ced14c89--R03"
     },
-    "f512edd9-08a0-4892-9396-bcf375f0d120": {
-        "sketch": true,
-        "reporting_name": "Sterilray GermBuster Sabre",
-        "manufacturer_name": "Sterilray, Inc",
-        "reporting_subtitle": "None",
-        "catalog_id": "f512edd9-08a0-4892-9396-bcf375f0d120",
-        "total_uvc_power_mW": 316.89361769812325,
-        "peak_1m_irradiance_uW_cm2": 12.659149068293166,
-        "w_s_222_score_ies_ansi_eye_pct": 280.6219743643417,
+    "9b03c8ee-745b-467e-a152-e270217ae50b": {
+        "sketch": false,
+        "reporting_name": "Nukit Torch R2 3v7",
+        "manufacturer_name": "Naomi Wu's Cyber Night-Market",
+        "reporting_subtitle": "(Rev 2; Supplied nominal battery voltage)",
+        "catalog_id": "9b03c8ee-745b-467e-a152-e270217ae50b",
+        "total_uvc_power_mW": 12.535563323726794,
+        "peak_1m_irradiance_uW_cm2": 1.2176533140839423,
+        "w_s_222_score_ies_ansi_eye_pct": 122.28776757885356,
         "revisions": [
             {
                 "name": "R00",
-                "date": "December 11, 2023",
+                "date": "July 5, 2024",
                 "note": "Initial Version"
             }
         ],
-        "slug": "sterilray germbuster sabre--f512edd9-08a0-4892-9396-bcf375f0d120--R00"
-    },
-    "8971ef4d-984f-421a-850f-aafdfd7fe7ad": {
-        "sketch": true,
-        "reporting_name": "USHIO B1",
-        "manufacturer_name": "Unknown",
-        "reporting_subtitle": "None",
-        "catalog_id": "8971ef4d-984f-421a-850f-aafdfd7fe7ad",
-        "total_uvc_power_mW": 118.76880416386713,
-        "peak_1m_irradiance_uW_cm2": 12.381611428087075,
-        "w_s_222_score_ies_ansi_eye_pct": 106.67459747397503,
-        "revisions": [
-            {
-                "name": "R01",
-                "date": "December 11, 2023",
-                "note": "Example revision correcting XYZ"
-            },
-            {
-                "name": "R00",
-                "date": "December 11, 2023",
-                "note": "Initial Revision"
-            }
-        ],
-        "slug": "ushio b1--8971ef4d-984f-421a-850f-aafdfd7fe7ad--R01"
-    },
-    "a6117f19-67b5-40ff-a3f9-f5473c85a313": {
-        "sketch": true,
-        "reporting_name": "USHIO B1.5",
-        "manufacturer_name": "Unknown",
-        "reporting_subtitle": "None",
-        "catalog_id": "a6117f19-67b5-40ff-a3f9-f5473c85a313",
-        "total_uvc_power_mW": 42.37467072885555,
-        "peak_1m_irradiance_uW_cm2": 4.138408959786583,
-        "w_s_222_score_ies_ansi_eye_pct": 109.93693866858992,
-        "revisions": [
-            {
-                "name": "R00",
-                "date": "December 11, 2023",
-                "note": "Initial Version"
-            }
-        ],
-        "slug": "ushio b1.5--a6117f19-67b5-40ff-a3f9-f5473c85a313--R00"
+        "slug": "nukit torch r2 3v7--9b03c8ee-745b-467e-a152-e270217ae50b--R00"
     },
     "e19b7def-1ae1-47ed-b847-44fb3c231b3f": {
         "sketch": false,
         "reporting_name": "UVPro222 B1",
         "manufacturer_name": "Bioabundance",
-        "reporting_subtitle": "None",
+        "reporting_subtitle": null,
         "catalog_id": "e19b7def-1ae1-47ed-b847-44fb3c231b3f",
         "total_uvc_power_mW": 107.50971329367529,
         "peak_1m_irradiance_uW_cm2": 9.62179333118538,
@@ -173,7 +132,7 @@
         "sketch": false,
         "reporting_name": "UVPro222 B2",
         "manufacturer_name": "Bioabundance",
-        "reporting_subtitle": "None",
+        "reporting_subtitle": null,
         "catalog_id": "73960dbb-abb7-45ed-bd57-5c706636ca15",
         "total_uvc_power_mW": 51.20258784097576,
         "peak_1m_irradiance_uW_cm2": 1.9775761186682246,
@@ -192,7 +151,7 @@
             {
                 "name": "R02",
                 "date": "May 2, 2024",
-                "note": "Electrical power, R², and safety revisions"
+                "note": "Electrical power, R\u00b2, and safety revisions"
             },
             {
                 "name": "R01",
