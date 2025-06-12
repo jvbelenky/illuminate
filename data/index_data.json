@@ -104,9 +104,64 @@
     },
 	"dummy": {
         "sketch": false,
-        "reporting_name": "Nukit Lantern",
+        "reporting_name": "Nukit Lantern (PREVIEW)",
         "manufacturer_name": "Naomi Wu's Cyber Night-Market",
         "slug": "nukit lantern--dummy"
+    },
+	"f512edd9-08a0-4892-9396-bcf375f0d120": {
+        "sketch": false,
+        "reporting_name": "Sterilray GermBuster Sabre",
+        "manufacturer_name": "Sterilray, Inc",
+        "reporting_subtitle": null,
+        "catalog_id": "f512edd9-08a0-4892-9396-bcf375f0d120",
+        "total_uvc_power_mW": 316.89361769812325,
+        "peak_1m_irradiance_uW_cm2": 12.659149068293166,
+        "w_s_222_score_ies_ansi_eye_pct": 280.6219743643417,
+        "revisions": [
+            {
+                "name": "R00",
+                "date": "December 11, 2023",
+                "note": "Initial Version"
+            }
+        ],
+        "slug": "sterilray germbuster sabre--f512edd9-08a0-4892-9396-bcf375f0d120--R00"
+    },
+	
+    "8971ef4d-984f-421a-850f-aafdfd7fe7ad": {
+        "sketch": false,
+        "reporting_name": "USHIO B1 (PREVIEW)",
+        "manufacturer_name": "Unknown",
+        "reporting_subtitle": null,
+        "catalog_id": "8971ef4d-984f-421a-850f-aafdfd7fe7ad",
+        "total_uvc_power_mW": 118.76880416386713,
+        "peak_1m_irradiance_uW_cm2": 12.381611428087075,
+        "w_s_222_score_ies_ansi_eye_pct": 106.67459747397503,
+        "revisions": [
+            {
+                "name": "R00",
+                "date": "December 11, 2023",
+                "note": "Initial Revision"
+            }
+        ],
+        "slug": "ushio b1--8971ef4d-984f-421a-850f-aafdfd7fe7ad--R00"
+    },
+    "a6117f19-67b5-40ff-a3f9-f5473c85a313": {
+        "sketch": false,
+        "reporting_name": "USHIO B1.5 (PREVIEW)",
+        "manufacturer_name": "Unknown",
+        "reporting_subtitle": null,
+        "catalog_id": "a6117f19-67b5-40ff-a3f9-f5473c85a313",
+        "total_uvc_power_mW": 42.37467072885555,
+        "peak_1m_irradiance_uW_cm2": 4.138408959786583,
+        "w_s_222_score_ies_ansi_eye_pct": 109.93693866858992,
+        "revisions": [
+            {
+                "name": "R00",
+                "date": "December 11, 2023",
+                "note": "Initial Version"
+            }
+        ],
+        "slug": "ushio b1.5--a6117f19-67b5-40ff-a3f9-f5473c85a313--R00"
     },
     "e19b7def-1ae1-47ed-b847-44fb3c231b3f": {
         "sketch": false,
