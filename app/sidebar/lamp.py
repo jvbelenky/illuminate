@@ -203,6 +203,8 @@ def lamp_info(lamp):
     """display info and plot if there is data to plot with"""
 
     if lamp.filedata is not None:
+        top = lamp.get_total_power()
+        st.write(f"Total optical output: **:violet[{round(top,1)}] mW**")
         cols = st.columns(2)
         skinmax, eyemax = lamp.get_limits(ss.room.standard)
         cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
