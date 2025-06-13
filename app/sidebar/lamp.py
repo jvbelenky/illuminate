@@ -240,7 +240,7 @@ def lamp_info(lamp):
 
     if lamp.filename in ss.vendored_spectra.keys():
 
-        if "PRERELEASE" not in lamp.filename:
+        if "PREVIEW" not in lamp.filename:
             link = ss.reports[lamp.filename].replace(" ", "%20")
             st.markdown(f"[View Full Report]({link})")
 

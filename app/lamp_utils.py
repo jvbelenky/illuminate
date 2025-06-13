@@ -18,16 +18,17 @@ BASE_URL = "https://reports.osluv.org/static/assay"
 
 LAMP_KEYS = {
     "Aerolamp DevKit": "aerolamp",
-    "Beacon (PRERELEASE DATA)": "beacon",
+    "Beacon (PREVIEW)": "beacon",
     "Beacon": "beacon",
     "Lumenizer Zone": "lumenizer_zone",
     "Nukit Lantern":"nukit_lantern",
+    "Nukit Lantern (PREVIEW)":"nukit_lantern",
     "Nukit Torch R2 3v7":"nukit_torch",
-    "Sterilray GermBuster Sabre (PRERELEASE DATA)": "sterilray",
+    "Sterilray GermBuster Sabre (PREVIEW)": "sterilray",
     "Sterilray GermBuster Sabre": "sterilray",
-    "USHIO B1 (PRERELEASE DATA)": "ushio_b1",
+    "USHIO B1 (PREVIEW)": "ushio_b1",
     "USHIO B1": "ushio_b1",
-    "USHIO B1.5 (PRERELEASE DATA)": "ushio_b1.5",
+    "USHIO B1.5 (PREVIEW)": "ushio_b1.5",
     "USHIO B1.5": "ushio_b1.5",
     "UVPro222 B1": "uvpro222_b1",
     "UVPro222 B2": "uvpro222_b2",
@@ -245,7 +246,7 @@ def get_ies_files():
         filename = data["slug"]
         name = data["reporting_name"]
         if data.get("sketch", False):
-            name += " (PRERELEASE DATA)"
+            name += " (PREVIEW)"
         ies_files[name] = f"{BASE_URL}/{filename}.ies"
         spectra[name] = f"{BASE_URL}/{filename}-spectrum.csv"
         reports[name] = f"{BASE_URL}/{filename}.html"
