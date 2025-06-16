@@ -73,7 +73,7 @@ def print_summary():
         if weighted_skin_dose.max() > 3:
             skincolor = "red"
         if weighted_eye_dose.max() > 3:
-            eyecolkeor = "red"
+            eyecolor = "red"
 
         skin_str = f"**:{skincolor}[{skin_values.max():.2f}]** {skin.units}"
         st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
@@ -85,11 +85,11 @@ def print_summary():
             st.error("This installation does not comply with selected TLVs.")
 
     st.download_button(
-            "Generate Report",
-            data=ss.room.generate_report(),
-            file_name="guv_report.csv",
-        )
-    
+        "Generate Report",
+        data=ss.room.generate_report(),
+        file_name="guv_report.csv",
+    )
+
 
 def print_user_defined_zones():
 
