@@ -22,21 +22,33 @@ def default_sidebar():
     st.header("Getting Started", divider="grey")
     st.write(
         """
-        To run your first simulation, click on the **`Select luminaire...`** menu in the top
-        bar, and select **`Add new luminaire`**. The luminaire editing menu will appear on the left panel.
-        Select a file from the **`Select lamp`** menu, then click on the red **:red[Calculate!]** button
-        in the upper right corner to immediately see average room fluence rate and skin and eye safety results.
-        Click the **`About`** button in the upper left corner at any time to return to this page.
+        To run your first simulation:
+        1. Click on the **`Select luminaire...`** menu and select **`Add new luminaire`**
+        2. In the new luminaire editing menu, select a file from the **`Select lamp`** menu.
+        3. Click on the red **:red[Calculate!]** button in the upper right corner to immediately see results for skin and eye safety and average room fluence results.
+        
+        At any time, you can return to this page by clicking the **`About`** button in the upper left corner of the page.
         """
+        
+        # """
+        # To run your first simulation, click on the **`Select luminaire...`** menu in the top
+        # bar, and select **`Add new luminaire`**. The luminaire editing menu will appear on the left panel.
+        # Select a file from the **`Select lamp`** menu, then click on the red **:red[Calculate!]** button
+        # in the upper right corner to immediately see average room fluence rate and skin and eye safety results.
+        # Click the **`About`** button in the upper left corner at any time to return to this page.
+        # """
     )
 
     st.subheader("Editing the Room")
     st.write(
         """
         In the **`Edit Room`** menu, you can change the size of the room, the air changes from ventilation and ozone decay
-        rate, as well as the photobiological safety standard to calculate for. Updating these options will update the 
-        calculation zones, so be sure to hit **:red[Calculate!]** again after doing so.
+        rate, as well as the photobiological safety standard to calculate for. You can also enable reflections for the room - 
+        the default values of 0.078 are typical reflectance values for 222 nm far-UVC.
         """
+        
+        #Updating these options will update the calculation zones, so be sure to hit **:red[Calculate!]** again after doing so.
+        
     )
 
     st.subheader("Adding and Editing Luminaires")
@@ -72,7 +84,7 @@ def default_sidebar():
         to bring up the calculation zone menu in the left hand panel. Select **`Plane`** or **`Volume`**
         and click **`Go`** to enter the full editing menu.
         
-        Currently, only planes normal to the floor are supported. These calculation 
+        Currently, only planes parallel to walls are supported. These calculation 
         zones will have their statistics displayed in the Results page alongside the built-in
         calculation zones.
         """
@@ -114,10 +126,10 @@ def default_sidebar():
         """
         Illuminate supports both far-UV (222 nm krpyton chloride) and upper-room UV (254 nm low pressure mercury)
         installations. However, currently, only far-UV lamps have pre-filled photometric files and other
-        [characterization data](https://assay.osluv.org/). For 254 nm modeling, you will have to provide your own
+        [characterization data](https://reports.osluv.org/). For 254 nm modeling, you will have to provide your own
         photometric file. 
         
-        We are eager to work with UV companies to expand the list of characterized fixtures available on Illuminate. Get in contact at contact-assay@osluv.org 
+        We are eager to work with UV companies to expand the list of characterized fixtures available on Illuminate. Get in contact at contact@osluv.org 
         """
     )
     st.subheader("Source Libraries")  # , divider="grey")
@@ -131,14 +143,25 @@ def default_sidebar():
         written primarily in Python. The features below are immediate priorities; contribution is highly encouraged.
         """
     )
+    
+    st.subheader("Recent Features")
+    st.write(
+        """
+        - **Support for diffuse reflectance**: Surface reflectance values can now be specified in the **`Edit Room`** menu
+        - **Near-field modeling**: GUV sources can now take into account emission surface geometry and near-field radiation distribution.
+        - **Calculation plane**: Calculation planes can now be defined relative to any surface
+        - **Locally installable app**: Illuminate can be run locally as a desktop app without internet access - see https://github.com/jvbelenky/illuminate/ for more information. Some use of terminal commands required.
+        """
+    )
 
     st.subheader(
-        "Features Under Development: [Illuminate](https://github.com/jvbelenky/illuminate)",
+        "Features Under Development",
         # divider="grey",
     )
     st.write("*Core Features:*")
     st.write(
         """        
+        - **Support for design of complex environments**: For both non-rectangular environments nad the inclusion of obstacles in the room.
         - **Risk reduction calculations**: Based on known pathogen emission rates, number of people present, community wastewater levels, etc.
         - **Occupancy-category comm check**: Select an indoor space type from a dropdown list to compare expected UV disinfection rates to recommended rates by ASHRAE 241, CDC, etc.
         - **Add portable air cleaners to the simulation**: In order to calculate total air cleaning achieved, not just from UV
@@ -147,33 +170,13 @@ def default_sidebar():
     st.write("*Tooling Features:*")
     st.write(
         """
-        - **Improved mobile view**: Clean layout configured for mobile devices
-        - **Generating a report**: Generate a polished safety and efficacy report of an installation with a click of a button
-        - **Copying objects**: Duplicate a luminaire or calculation zone
         - **Interactive plotting**: Place luminaires and draw calculation zones directly onto the interactive visualization plot
         - **In-tool CAD support**: Design complex environments directly in the interface
-        - **Locally installable app**: Run easily as a desktop app without internet access
         - **Arbitray GUV wavelength support**: Run simulations for any GUV wavelength
-        - *...and much more!*
         """
     )
-
-    st.subheader(
-        "Features Under Development: [GUV-Calcs](https://github.com/jvbelenky/guv-calcs)",
-        # divider="grey",
-    )
-    st.write(
-        """
-        - **Support for diffuse reflectance**: Include reflectance values in the fluence and irradiance calculations
-        - **Support for design of complex environments**: Whether designing a complex environment 
-        - **More accurate near-field modeling**: Definitions of GUV sources that take into account emission surface geometry and near-field radiation distribution.
-        
-        """
-    )
-    st.subheader(
-        "Features Under Development: [PhotomPy](https://github.com/jvbelenky/photompy)",
-        # divider="grey",
-    )
+    
+    st.write("*Photometric File Features*")
     st.write(
         """
         - **Dialux support**: Support for Dialux (.ldt) files

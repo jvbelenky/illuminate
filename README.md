@@ -16,10 +16,6 @@ Install the requirements
 Run locally with streamlit 
 
 	streamlit run guv_app.py
-	
-## Roadmap
-
-*Coming soon...*
 
 ## License
 
