@@ -51,7 +51,6 @@ if "init" not in ss:
     initialize()
 
 top_ribbon()
-
 if ss.show_results or ss.editing is not None:
     left_pane, right_pane = st.columns([2, 3])
 else:

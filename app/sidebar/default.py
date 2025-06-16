@@ -29,7 +29,6 @@ def default_sidebar():
         
         At any time, you can return to this page by clicking the **`About`** button in the upper left corner of the page.
         """
-        
         # """
         # To run your first simulation, click on the **`Select luminaire...`** menu in the top
         # bar, and select **`Add new luminaire`**. The luminaire editing menu will appear on the left panel.
@@ -46,9 +45,7 @@ def default_sidebar():
         rate, as well as the photobiological safety standard to calculate for. You can also enable reflections for the room - 
         the default values of 0.078 are typical reflectance values for 222 nm far-UVC.
         """
-        
-        #Updating these options will update the calculation zones, so be sure to hit **:red[Calculate!]** again after doing so.
-        
+        # Updating these options will update the calculation zones, so be sure to hit **:red[Calculate!]** again after doing so.
     )
 
     st.subheader("Adding and Editing Luminaires")
@@ -143,7 +140,7 @@ def default_sidebar():
         written primarily in Python. The features below are immediate priorities; contribution is highly encouraged.
         """
     )
-    
+
     st.subheader("Recent Features")
     st.write(
         """
@@ -175,7 +172,7 @@ def default_sidebar():
         - **Arbitray GUV wavelength support**: Run simulations for any GUV wavelength
         """
     )
-    
+
     st.write("*Photometric File Features*")
     st.write(
         """
