@@ -1,2 +1,6 @@
+[global] 
+disableWidgetStateDuplicationWarning = true
+showWarningOnDirectExecution = false
+
 [ui]
 hideTopBar = true

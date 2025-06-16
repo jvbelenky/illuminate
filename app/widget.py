@@ -100,6 +100,7 @@ def initialize_room():
         "enable_reflectance",
         "max_num_passes",
         "threshold",
+        "precision",
     ]
     vals = [
         ss.room.x,
@@ -115,6 +116,7 @@ def initialize_room():
         ss.room.enable_reflectance,
         ss.room.ref_manager.max_num_passes,
         ss.room.ref_manager.threshold,
+        ss.room.precision,
     ]
 
     # reflection options

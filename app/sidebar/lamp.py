@@ -121,8 +121,6 @@ def lamp_sidebar():
             key="close_lamp_sidebar2",
         )
 
-    
-
 
 def lamp_wavelength_options(lamp):
     """
@@ -259,8 +257,8 @@ def lamp_position_options(lamp):
     col1.number_input(
         "Position X",
         min_value=0.0,
-        step=0.1,
-        format="%0.3f",
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key=f"pos_x_{lamp.lamp_id}",
         on_change=update_lamp_position,
         args=[lamp],
@@ -268,8 +266,8 @@ def lamp_position_options(lamp):
     col2.number_input(
         "Position Y",
         min_value=0.0,
-        step=0.1,
-        format="%0.3f",
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key=f"pos_y_{lamp.lamp_id}",
         on_change=update_lamp_position,
         args=[lamp],
@@ -277,8 +275,8 @@ def lamp_position_options(lamp):
     col3.number_input(
         "Position Z",
         min_value=0.0,
-        step=0.1,
-        format="%0.3f",
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key=f"pos_z_{lamp.lamp_id}",
         on_change=update_lamp_position,
         args=[lamp],
@@ -301,21 +299,24 @@ def lamp_position_options(lamp):
     col4, col5, col6 = st.columns(3)
     col4.number_input(
         "Aim X",
-        format="%0.3f",
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key=f"aim_x_{lamp.lamp_id}",
         on_change=update_lamp_orientation,
         args=[lamp],
     )
     col5.number_input(
         "Aim Y",
-        format="%0.3f",
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key=f"aim_y_{lamp.lamp_id}",
         on_change=update_lamp_orientation,
         args=[lamp],
     )
     col6.number_input(
         "Aim Z",
-        format="%0.3f",
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key=f"aim_z_{lamp.lamp_id}",
         on_change=update_lamp_orientation,
         args=[lamp],

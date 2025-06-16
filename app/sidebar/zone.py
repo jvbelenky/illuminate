@@ -204,7 +204,8 @@ def plane_dimensions(zone, DISABLED):
     with col1:
         st.number_input(
             f"{x}1",
-            # min_value=0.0,
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"x1_{zone.zone_id}",
             on_change=update_plane_x1,
             args=[zone],
@@ -212,6 +213,8 @@ def plane_dimensions(zone, DISABLED):
         )
         st.number_input(
             f"{x}2",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             # min_value=0.0,
             key=f"x2_{zone.zone_id}",
             on_change=update_plane_x2,
@@ -228,6 +231,8 @@ def plane_dimensions(zone, DISABLED):
         )
         st.number_input(
             f"Column ({x}) spacing",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             # min_value=0.01,
             # max_value=float(abs(zone.x2 - zone.x1)),
             key=f"x_spacing_{zone.zone_id}",
@@ -238,6 +243,8 @@ def plane_dimensions(zone, DISABLED):
     with col2:
         st.number_input(
             f"{y}1",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             # min_value=0.0,
             key=f"y1_{zone.zone_id}",
             on_change=update_plane_y1,
@@ -246,6 +253,8 @@ def plane_dimensions(zone, DISABLED):
         )
         st.number_input(
             f"{y}2",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             # min_value=0.0,
             key=f"y2_{zone.zone_id}",
             on_change=update_plane_y2,
@@ -262,6 +271,8 @@ def plane_dimensions(zone, DISABLED):
         )
         st.number_input(
             f"Row ({y}) spacing",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             # min_value=0.01,
             # max_value=float(abs(zone.y2 - zone.y1)),
             key=f"y_spacing_{zone.zone_id}",
@@ -276,6 +287,8 @@ def volume_dimensions(zone, DISABLED):
     with col1:
         st.number_input(
             "X1",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"x1_{zone.zone_id}",
             on_change=update_vol_x1,
             args=[zone],
@@ -283,6 +296,8 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "X2",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"x2_{zone.zone_id}",
             on_change=update_vol_x2,
             args=[zone],
@@ -297,6 +312,8 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Column (X) spacing",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"x_spacing_{zone.zone_id}",
             on_change=update_vol_x_spacing,
             args=[zone],
@@ -304,6 +321,8 @@ def volume_dimensions(zone, DISABLED):
     with col2:
         st.number_input(
             "Y1",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"y1_{zone.zone_id}",
             on_change=update_vol_y1,
             args=[zone],
@@ -311,6 +330,8 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Y2",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"y2_{zone.zone_id}",
             on_change=update_vol_y2,
             args=[zone],
@@ -325,6 +346,8 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Row (Y) spacing",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"y_spacing_{zone.zone_id}",
             on_change=update_vol_y_spacing,
             args=[zone],
@@ -332,6 +355,8 @@ def volume_dimensions(zone, DISABLED):
     with col3:
         st.number_input(
             "Z1",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"z1_{zone.zone_id}",
             on_change=update_vol_z1,
             args=[zone],
@@ -339,6 +364,8 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Z2",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"z2_{zone.zone_id}",
             on_change=update_vol_z2,
             args=[zone],
@@ -353,6 +380,8 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Vertical (Z) spacing",
+            format=f"%0.{ss.room.precision}f",
+            step=1 / (10 ** ss.room.precision),
             key=f"z_spacing_{zone.zone_id}",
             on_change=update_vol_z_spacing,
             args=[zone],
@@ -399,7 +428,12 @@ def dose_and_offset_options(zone, DISABLED):
 def create_zone():
     if ss["select_zone_type"] == "Plane":
         new_zone = CalcPlane(
-            zone_id=ss.selected_zone_id, x1=0, x2=ss.room.x, y1=0, y2=ss.room.y
+            zone_id=ss.selected_zone_id,
+            x1=0,
+            x2=ss.room.x,
+            y1=0,
+            y2=ss.room.y,
+            height=0,
         )
         ss.editing = "planes"
     elif ss["select_zone_type"] == "Volume":

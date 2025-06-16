@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 from app.widget import close_sidebar, set_val, add_keys, persistent_checkbox
 
 ss = st.session_state
@@ -16,23 +17,29 @@ def room_sidebar():
     )
 
     st.subheader("Dimensions", divider="grey")
-    col1, col2, col3, col4 = st.columns(4)
 
+    col1, col2, col3, col4 = st.columns(4)
     col1.number_input(
         "Room length (x)",
-        format="%0.3f",
+        value=ss.room.x,
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key="room_x",
         on_change=update_room_x,
     )
     col2.number_input(
         "Room width (y)",
-        format="%0.3f",
+        value=ss.room.y,
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key="room_y",
         on_change=update_room_y,
     )
     col3.number_input(
         "Room height (z)",
-        format="%0.3f",
+        value=ss.room.z,
+        format=f"%0.{ss.room.precision}f",
+        step=1 / (10 ** ss.room.precision),
         key="room_z",
         on_change=update_room_z,
     )
@@ -44,6 +51,16 @@ def room_sidebar():
         index=unitindex,
         key="room_units",
         on_change=update_units,
+    )
+
+    cols = st.columns(4)
+    cols[0].number_input(
+        "Precision",
+        min_value=1,
+        max_value=9,
+        on_change=update_precision,
+        key="precision",
+        help="Sets the global value precision for all dimension values in the room.",
     )
 
     st.subheader("Reflectance", divider="grey")
@@ -76,7 +93,7 @@ def room_sidebar():
 
     if ss["advanced_reflection"]:
         advanced_reflection_options(keys, labels)
-    
+
     st.subheader("Standards", divider="grey")
     st.selectbox(
         "Select photobiological safety standard",
@@ -110,7 +127,8 @@ def room_sidebar():
         "Close",
         on_click=close_sidebar,
         use_container_width=True,
-    )   
+    )
+
 
 def enable_advanced_reflections(keys):
     """if the advanced reflection option is enabled, initialize the keys with parameter values from the room object"""
@@ -125,7 +143,7 @@ def enable_advanced_reflections(keys):
         allkeys = xkeys + ykeys + other_keys
         allvals = xvals + yvals + other_vals
         add_keys(allkeys, allvals)
-        
+
 
 def advanced_reflection_options(keys, labels):
     """display the spacing and interreflection options for the reflectance module"""
@@ -181,10 +199,12 @@ def advanced_reflection_options(keys, labels):
         help="Interreflection calculation will terminate if the contribution of each loop falls below this percentage of the initial value",
     )
 
+
 def update_reflectance(key):
     """update the reflectance by wall key"""
     ref = set_val(f"{key}_reflectance", ss.room.ref_manager.reflectances[key])
     ss.room.set_reflectance(ref, key)
+
 
 def update_reflectance_spacing(key):
     """update the reflectance spacing settings by wall key"""
@@ -199,20 +219,21 @@ def update_room_x():
     # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(x2=ss.room.x)
     # ss.room.calc_zones["SkinLimits"].set_dimensions(x2=ss.room.x)
     # ss.room.calc_zones["EyeLimits"].set_dimensions(
-        # x2=ss.room.x,
+    # x2=ss.room.x,
     # )
+
 
 def update_room_y():
     y = set_val("room_y", ss.room.y)
     ss.room.set_dimensions(y=y)
     # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
-        # y2=ss.room.y,
+    # y2=ss.room.y,
     # )
     # ss.room.calc_zones["SkinLimits"].set_dimensions(
-        # y2=ss.room.y,
+    # y2=ss.room.y,
     # )
     # ss.room.calc_zones["EyeLimits"].set_dimensions(
-        # y2=ss.room.y,
+    # y2=ss.room.y,
     # )
 
 
@@ -220,14 +241,68 @@ def update_room_z():
     z = set_val("room_z", ss.room.z)
     ss.room.set_dimensions(z=z)
     # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
-        # z2=ss.room.z,
+    # z2=ss.room.z,
     # )
 
 
 def update_units():
     """update room units"""
     units = set_val("room_units", ss.room.units)
+
+    # save all calc zone number of points and preserve them
+    zone_points = {}
+    for zone_id, zone in ss.room.calc_zones.items():
+        zone_points[zone_id] = zone.num_points
+
+    # update room dims
+    if units == "feet":
+        room_dims = [dim / 0.3048 for dim in ss.room.dimensions]
+        for lamp in ss.room.lamps.values():
+            new_pos = [val / 0.3048 for val in lamp.position]
+            new_aim = [val / 0.3048 for val in lamp.aim_point]
+            lamp.move(*new_pos)
+            lamp.aim(*new_aim)
+        for zone in ss.room.calc_zones.values():
+            dims = np.array(zone.dimensions).T
+            zone_dims = []
+            for dim in dims:
+                for val in dim:
+                    zone_dims.append(val / 0.3048)
+            zone.set_dimensions(*zone_dims)
+            if zone.calctype == "Plane":
+                zone.set_height(zone.height / 0.3048)
+
+    elif units == "meters":
+        room_dims = [dim * 0.3048 for dim in ss.room.dimensions]
+        for lamp in ss.room.lamps.values():
+            new_pos = [val * 0.3048 for val in lamp.position]
+            new_aim = [val * 0.3048 for val in lamp.aim_point]
+            lamp.move(*new_pos)
+            lamp.aim(*new_aim)
+        for zone in ss.room.calc_zones.values():
+            dims = np.array(zone.dimensions).T
+            zone_dims = []
+            for dim in dims:
+                for val in dim:
+                    zone_dims.append(val * 0.3048)
+            zone.set_dimensions(*zone_dims)
+            if zone.calctype == "Plane":
+                zone.set_height(zone.height * 0.3048)
+
+    ss.room.set_dimensions(*room_dims)
+    ss["room_x"] = room_dims[0]
+    ss["room_y"] = room_dims[1]
+    ss["room_z"] = room_dims[2]
+
+    for zone_id, num_points in zone_points.items():
+        zone = ss.room.calc_zones[zone_id]
+        zone.set_num_points(*num_points)
+
     ss.room.set_units(units)
+
+
+def update_precision():
+    ss.room.precision = set_val("precision", ss.room.precision)
 
 
 def update_reflections():
