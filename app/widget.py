@@ -101,6 +101,7 @@ def initialize_room():
         "max_num_passes",
         "threshold",
         "precision",
+        "colormap",
     ]
     vals = [
         ss.room.x,
@@ -117,6 +118,7 @@ def initialize_room():
         ss.room.ref_manager.max_num_passes,
         ss.room.ref_manager.threshold,
         ss.room.precision,
+        ss.room.scene.colormap,
     ]
 
     # reflection options

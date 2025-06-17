@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+from matplotlib import colormaps
 from app.widget import close_sidebar, set_val, add_keys, persistent_checkbox
 
 ss = st.session_state
@@ -53,14 +54,14 @@ def room_sidebar():
         on_change=update_units,
     )
 
-    cols = st.columns(4)
+    cols = st.columns([1, 2])
     cols[0].number_input(
-        "Precision",
+        "Display Precision",
         min_value=1,
         max_value=9,
         on_change=update_precision,
         key="precision",
-        help="Sets the global value precision for all dimension values in the room.",
+        help="Sets the global value precision for all dimension values in the room. This will only affect display values - if you enter a value of 1.09, then change precision from 2 to 1, the true value will still be 1.09, but display as 1.1 unless it is changed manually.",
     )
 
     st.subheader("Reflectance", divider="grey")
@@ -122,6 +123,17 @@ def room_sidebar():
             key="ozone_decay_constant",
             help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
         )
+        
+    st.subheader("Display",divider="grey")
+    st.selectbox(
+        "Colormap",
+        options=list(colormaps),
+        on_change=update_colormap,
+        key="colormap",
+        help="Set the display colormap of all. We recommend sticking with `plasma`, `viridis`, or `magma`, but any MatPlotLib colormap is allowed. Colormaps ending with `_r` are reversed versions of the base colormap.",
+    )
+    st.write("")
+    st.write("")
 
     st.button(
         "Close",
@@ -302,7 +314,14 @@ def update_units():
 
 
 def update_precision():
+    """update global dimensions precision"""
     ss.room.precision = set_val("precision", ss.room.precision)
+
+
+def update_colormap():
+    """update global colormap"""
+    colormap = set_val("colormap", ss.room.scene.colormap)
+    ss.room.set_colormap(colormap)
 
 
 def update_reflections():

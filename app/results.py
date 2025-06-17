@@ -96,7 +96,7 @@ def print_user_defined_zones():
     """all user-defined calc zones, basic stats and"""
     st.subheader("User Defined Calculation Zones", divider="grey")
     for zone_id, zone in ss.room.calc_zones.items():
-        
+
         vals = zone.get_values()
         if vals is not None and zone.zone_id not in SPECIAL_ZONES:
             cols = st.columns(2)
@@ -107,8 +107,8 @@ def print_user_defined_zones():
                 )
             elif zone.calctype == "Volume":
                 fig = zone.plot_volume(title=zone.name)
-                cols[0].plotly_chart(fig, use_container_width=True, height=450)                
-                        
+                cols[0].plotly_chart(fig, use_container_width=True, height=450)
+
             cols[1].write("")
             cols[1].write("")
             # cols[1].write(f"***{zone.name}***")
