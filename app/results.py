@@ -378,6 +378,9 @@ def print_efficacy():
             st.markdown(
                 "See any missing data? Let us know [here](https://docs.google.com/forms/d/e/1FAIpQLSdpHgV3I0vYE1i8wsImyepMDumuuEfF9nY6BVtNhErMSW9iPg/viewform)"
             )
+        st.markdown(
+            "[Full Database](https://docs.google.com/spreadsheets/d/16eAuATxHYOdPo6B4yerZqxMh843lb1iCXrTGBMrtbEE/edit?gid=944341396#gid=944341396)"
+        )
 
 
 def print_airchem():
