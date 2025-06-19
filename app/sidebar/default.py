@@ -158,7 +158,7 @@ def default_sidebar():
     st.write("*Core Features:*")
     st.write(
         """        
-        - **Support for design of complex environments**: For both non-rectangular environments nad the inclusion of obstacles in the room.
+        - **Support for design of complex environments**: For both non-rectangular environments and the inclusion of obstacles in the room.
         - **Risk reduction calculations**: Based on known pathogen emission rates, number of people present, community wastewater levels, etc.
         - **Occupancy-category comm check**: Select an indoor space type from a dropdown list to compare expected UV disinfection rates to recommended rates by ASHRAE 241, CDC, etc.
         - **Add portable air cleaners to the simulation**: In order to calculate total air cleaning achieved, not just from UV
