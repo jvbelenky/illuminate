@@ -15,6 +15,7 @@ from app.lamp_utils import (
     update_lamp_orientation,
     update_from_tilt,
     update_from_orientation,
+    update_lamp_scaling,
     update_lamp_width,
     update_lamp_length,
     update_lamp_depth,
@@ -98,6 +99,7 @@ def lamp_sidebar():
     st.checkbox("Show advanced lamp settings", key="advanced_lamp_settings")
     if ss["advanced_lamp_settings"]:
         # st.header("Advanced settings")
+        lamp_scaling_options(lamp)
         lamp_source_options(lamp)  # specify source  properties
         lamp_advanced_options(lamp)
 
@@ -122,6 +124,45 @@ def lamp_sidebar():
             key="close_lamp_sidebar2",
         )
 
+
+def lamp_scaling_options(lamp):
+
+    st.subheader("Photometry scaling")
+    cols = st.columns([1, 2])
+
+    methods = {
+        "factor": "Scale to relative value",
+        "max": "Scale to max irradiance (µW/cm²)",
+        "total": "Scale to total power (mW)",
+        "center": "Scale to center irradiance (µW/cm²)",
+    }
+    # current_mode = lamp._scale_mode
+    labels = list(methods.keys())
+    # idx = labels.index(current_mode)
+
+    defaults = {"factor": lamp.scaling_factor}
+    if lamp.ies is not None:
+        defaults["max"] = lamp.ies.max()
+        defaults["total"] = lamp.ies.total()
+        defaults["center"] = lamp.ies.center()
+
+    cols[1].selectbox(
+        "Scaling method",
+        options=labels,
+        format_func=lambda x: methods[x],
+        # index=idx,
+        key=f"scale_method_{lamp.lamp_id}",
+    )
+
+    cols[0].number_input(
+        "Value",
+        min_value=0.0,
+        value=defaults.get(ss[f"scale_method_{lamp.lamp_id}"], 1.0),
+        format="%.3f",
+        key=f"scale_value_{lamp.lamp_id}",
+        on_change=update_lamp_scaling,
+        args=[lamp],
+    )
 
 def lamp_wavelength_options(lamp):
     """
@@ -401,7 +442,7 @@ def lamp_source_options(lamp):
     if lamp.filedata is not None:
         old_ies = lamp.save_ies(original=True)
         new_ies = lamp.save_ies(original=False)
-        fname = lamp.lamp_id+".ies"
+        fname = lamp.lamp_id + ".ies"
         # fname = str(lamp.filename)
         # fname = fname.split(".ies")[0].replace(" ", "_") + ".ies"
         st.download_button(
