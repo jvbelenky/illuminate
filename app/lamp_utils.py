@@ -428,6 +428,21 @@ def update_lamp_aim_point(lamp):
     ss[f"aim_x_{lamp.lamp_id}"] = lamp.aimx
     ss[f"aim_y_{lamp.lamp_id}"] = lamp.aimy
     ss[f"aim_z_{lamp.lamp_id}"] = lamp.aimz
+    
+
+def update_lamp_scaling(lamp):
+    """scale the lamp's photometry by the current value and method"""
+    mode = ss[f"scale_method_{lamp.lamp_id}"]
+    value = ss[f"scale_value_{lamp.lamp_id}"]
+
+    if mode == "factor":
+        lamp.scale(value)
+    elif mode == "total":
+        lamp.scale_to_total(value)
+    elif mode == "center":
+        lamp.scale_to_center(value)
+    elif mode == "max":
+        lamp.scale_to_max(value)
 
 
 def update_lamp_width(lamp):

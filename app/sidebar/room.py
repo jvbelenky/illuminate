@@ -123,8 +123,8 @@ def room_sidebar():
             key="ozone_decay_constant",
             help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
         )
-        
-    st.subheader("Display",divider="grey")
+
+    st.subheader("Display", divider="grey")
     st.selectbox(
         "Colormap",
         options=list(colormaps),
