@@ -125,6 +125,7 @@ def lamp_sidebar():
         )
 
 
+
 def lamp_scaling_options(lamp):
 
     st.subheader("Photometry scaling")
@@ -142,9 +143,9 @@ def lamp_scaling_options(lamp):
 
     defaults = {"factor": lamp.scaling_factor}
     if lamp.ies is not None:
-        defaults["max"] = lamp.ies.max()
-        defaults["total"] = lamp.ies.total()
-        defaults["center"] = lamp.ies.center()
+        defaults["max"] = lamp.max()
+        defaults["total"] = lamp.total()
+        defaults["center"] = lamp.center()
 
     cols[1].selectbox(
         "Scaling method",
