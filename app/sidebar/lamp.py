@@ -351,8 +351,8 @@ def lamp_scaling_options(lamp):
 
     st.subheader("Photometry scaling")
     st.write("Scale the total power output of the lamp by a factor. You can use a relative scale, or input a target value for total power, maximum irradiance, or central irradiance.")
-    # factor = round(lamp.scaling_factor*100)
-    # st.write(f"Lamp power: {factor}%")
+    factor = round(lamp.scaling_factor*100)
+    st.write(f"Lamp power: {factor}%")
 
     cols = st.columns([1, 2])
 
