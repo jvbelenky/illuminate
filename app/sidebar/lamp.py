@@ -125,46 +125,6 @@ def lamp_sidebar():
         )
 
 
-
-def lamp_scaling_options(lamp):
-
-    st.subheader("Photometry scaling")
-    cols = st.columns([1, 2])
-
-    methods = {
-        "factor": "Scale to relative value",
-        "max": "Scale to max irradiance (µW/cm²)",
-        "total": "Scale to total power (mW)",
-        "center": "Scale to center irradiance (µW/cm²)",
-    }
-    # current_mode = lamp._scale_mode
-    labels = list(methods.keys())
-    # idx = labels.index(current_mode)
-
-    defaults = {"factor": lamp.scaling_factor}
-    if lamp.ies is not None:
-        defaults["max"] = lamp.max()
-        defaults["total"] = lamp.total()
-        defaults["center"] = lamp.center()
-
-    cols[1].selectbox(
-        "Scaling method",
-        options=labels,
-        format_func=lambda x: methods[x],
-        # index=idx,
-        key=f"scale_method_{lamp.lamp_id}",
-    )
-
-    cols[0].number_input(
-        "Value",
-        min_value=0.0,
-        value=defaults.get(ss[f"scale_method_{lamp.lamp_id}"], 1.0),
-        format="%.3f",
-        key=f"scale_value_{lamp.lamp_id}",
-        on_change=update_lamp_scaling,
-        args=[lamp],
-    )
-
 def lamp_wavelength_options(lamp):
     """
     NOTE: Currently not used
@@ -387,7 +347,49 @@ def lamp_position_options(lamp):
         args=[lamp],
     )
 
+def lamp_scaling_options(lamp):
 
+    st.subheader("Photometry scaling")
+    st.write("Scale the total power output of the lamp by a factor. You can use a relative scale, or input a target value for total power, maximum irradiance, or central irradiance.")
+    # factor = round(lamp.scaling_factor*100)
+    # st.write(f"Lamp power: {factor}%")
+
+    cols = st.columns([1, 2])
+
+    methods = {
+        "factor": "Scale to relative value",
+        "max": "Scale to max irradiance (µW/cm²)",
+        "total": "Scale to total power (mW)",
+        "center": "Scale to center irradiance (µW/cm²)",
+    }
+    # current_mode = lamp._scale_mode
+    labels = list(methods.keys())
+    # idx = labels.index(current_mode)
+
+    defaults = {"factor": lamp.scaling_factor}
+    if lamp.ies is not None:
+        defaults["max"] = lamp.max()
+        defaults["total"] = lamp.total()
+        defaults["center"] = lamp.center()
+
+    cols[1].selectbox(
+        "Scaling method",
+        options=labels,
+        format_func=lambda x: methods[x],
+        # index=idx,
+        key=f"scale_method_{lamp.lamp_id}",
+    )
+
+    cols[0].number_input(
+        "Value",
+        min_value=0.001,
+        value=defaults.get(ss[f"scale_method_{lamp.lamp_id}"], 1.0),
+        format="%.2f",
+        key=f"scale_value_{lamp.lamp_id}",
+        on_change=update_lamp_scaling,
+        args=[lamp],
+    )
+    
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 
