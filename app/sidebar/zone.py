@@ -34,6 +34,7 @@ def zone_sidebar():
         colb.button("Go", on_click=create_zone, use_container_width=True)
 
     elif ss.editing in ["planes", "volumes"]:
+        
         zone = ss.room.calc_zones[ss.selected_zone_id]
         initialize_zone(zone)
         st.text_input(
@@ -75,7 +76,6 @@ def zone_sidebar():
             disabled=DISABLED,
             key="calc_type",
         )
-
         col1, col2 = st.columns([2, 2])
         col1.selectbox(
             "Reference surface",
@@ -85,7 +85,6 @@ def zone_sidebar():
             args=[zone],
             disabled=DISABLED,
         )
-
         if zone.direction == 0:
             col2.selectbox(
                 "Normal direction",
@@ -447,8 +446,7 @@ def create_zone():
             z2=ss.room.z,
         )
         ss.editing = "volumes"
-    ss.room.add_calc_zone(new_zone)
-
+    ss.room.add_calc_zone(new_zone, on_collision="overwrite")
 
 def update_zone_name(zone):
     """update zone name from widget"""
