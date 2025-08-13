@@ -186,7 +186,7 @@ def print_safety():
             skin_hours_str = f"\tHours to 8-hour skin limit: **:{skincolor}[{skin_hrs}]** hours"
         else:
             skin_hours_str = (
-                f"\tHours to 8-hour eye limit: **:{skincolor}[Indefinite]** ({skin_hrs} hours)"
+                f"\tHours to 8-hour skin limit: **:{skincolor}[Indefinite]** ({skin_hrs} hours)"
             )
         cols[0].write(skin_hours_str)
         cols[0].write(f"\tMax 8-hour skin dose: **:{skincolor}[{skinmax:.1f}]** mJ/cm²")
