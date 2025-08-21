@@ -43,7 +43,11 @@ def results_page():
     if len(user_zones) > 0:
         if any([zones[key].values is not None for key in user_zones]):
             print_user_defined_zones()
-    print_safety()
+
+    skin = ss.room.calc_zones["SkinLimits"]
+    eye = ss.room.calc_zones["EyeLimits"]
+    if skin.enabled or eye.enabled:
+        print_safety()
     print_efficacy()
     if all(["Krypton chloride" in lamp.guv_type for lamp in lamps.values()]):
         print_airchem()
@@ -75,11 +79,13 @@ def print_summary():
         if weighted_eye_dose.max() > 3:
             eyecolor = "red"
 
-        skin_str = f"**:{skincolor}[{skin_values.max():.2f}]** {skin.units}"
-        st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
+        if skin.enabled:
+            skin_str = f"**:{skincolor}[{skin_values.max():.2f}]** {skin.units}"
+            st.write("**Max Skin Dose (8 Hours)**: ", skin_str)
 
-        eye_str = f"**:{eyecolor}[{eye_values.max():.2f}]** {eye.units}"
-        st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
+        if eye.enabled:
+            eye_str = f"**:{eyecolor}[{eye_values.max():.2f}]** {eye.units}"
+            st.write("**Max Eye Dose (8 Hours)**: ", eye_str)
 
         if max(weighted_skin_dose.max(), weighted_eye_dose.max()) > 3:
             st.error("This installation does not comply with selected TLVs.")
@@ -182,44 +188,52 @@ def print_safety():
         if weighted_eye_dose.max() > 3:
             eyecolor = "red"
 
-        if skin_hrs < 8:
-            skin_hours_str = f"\tHours to 8-hour skin limit: **:{skincolor}[{skin_hrs}]** hours"
-        else:
-            skin_hours_str = (
-                f"\tHours to 8-hour skin limit: **:{skincolor}[Indefinite]** ({skin_hrs} hours)"
-            )
-        cols[0].write(skin_hours_str)
-        cols[0].write(f"\tMax 8-hour skin dose: **:{skincolor}[{skinmax:.1f}]** mJ/cm²")
-        cols[0].write(
-            f"\tMax 8-hour *weighted* skin dose: **:{skincolor}[{skinmax_w:.2f}]** mJ/cm²"
-        )
+        if skin.enabled:
+            if skin_hrs < 8:
+                skin_hours_str = (
+                    f"\tHours to 8-hour skin limit: **:{skincolor}[{skin_hrs}]** hours"
+                )
+            else:
+                skin_hours_str = f"\tHours to 8-hour skin limit: **:{skincolor}[Indefinite]** ({skin_hrs} hours)"
 
-        if eye_hrs < 8:
-            eye_hours_str = f"\tHours to eye TLV: **:{eyecolor}[{eye_hrs}]** hours"
-        else:
-            eye_hours_str = (
-                f"\tHours to eye TLV: **:{eyecolor}[Indefinite]** ({eye_hrs} hours)"
+            cols[0].write(skin_hours_str)
+            cols[0].write(
+                f"\tMax 8-hour skin dose: **:{skincolor}[{skinmax:.1f}]** mJ/cm²"
             )
-        cols[1].write(eye_hours_str)
-        cols[1].write(f"\tMax 8-hour eye dose: **:{eyecolor}[{eyemax:.1f}]** mJ/cm²")
-        cols[1].write(
-            f"\tMax 8-hour *weighted* eye dose: **:{eyecolor}[{eyemax_w:.2f}]** mJ/cm²"
-        )
+            cols[0].write(
+                f"\tMax 8-hour *weighted* skin dose: **:{skincolor}[{skinmax_w:.2f}]** mJ/cm²"
+            )
+
+        if eye.enabled:
+            if eye_hrs < 8:
+                eye_hours_str = f"\tHours to eye TLV: **:{eyecolor}[{eye_hrs}]** hours"
+            else:
+                eye_hours_str = (
+                    f"\tHours to eye TLV: **:{eyecolor}[Indefinite]** ({eye_hrs} hours)"
+                )
+            cols[1].write(eye_hours_str)
+            cols[1].write(
+                f"\tMax 8-hour eye dose: **:{eyecolor}[{eyemax:.1f}]** mJ/cm²"
+            )
+            cols[1].write(
+                f"\tMax 8-hour *weighted* eye dose: **:{eyecolor}[{eyemax_w:.2f}]** mJ/cm²"
+            )
 
         SHOW_PLOTS = st.checkbox("Show Plots", value=True)
         if SHOW_PLOTS:
             cols = st.columns(2)
             skintitle = f"8-Hour Skin Dose (Max: {skinmax:.1f} {skin.units})"
             eyetitle = f"8-Hour Eye Dose (Max: {eyemax:.1f} {eye.units})"
-
-            cols[0].pyplot(
-                skin.plot_plane(title=skintitle)[0],
-                **{"transparent": "True"},
-            )
-            cols[1].pyplot(
-                eye.plot_plane(title=eyetitle)[0],
-                **{"transparent": "True"},
-            )
+            if skin.enabled:
+                cols[0].pyplot(
+                    skin.plot_plane(title=skintitle)[0],
+                    **{"transparent": "True"},
+                )
+            if eye.enabled:
+                cols[1].pyplot(
+                    eye.plot_plane(title=eyetitle)[0],
+                    **{"transparent": "True"},
+                )
 
 
 def check_lamps(room, warn=True):

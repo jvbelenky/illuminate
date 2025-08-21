@@ -227,7 +227,7 @@ def update_reflectance_spacing(key):
 
 def update_room_x():
     x = set_val("room_x", ss.room.x)
-    ss.room.set_dimensions(x=x)
+    ss.room.set_dimensions(x=x, preserve_spacing=False)
     # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(x2=ss.room.x)
     # ss.room.calc_zones["SkinLimits"].set_dimensions(x2=ss.room.x)
     # ss.room.calc_zones["EyeLimits"].set_dimensions(
@@ -237,7 +237,7 @@ def update_room_x():
 
 def update_room_y():
     y = set_val("room_y", ss.room.y)
-    ss.room.set_dimensions(y=y)
+    ss.room.set_dimensions(y=y, preserve_spacing=False)
     # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
     # y2=ss.room.y,
     # )
@@ -251,7 +251,17 @@ def update_room_y():
 
 def update_room_z():
     z = set_val("room_z", ss.room.z)
-    ss.room.set_dimensions(z=z)
+    ss.room.set_dimensions(z=z, preserve_spacing=False)
+
+    # disable the standard zones
+    if "UL8802" in ss.room.standard:
+        height = 1.9 if ss.room.units == "meters" else 6.25
+    else:
+        height = 1.8 if ss.room.units == "meters" else 5.9
+    if ss.room.z < height:
+        ss.room.calc_zones["SkinLimits"].enabled = False
+        ss.room.calc_zones["EyeLimits"].enabled = False
+
     # ss.room.calc_zones["WholeRoomFluence"].set_dimensions(
     # z2=ss.room.z,
     # )

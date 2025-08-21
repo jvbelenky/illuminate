@@ -34,7 +34,7 @@ def zone_sidebar():
         colb.button("Go", on_click=create_zone, use_container_width=True)
 
     elif ss.editing in ["planes", "volumes"]:
-        
+
         zone = ss.room.calc_zones[ss.selected_zone_id]
         initialize_zone(zone)
         st.text_input(
@@ -447,6 +447,7 @@ def create_zone():
         )
         ss.editing = "volumes"
     ss.room.add_calc_zone(new_zone, on_collision="overwrite")
+
 
 def update_zone_name(zone):
     """update zone name from widget"""

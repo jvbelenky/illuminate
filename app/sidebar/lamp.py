@@ -347,11 +347,14 @@ def lamp_position_options(lamp):
         args=[lamp],
     )
 
+
 def lamp_scaling_options(lamp):
 
     st.subheader("Photometry scaling")
-    st.write("Scale the total power output of the lamp by a factor. You can use a relative scale, or input a target value for total power, maximum irradiance, or central irradiance.")
-    factor = round(lamp.scaling_factor*100)
+    st.write(
+        "Scale the total power output of the lamp by a factor. You can use a relative scale, or input a target value for total power, maximum irradiance, or central irradiance."
+    )
+    factor = round(lamp.scaling_factor * 100)
     st.write(f"Lamp power: {factor}%")
 
     cols = st.columns([1, 2])
@@ -389,7 +392,8 @@ def lamp_scaling_options(lamp):
         on_change=update_lamp_scaling,
         args=[lamp],
     )
-    
+
+
 def lamp_source_options(lamp):
     """maybe move to separate lamp report page."""
 

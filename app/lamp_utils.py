@@ -49,12 +49,16 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
     name = new_lamp_id if name is None else name
 
     x, y = new_lamp_position(lamp_idx=new_lamp_idx, x=ss.room.x, y=ss.room.y)
+    if ss.room.units == "meters":
+        z = ss.room.z - 0.1 if ss.room.z > 2 else ss.room.z
+    elif ss.room.units == "feet":
+        z = ss.room.z - 0.3 if ss.room.z > 7 else ss.room.z
     new_lamp = Lamp(
         lamp_id=new_lamp_id,
         name=name,
         x=defaults.get("x", x),
         y=defaults.get("y", y),
-        z=defaults.get("z", ss.room.z - 0.1),
+        z=defaults.get("z", z),
         wavelength=222,
         guv_type="Krypton chloride (222 nm)",
     )
@@ -428,7 +432,7 @@ def update_lamp_aim_point(lamp):
     ss[f"aim_x_{lamp.lamp_id}"] = lamp.aimx
     ss[f"aim_y_{lamp.lamp_id}"] = lamp.aimy
     ss[f"aim_z_{lamp.lamp_id}"] = lamp.aimz
-    
+
 
 def update_lamp_scaling(lamp):
     """scale the lamp's photometry by the current value and method"""
