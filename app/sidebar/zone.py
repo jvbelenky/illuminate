@@ -371,7 +371,7 @@ def volume_dimensions(zone, DISABLED):
             disabled=DISABLED,
         )
         st.number_input(
-            "Num vertical stacks (Z points)",
+            "Num stacks (Z points)",
             min_value=1,
             key=f"z_num_points_{zone.zone_id}",
             on_change=update_vol_points,
