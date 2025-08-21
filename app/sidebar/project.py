@@ -95,6 +95,15 @@ def upload():
             if lamp.filename not in ss.vendored_lamps.keys():
                 ss.uploaded_files[lamp.filename] = lamp.filedata
 
+        # disable standard calc zones if they're irrelevant
+        if "UL8802" in ss.room.standard:
+            height = 1.9 if ss.room.units == "meters" else 6.25
+        else:
+            height = 1.8 if ss.room.units == "meters" else 5.9
+        if ss.room.z < height:
+            ss.room.calc_zones["SkinLimits"].enabled = False
+            ss.room.calc_zones["EyeLimits"].enabled = False
+
         # update_calc_zones()
         if ss["calculate_after_loading"]:
             ss.room.calculate()
