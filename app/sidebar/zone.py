@@ -286,6 +286,7 @@ def volume_dimensions(zone, DISABLED):
     with col1:
         st.number_input(
             "X1",
+            min_value=0.000001,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"x1_{zone.zone_id}",
@@ -295,6 +296,7 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "X2",
+            min_value=0.0000011,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"x2_{zone.zone_id}",
@@ -311,6 +313,7 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Column (X) spacing",
+            min_value=0.0000001,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"x_spacing_{zone.zone_id}",
@@ -320,6 +323,7 @@ def volume_dimensions(zone, DISABLED):
     with col2:
         st.number_input(
             "Y1",
+            min_value=0.000001,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"y1_{zone.zone_id}",
@@ -329,6 +333,7 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Y2",
+            min_value=0.0000011,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"y2_{zone.zone_id}",
@@ -345,6 +350,7 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Row (Y) spacing",
+            min_value=0.0000001,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"y_spacing_{zone.zone_id}",
@@ -354,6 +360,7 @@ def volume_dimensions(zone, DISABLED):
     with col3:
         st.number_input(
             "Z1",
+            min_value=0.000001,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"z1_{zone.zone_id}",
@@ -363,6 +370,7 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Z2",
+            min_value=0.0000011,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"z2_{zone.zone_id}",
@@ -379,6 +387,7 @@ def volume_dimensions(zone, DISABLED):
         )
         st.number_input(
             "Vertical (Z) spacing",
+            min_value=0.0000001,
             format=f"%0.{ss.room.precision}f",
             step=1 / (10 ** ss.room.precision),
             key=f"z_spacing_{zone.zone_id}",
