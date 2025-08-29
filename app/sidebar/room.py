@@ -148,19 +148,59 @@ def enable_advanced_reflections(keys):
     if ss["advanced_reflection"]:
         xkeys = [f"{key}_x_spacing" for key in keys]
         ykeys = [f"{key}_y_spacing" for key in keys]
+        xnumkeys = [f"{key}_num_x" for key in keys]
+        ynumkeys = [f"{key}_num_y" for key in keys]
         xvals = [ss.room.ref_manager.x_spacings[key] for key in keys]
         yvals = [ss.room.ref_manager.y_spacings[key] for key in keys]
+        xnumvals = [ss.room.ref_manager.num_x[key] for key in keys]
+        ynumvals = [ss.room.ref_manager.num_y[key] for key in keys]
         other_keys = ["max_num_passes", "threshold"]
         other_vals = [ss.room.ref_manager.max_num_passes, ss.room.ref_manager.threshold]
-        allkeys = xkeys + ykeys + other_keys
-        allvals = xvals + yvals + other_vals
+        allkeys = xkeys + ykeys + xnumkeys + ynumkeys + other_keys
+        allvals = xvals + yvals + xnumvals + ynumvals + other_vals
         add_keys(allkeys, allvals)
 
 
 def advanced_reflection_options(keys, labels):
     """display the spacing and interreflection options for the reflectance module"""
+    # number of points
+
     st.subheader(
-        "Reflectance surface spacing",
+        "Reflective surface number of points",
+        help="Determine the fineness of the reflection surface discretization. Larger values will cause the calculation to slow down, but may increase accuracy. Smaller values will result in a faster calculation.",
+    )
+    cols = st.columns(3)
+    cols[1].write("Num columns")
+    cols[2].write("Num rows")
+    with cols[0]:
+        for label in labels:
+            # st.write("")
+            st.write(label)
+            st.write("")
+    with cols[1]:
+        for key in keys:
+            st.number_input(
+                "Num Columns",
+                min_value=1,
+                on_change=update_reflectance_num_points,
+                args=[key],
+                key=f"{key}_num_x",
+                label_visibility="collapsed",
+            )
+    with cols[2]:
+        for key in keys:
+            st.number_input(
+                "Num Rows",
+                min_value=1,
+                on_change=update_reflectance_num_points,
+                args=[key],
+                key=f"{key}_num_y",
+                label_visibility="collapsed",
+            )
+
+    # spacing
+    st.subheader(
+        "Reflective surface spacing",
         help="Determine the fineness of the reflection surface discretization. Smaller values will cause the calculation to slow down, but may increase accuracy. Larger values will result in a faster calculation.",
     )
     cols = st.columns(3)
@@ -195,6 +235,7 @@ def advanced_reflection_options(keys, labels):
                 label_visibility="collapsed",
             )
 
+    # interreflection settings
     st.subheader("Interreflection Settings", help="These settings determine how many ")
     cols = st.columns(2)
     cols[0].number_input(
@@ -223,6 +264,19 @@ def update_reflectance_spacing(key):
     xval = set_val(f"{key}_x_spacing", ss.room.ref_manager.x_spacings[key])
     yval = set_val(f"{key}_y_spacing", ss.room.ref_manager.y_spacings[key])
     ss.room.set_reflectance_spacing(xval, yval, key)
+
+    ss[f"{key}_num_x"] = ss.room.ref_manager.num_x[key]
+    ss[f"{key}_num_y"] = ss.room.ref_manager.num_y[key]
+
+
+def update_reflectance_num_points(key):
+    """update the reflectance surface number of points settings by wall key"""
+    xval = set_val(f"{key}_num_x", ss.room.ref_manager.num_x[key])
+    yval = set_val(f"{key}_num_y", ss.room.ref_manager.num_y[key])
+    ss.room.set_reflectance_num_points(xval, yval, key)
+
+    ss[f"{key}_x_spacing"] = ss.room.ref_manager.x_spacings[key]
+    ss[f"{key}_y_spacing"] = ss.room.ref_manager.y_spacings[key]
 
 
 def update_room_x():
