@@ -32,10 +32,12 @@ def results_page():
         st.warning(msg)
     else:
         # check that all positions of lamps and calc zones are where they're supposed to be
-        msgs = ss.room.check_positions()
-        for msg in msgs:
-            if msg is not None:
-                st.warning(msg)
+        msg_dict = ss.room.check_positions()
+        room_dict = ss.room.to_dict()
+        for obj_type, msgs in msg_dict.items():
+            for obj_id, msg in msgs.items():
+                if msg is not None and room_dict[obj_type][obj_id]['enabled']:
+                    st.warning(msg)
     # if we're good print the results
     print_summary()
     zones = ss.room.calc_zones

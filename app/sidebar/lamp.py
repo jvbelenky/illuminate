@@ -259,7 +259,7 @@ def lamp_position_options(lamp):
     col1, col2, col3 = st.columns(3)
     col1.number_input(
         "Position X",
-        min_value=0.0,
+        # min_value=0.0,
         format=f"%0.{ss.room.precision}f",
         step=1 / (10 ** ss.room.precision),
         key=f"pos_x_{lamp.lamp_id}",
@@ -268,7 +268,7 @@ def lamp_position_options(lamp):
     )
     col2.number_input(
         "Position Y",
-        min_value=0.0,
+        # min_value=0.0,
         format=f"%0.{ss.room.precision}f",
         step=1 / (10 ** ss.room.precision),
         key=f"pos_y_{lamp.lamp_id}",
@@ -277,7 +277,7 @@ def lamp_position_options(lamp):
     )
     col3.number_input(
         "Position Z",
-        min_value=0.0,
+        # min_value=0.0,
         format=f"%0.{ss.room.precision}f",
         step=1 / (10 ** ss.room.precision),
         key=f"pos_z_{lamp.lamp_id}",

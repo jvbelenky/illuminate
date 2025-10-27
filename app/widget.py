@@ -205,7 +205,7 @@ def initialize_zone(zone):
         keys.append(f"fov_vert_{zone.zone_id}")
         keys.append(f"fov_horiz_{zone.zone_id}")
         keys.append(f"ref_surface_{zone.zone_id}")
-        # keys.append(f"direction_{zone.zone_id}")
+        keys.append(f"direction_{zone.zone_id}")
 
     elif isinstance(zone, CalcVol):
         keys.append(f"z1_{zone.zone_id}")
@@ -234,7 +234,7 @@ def initialize_zone(zone):
         vals.append(zone.fov_vert)
         vals.append(zone.fov_horiz)
         vals.append(zone.ref_surface)
-        # vals.append(zone.direction)
+        vals.append(zone.direction)
     elif isinstance(zone, CalcVol):
         vals.append(zone.z1)
         vals.append(zone.z2)
