@@ -339,7 +339,7 @@ def update_units():
             lamp.move(*new_pos)
             lamp.aim(*new_aim)
         for zone in ss.room.calc_zones.values():
-            dims = np.array(zone.dimensions).T
+            dims = np.array(zone.dimensions)
             zone_dims = []
             for dim in dims:
                 for val in dim:
@@ -356,7 +356,7 @@ def update_units():
             lamp.move(*new_pos)
             lamp.aim(*new_aim)
         for zone in ss.room.calc_zones.values():
-            dims = np.array(zone.dimensions).T
+            dims = np.array(zone.dimensions)
             zone_dims = []
             for dim in dims:
                 for val in dim:
