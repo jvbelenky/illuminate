@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 from app.widget import close_results, set_val, persistent_checkbox
+from guv_calcs import PhotStandard
 
 # from ._top_ribbon import check_recalculation
 
@@ -158,7 +159,7 @@ def print_safety():
     )
     st.selectbox(
         "Select photobiological safety standard",
-        options=ss.standards,
+        options=PhotStandard.labels(),
         on_change=update_standard_results,
         key="room_standard_results",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH). The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP). Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
@@ -270,11 +271,11 @@ def check_lamps(room, warn=True):
 
     # check if any individual lamp exceeds the limits
     for lampid, lamp in room.lamps.items():
-        if lampid in eye.lamp_values.keys() and lampid in skin.lamp_values.keys():
+        if lampid in eye.lamp_cache.keys() and lampid in skin.lamp_cache.keys():
             # fetch the limits for this specific lamp
-            skinmax, eyemax = room.lamps[lampid].get_limits(room.standard)
+            skinmax, eyemax = room.lamps[lampid].get_tlvs(room.standard)
             # these are irradiance values, not dose
-            skinrad, eyerad = skin.lamp_values[lampid], eye.lamp_values[lampid]
+            skinrad, eyerad = skin.lamp_cache[lampid].values, eye.lamp_cache[lampid].values
             # to dose
             skinvals, eyevals = skinrad * 3.6 * skin.hours, eyerad * 3.6 * eye.hours
             # weighting function for this specific lamp

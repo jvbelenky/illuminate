@@ -26,11 +26,6 @@ def initialize():
     ss.uploaded_files = {}
     ss.uploaded_spectras = {}
 
-    ss.guv_dict = {}
-    ss.guv_dict["Krypton chloride (222 nm)"] = 222
-    ss.guv_dict["Low-pressure mercury (254 nm)"] = 254
-    # ss.guv_dict["Other"] = 268 # to be added later
-
     df = get_full_disinfection_table()
 
     wavelengths = df[df["Medium"] == "Aerosol"]["wavelength [nm]"]
@@ -63,16 +58,8 @@ def initialize():
     ss.kdf = None
 
     # initialize room object and add zones to it
-    ss.standards = [
-        "ANSI IES RP 27.1-22 (ACGIH Limits)",
-        "ANSI IES RP 27.1-22 (ACGIH Limits) - UL8802",
-        "IEC 62471-6:2022 (ICNIRP Limits)",
-    ]
-    walls = ["floor", "ceiling", "south", "north", "east", "west"]
-    reflectances = {surface: 0.078 for surface in walls}
-    ss.room = Room(
-        standard=ss.standards[0], reflectances=reflectances, enable_reflectance=False
-    )
+    ss.room = Room(standard="acgih", enable_reflectance=False)
+    ss.room.set_reflectance(0.078)
     ss.room.add_standard_zones()
     for zone_id, zone in ss.room.calc_zones.items():
         initialize_zone(zone)

@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 from matplotlib import colormaps
 from app.widget import close_sidebar, set_val, add_keys, persistent_checkbox
+from guv_calcs import PhotStandard
 
 ss = st.session_state
 
@@ -98,7 +99,7 @@ def room_sidebar():
     st.subheader("Standards", divider="grey")
     st.selectbox(
         "Select photobiological safety standard",
-        options=ss.standards,
+        options=PhotStandard.labels(),
         on_change=update_standard,
         key="room_standard",
         help="The ANSI IES RP 27.1-22 standard corresponds to the photobiological limits for UV exposure set by the American Conference of Governmental Industrial Hygienists (ACGIH). The IEC 62471-6:2022 standard corresponds to the limits set by the International Commission on Non-Ionizing Radiation Protection (ICNIRP). Both standards indicate that the measurement should be taken at 1.8 meters up from the floor, but UL8802 (Ultraviolet (UV) Germicidal Equipment and Systems) indicates that it should be taken at 1.9 meters instead. Additionally, though ANSI IES RP 27.1-22 indicates that eye exposure limits be taken with a 80 degere field of view parallel to the floor, considering only vertical irradiance, UL8802 indicates that measurements be taken in the 'worst case' direction, resulting in a stricter limit.",
@@ -150,10 +151,10 @@ def enable_advanced_reflections(keys):
         ykeys = [f"{key}_y_spacing" for key in keys]
         xnumkeys = [f"{key}_num_x" for key in keys]
         ynumkeys = [f"{key}_num_y" for key in keys]
-        xvals = [ss.room.ref_manager.x_spacings[key] for key in keys]
-        yvals = [ss.room.ref_manager.y_spacings[key] for key in keys]
-        xnumvals = [ss.room.ref_manager.num_x[key] for key in keys]
-        ynumvals = [ss.room.ref_manager.num_y[key] for key in keys]
+        xvals = [ss.room.surfaces[key].x_spacing for key in keys]
+        yvals = [ss.room.surfaces[key].y_spacing for key in keys]
+        xnumvals = [ss.room.surfaces[key].num_x for key in keys]
+        ynumvals = [ss.room.surfaces[key].num_x for key in keys]
         other_keys = ["max_num_passes", "threshold"]
         other_vals = [ss.room.ref_manager.max_num_passes, ss.room.ref_manager.threshold]
         allkeys = xkeys + ykeys + xnumkeys + ynumkeys + other_keys
@@ -261,22 +262,22 @@ def update_reflectance(key):
 
 def update_reflectance_spacing(key):
     """update the reflectance spacing settings by wall key"""
-    xval = set_val(f"{key}_x_spacing", ss.room.ref_manager.x_spacings[key])
-    yval = set_val(f"{key}_y_spacing", ss.room.ref_manager.y_spacings[key])
+    xval = set_val(f"{key}_x_spacing", ss.room.surfaces[key].x_spacing)
+    yval = set_val(f"{key}_y_spacing", ss.room.surfaces[key].y_spacing)
     ss.room.set_reflectance_spacing(xval, yval, key)
 
-    ss[f"{key}_num_x"] = ss.room.ref_manager.num_x[key]
-    ss[f"{key}_num_y"] = ss.room.ref_manager.num_y[key]
+    ss[f"{key}_num_x"] = ss.room.surfaces[key].num_x
+    ss[f"{key}_num_y"] = ss.room.surfaces[key].num_y
 
 
 def update_reflectance_num_points(key):
     """update the reflectance surface number of points settings by wall key"""
-    xval = set_val(f"{key}_num_x", ss.room.ref_manager.num_x[key])
-    yval = set_val(f"{key}_num_y", ss.room.ref_manager.num_y[key])
+    xval = set_val(f"{key}_num_x", ss.room.surfaces[key].num_x)
+    yval = set_val(f"{key}_num_y", ss.room.surfaces[key].num_y)
     ss.room.set_reflectance_num_points(xval, yval, key)
 
-    ss[f"{key}_x_spacing"] = ss.room.ref_manager.x_spacings[key]
-    ss[f"{key}_y_spacing"] = ss.room.ref_manager.y_spacings[key]
+    ss[f"{key}_x_spacing"] = ss.room.surfaces[key].x_spacing
+    ss[f"{key}_y_spacing"] = ss.room.surfaces[key].y_spacing
 
 
 def update_room_x():
@@ -308,7 +309,7 @@ def update_room_z():
     ss.room.set_dimensions(z=z, preserve_spacing=False)
 
     # disable the standard zones
-    if "UL8802" in ss.room.standard:
+    if "UL8802" in ss.room.standard.upper():
         height = 1.9 if ss.room.units == "meters" else 6.25
     else:
         height = 1.8 if ss.room.units == "meters" else 5.9
@@ -322,7 +323,11 @@ def update_room_z():
 
 
 def update_units():
-    """update room units"""
+    """
+    KLUDGE. needs fixing.
+    
+    update room units
+    """
     units = set_val("room_units", ss.room.units)
 
     # save all calc zone number of points and preserve them
@@ -332,49 +337,36 @@ def update_units():
 
     # update room dims
     if units == "feet":
-        room_dims = [dim / 0.3048 for dim in ss.room.dimensions]
-        for lamp in ss.room.lamps.values():
-            new_pos = [val / 0.3048 for val in lamp.position]
-            new_aim = [val / 0.3048 for val in lamp.aim_point]
-            lamp.move(*new_pos)
-            lamp.aim(*new_aim)
-        for zone in ss.room.calc_zones.values():
-            dims = np.array(zone.dimensions)
-            zone_dims = []
-            for dim in dims:
-                for val in dim:
-                    zone_dims.append(val / 0.3048)
-            zone.set_dimensions(*zone_dims)
-            if zone.calctype == "Plane":
-                zone.set_height(zone.height / 0.3048)
-
+        factor = 1 / 0.3048
     elif units == "meters":
-        room_dims = [dim * 0.3048 for dim in ss.room.dimensions]
-        for lamp in ss.room.lamps.values():
-            new_pos = [val * 0.3048 for val in lamp.position]
-            new_aim = [val * 0.3048 for val in lamp.aim_point]
-            lamp.move(*new_pos)
-            lamp.aim(*new_aim)
-        for zone in ss.room.calc_zones.values():
-            dims = np.array(zone.dimensions)
-            zone_dims = []
-            for dim in dims:
-                for val in dim:
-                    zone_dims.append(val * 0.3048)
-            zone.set_dimensions(*zone_dims)
-            if zone.calctype == "Plane":
-                zone.set_height(zone.height * 0.3048)
+        factor = 0.3048
+        
+    room_dims = [dim * factor for dim in ss.room.dimensions]
+    for lamp in ss.room.lamps.values():
+        new_pos = [val * factor for val in lamp.position]
+        new_aim = [val * factor for val in lamp.aim_point]
+        lamp.move(*new_pos)
+        lamp.aim(*new_aim)
+    for zone in ss.room.calc_zones.values():
+        dims = np.array(zone.dimensions)
+        zone_dims = []
+        for dim in dims:
+            for val in dim:
+                zone_dims.append(val * factor)
+        zone.set_dimensions(*zone_dims, preserve_spacing=False)
+        if zone.calctype == "Plane":
+            zone.set_height(zone.height * factor)
 
-    ss.room.set_dimensions(*room_dims)
-    ss["room_x"] = room_dims[0]
-    ss["room_y"] = room_dims[1]
-    ss["room_z"] = room_dims[2]
+    ss.room.set_dimensions(*room_dims, preserve_spacing=False)
+    ss["room_x"] = ss.room.x
+    ss["room_y"] = ss.room.y
+    ss["room_z"] = ss.room.z
 
-    for zone_id, num_points in zone_points.items():
-        zone = ss.room.calc_zones[zone_id]
-        zone.set_num_points(*num_points)
+    # for zone_id, num_points in zone_points.items():
+        # zone = ss.room.calc_zones[zone_id]
+        # zone.set_num_points(*num_points)
 
-    ss.room.set_units(units)
+    ss.room.set_units(units, preserve_spacing=False)
 
 
 def update_precision():
@@ -390,7 +382,7 @@ def update_colormap():
 
 def update_reflections():
     """update room reflections"""
-    keys = ss.room.ref_manager.reflectances.keys()
+    keys = ss.room.ref_manager.keys()
     for key in keys:
         val = set_val(f"{key}_reflectance", ss.room.ref_manager.reflectances[key])
         ss.room.set_reflectance(val, key)
@@ -398,7 +390,8 @@ def update_reflections():
 
 def enable_reflectance():
     """Enable reflectances"""
-    ss.room.enable_reflectance = True if ss["enable_reflectance"] else False
+    enable = True if ss["enable_reflectance"] else False
+    ss.room.enable_reflectance(ss.room.enable_reflectance)
 
 
 def update_ozone():
@@ -418,7 +411,7 @@ def update_standard():
     """update what standard is used, recalculate if necessary"""
     # store whether recalculation is necessary
     RECALCULATE = False
-    if ("UL8802" in ss.room.standard) ^ ("UL8802" in ss["room_standard"]):
+    if ("UL8802" in ss.room.standard.upper()) ^ ("UL8802" in ss["room_standard"].upper()):
         RECALCULATE = True
     # update room standard
     standard = set_val("room_standard", ss.room.standard)

@@ -507,11 +507,11 @@ def update_ref_surface(zone):
     zone.set_ref_surface(ref_surface)
     if update_dims:
         if ref_surface == "xy":
-            zone.set_dimensions(0, ss.room.x, 0, ss.room.y)
+            zone.set_dimensions(x1=0, x2=ss.room.x, y1=0, y2=ss.room.y)
         elif ref_surface == "xz":
-            zone.set_dimensions(0, ss.room.x, 0, ss.room.z)
+            zone.set_dimensions(x1=0, x2=ss.room.x, y1=0, y2=ss.room.z)
         elif ref_surface == "yz":
-            zone.set_dimensions(0, ss.room.y, 0, ss.room.z)
+            zone.set_dimensions(x1=0, x2=ss.room.y, y1=0, y2=ss.room.z)
         ss[f"x1_{zone.zone_id}"] = zone.x1
         ss[f"x2_{zone.zone_id}"] = zone.x2
         ss[f"y1_{zone.zone_id}"] = zone.y1

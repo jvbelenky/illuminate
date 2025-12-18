@@ -163,7 +163,7 @@ def lamp_wavelength_options(lamp):
 def lamp_file_options(lamp):
     """widgets and plots to do with lamp file sources"""
 
-    if lamp.guv_type == "Krypton chloride (222 nm)":
+    if lamp.guv_type == "krcl":
 
         lamp_select_widget(lamp)
 
@@ -192,7 +192,7 @@ def lamp_file_options(lamp):
         else:
             lamp_upload_widget(lamp)
 
-        if lamp.guv_type == "Other":
+        if lamp.guv_type == "other":
             if lamp.filename in ss.uploaded_files:
                 if lamp.filename in ss.uploaded_spectras:
                     load_uploaded_spectra(lamp)
@@ -207,7 +207,7 @@ def lamp_info(lamp):
         top = lamp.get_total_power()
         st.write(f"Total optical output: **:violet[{round(top,1)}] mW**")
         cols = st.columns(2)
-        skinmax, eyemax = lamp.get_limits(ss.room.standard)
+        skinmax, eyemax = lamp.get_tlvs(ss.room.standard)
         cols[0].write(f"Max 8-hour skin dose: **:violet[{round(skinmax, 1)}] mJ/cm²**")
         cols[1].write(f"Max 8-hour eye dose: **:violet[{round(eyemax, 1)}] mJ/cm²**")
 

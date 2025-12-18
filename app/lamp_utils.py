@@ -3,7 +3,7 @@ from pathlib import Path
 import requests
 import json
 import matplotlib.pyplot as plt
-from guv_calcs import Lamp, Spectrum, new_lamp_position
+from guv_calcs import Lamp, Spectrum, GUVType, new_lamp_position
 from app.widget import (
     set_val,
     initialize_lamp,
@@ -59,8 +59,7 @@ def add_new_lamp(name=None, interactive=True, defaults={}):
         x=defaults.get("x", x),
         y=defaults.get("y", y),
         z=defaults.get("z", z),
-        wavelength=222,
-        guv_type="Krypton chloride (222 nm)",
+        guv_type="krcl",
     )
     new_lamp.set_tilt(defaults.get("tilt", 0))
     new_lamp.set_orientation(defaults.get("orientation", 0))
@@ -208,7 +207,7 @@ def make_file_list():
     """generate current list of lampfile options, both locally uploaded and from reports.osluv.org"""
     vendorfiles = list(ss.vendored_lamps.keys())
     uploadfiles = list(ss.uploaded_files.keys())
-    if ss.selected_lamp.guv_type == "Krypton chloride (222 nm)":
+    if ss.selected_lamp.guv_type == "krcl":
         ss.lamp_options = [None] + vendorfiles + uploadfiles + [SELECT_LOCAL]
     else:
         ss.lamp_options = [None] + uploadfiles + [SELECT_LOCAL]
@@ -273,12 +272,13 @@ def lamp_name_widget(lamp):
 
 
 def lamp_type_widget(lamp):
-    options = list(ss.guv_dict.keys())
+    guv_dict = GUVType.dict()
     return st.selectbox(
         "Lamp type",
-        options=options,
+        options=list(guv_dict.keys()),
+        format_func=lambda x: guv_dict[x],
         key=f"guv_type_{lamp.lamp_id}",
-        on_change=update_wavelength,
+        on_change=update_guv_type,
         args=[lamp],
     )
 
@@ -293,7 +293,7 @@ def lamp_select_widget(lamp):
         lamp.load_ies(filedata=None)
         # lamp.reload(filename=None, filedata=None)  # unload
         lamp.load_spectra(spectra_source=None)  # unload spectra if any
-    if lamp.guv_type == "Krypton chloride (222 nm)":
+    if lamp.guv_type == "krcl":
         helptext = "This dropdown list is populated by data from the OSLUV project 222 nm UV characterization database which may be viewed at https://reports.osluv.org/. You may also upload your own photometric and spectra files."
     else:
         helptext = "There are currently no characterized lamps for the selected lamp type. Please provide your own photometric files."
@@ -347,10 +347,11 @@ def adjust_yscale(lamp):  # ,spectrafig):
     ss.spectrafig.axes[0].set_yscale(yscale)
 
 
-def update_wavelength(lamp):
+def update_guv_type(lamp):
     """update the primary lamp wavelength / lamp type"""
-    lamp.guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
-    lamp.wavelength = ss.guv_dict[lamp.guv_type]
+    guv_type = set_val(f"guv_type_{lamp.lamp_id}", lamp.guv_type)
+    lamp.set_guv_type(guv_type)
+    # lamp.wavelength = ss.guv_dict[lamp.guv_type]
     if lamp.filename not in ss.uploaded_files:
         # lamp.reload()
         # deload filedata only if it was a prepopulated lamp
@@ -366,7 +367,8 @@ def update_wavelength_select(lamp):
     update lamp wavelength from dropdown menu (populated by UVC inactivation
     data) if the `Other` lamp type is selected
     """
-    lamp.wavelength = set_val("wavelength_select", lamp.wavelength)
+    wavelength = set_val("wavelength_select", lamp.wavelength)
+    lamp.set_wavelength(wavelength)
     if ss.show_results:
         show_results()
 
@@ -376,7 +378,8 @@ def update_custom_wavelength(lamp):
     not currently used
     update lamp wavelength by number input if the `Other` lamp type is selected
     """
-    lamp.wavelength = set_val("custom_wavelength_input", lamp.wavelength)
+    wavelength = set_val("custom_wavelength_input", lamp.wavelength)
+    lamp.set_wavelength(wavelength)
     if ss.show_results:
         show_results()
 

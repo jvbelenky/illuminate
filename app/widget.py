@@ -5,15 +5,6 @@ from guv_calcs import CalcPlane, CalcVol
 ss = st.session_state
 SELECT_LOCAL = "Select local file..."
 
-OLD_STANDARDS = [
-    "ANSI IES RP 27.1-22 (America)",
-    "ANSI IES RP 27.1-22 (America) - UL8802",
-    "IEC 62471-6:2022 (International)",
-]
-
-# initialize
-
-
 def add_keys(keys, vals):
     """initialize widgets with parameters"""
     for key, val in zip(keys, vals):
@@ -50,29 +41,13 @@ def persistent_checkbox(
     # print(ss.get('checklist_items', {}))
     return state
 
-
-def fix_room_standard():
-    """
-    older versions of illuminate had the standard options named differently;
-    this function allows for compatibility with older save files
-    """
-
-    if ss.room.standard in ss.standards:
-        pass
-    elif ss.room.standard in OLD_STANDARDS:
-        ss.room.standard = ss.standards[OLD_STANDARDS.index(ss.room.standard)]
-    else:
-        ss.room.standard = "ANSI IES RP 27.1-22 (ACGIH Limits)"
-
-
 def initialize_results():
-    fix_room_standard()
     keys = [
         "air_changes_results",
         "ozone_decay_constant_results",
         "room_standard_results",
     ]
-    vals = [ss.room.air_changes, ss.room.ozone_decay_constant, ss.room.standard]
+    vals = [ss.room.air_changes, ss.room.ozone_decay_constant, ss.room.standard.label]
     add_keys(keys, vals)
 
 
@@ -83,8 +58,6 @@ def initialize_project():
 
 
 def initialize_room():
-
-    fix_room_standard()
 
     keys = [
         "room_x",
@@ -108,13 +81,13 @@ def initialize_room():
         ss.room.y,
         ss.room.z,
         ss.room.units,
-        ss.room.standard,
+        ss.room.standard.label,
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
         ss.room.air_changes,
         ss.room.ozone_decay_constant,
-        ss.room.standard,
-        ss.room.enable_reflectance,
+        ss.room.standard.label,
+        ss.room.ref_manager.enabled,
         ss.room.ref_manager.max_num_passes,
         ss.room.ref_manager.threshold,
         ss.room.precision,
@@ -122,6 +95,7 @@ def initialize_room():
     ]
 
     # reflection options
+    
     walls = ["floor", "ceiling", "south", "north", "east", "west"]
 
     keys += [f"{key}_reflectance" for key in walls]
@@ -170,7 +144,7 @@ def initialize_lamp(lamp):
         lamp.angle,
         lamp.heading,
         lamp.bank,
-        lamp.guv_type,
+        lamp.guv_type.value,
         lamp.wavelength,
         lamp.surface.width,
         lamp.surface.length,
