@@ -99,13 +99,13 @@ def initialize_room():
     walls = ["floor", "ceiling", "south", "north", "east", "west"]
 
     keys += [f"{key}_reflectance" for key in walls]
-    vals += [ss.room.ref_manager.reflectances[key] for key in walls]
+    vals += [ss.room.surfaces[key].R for key in walls]
 
     keys += [f"{key}_x_spacing" for key in walls]
-    vals += [ss.room.ref_manager.x_spacings[key] for key in walls]
+    vals += [ss.room.surfaces[key].x_spacing for key in walls]
 
     keys += [f"{key}_y_spacing" for key in walls]
-    vals += [ss.room.ref_manager.y_spacings[key] for key in walls]
+    vals += [ss.room.surfaces[key].y_spacing for key in walls]
 
     add_keys(keys, vals)
 

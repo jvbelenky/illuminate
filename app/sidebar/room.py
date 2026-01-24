@@ -256,7 +256,7 @@ def advanced_reflection_options(keys, labels):
 
 def update_reflectance(key):
     """update the reflectance by wall key"""
-    ref = set_val(f"{key}_reflectance", ss.room.ref_manager.reflectances[key])
+    ref = set_val(f"{key}_reflectance", ss.room.surfaces[key].R)
     ss.room.set_reflectance(ref, key)
 
 
@@ -382,16 +382,16 @@ def update_colormap():
 
 def update_reflections():
     """update room reflections"""
-    keys = ss.room.ref_manager.keys()
+    keys = ss.room.surfaces.keys()
     for key in keys:
-        val = set_val(f"{key}_reflectance", ss.room.ref_manager.reflectances[key])
+        val = set_val(f"{key}_reflectance", ss.room.surfaces[key].R)
         ss.room.set_reflectance(val, key)
 
 
 def enable_reflectance():
     """Enable reflectances"""
     enable = True if ss["enable_reflectance"] else False
-    ss.room.enable_reflectance(ss.room.enable_reflectance)
+    ss.room.enable_reflectance(enable)
 
 
 def update_ozone():

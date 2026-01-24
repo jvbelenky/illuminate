@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
-from guv_calcs import Room, get_full_disinfection_table
+from guv_calcs import Room
 from app.lamp_utils import add_new_lamp, get_ies_files, get_defaults
 from app.top_ribbon import calculate
 from app.widget import initialize_zone
@@ -25,14 +25,6 @@ def initialize():
     ss.selected_zone_id = None  # no zone initially selected
     ss.uploaded_files = {}
     ss.uploaded_spectras = {}
-
-    df = get_full_disinfection_table()
-
-    wavelengths = df[df["Medium"] == "Aerosol"]["wavelength [nm]"]
-    ss.wavelength_options = list(wavelengths.sort_values().unique())
-    ss.wavelength_options.remove(222)
-    ss.wavelength_options.remove(254)
-    ss.custom_wavelength = False
 
     # load lamp list
     ss.vendored_lamps, ss.vendored_spectra, ss.reports = get_ies_files()
@@ -98,7 +90,7 @@ def room_plot():
         select_id = ss.selected_zone_id
     else:
         select_id = None
-    ss.fig = ss.room.plotly(fig=ss.fig, select_id=select_id)
+    ss.fig = ss.room.plot(fig=ss.fig, select_id=select_id)
 
     if ss.show_results:
         if ss.editing is None:
