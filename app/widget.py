@@ -341,6 +341,5 @@ def show_results():
     # format the figure and disinfection table now so we don't redo it later
     fluence = ss.room.calc_zones["WholeRoomFluence"]
     if fluence.values is not None:
-        df, fig = ss.room.get_disinfection_data(zone_id="WholeRoomFluence")
-        ss.kdf = df
-        ss.kfig = fig
+        ss.kdf = ss.room.disinfection_table(zone_id="WholeRoomFluence")
+        ss.kfig = ss.room.disinfection_plot(zone_id="WholeRoomFluence")
