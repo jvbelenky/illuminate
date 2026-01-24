@@ -385,8 +385,6 @@ def print_efficacy():
             st.pyplot(ss.kfig)
         SHOW_KDATA = st.checkbox("Show Data", value=False)
         if SHOW_KDATA:
-            new_keys = ["Link"] + [key for key in ss.kdf.keys() if "Link" not in key]
-            df = df[new_keys]
             st.data_editor(
                 ss.kdf,
                 disabled=True,
