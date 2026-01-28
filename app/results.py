@@ -52,8 +52,7 @@ def results_page():
     if skin.enabled or eye.enabled:
         print_safety()
     print_efficacy()
-    if all(["Krypton chloride" in lamp.guv_type for lamp in lamps.values()]):
-        print_airchem()
+    print_airchem()
 
     export_options()
 
@@ -426,7 +425,8 @@ def print_airchem():
         key="ozone_decay_constant_results",
         help="An initial ozone decay constant of 2.7 is typical of indoor environments (Nazaroff and Weschler; DOI: 10.1111/ina.12942); ",
     )
-    fluence_values = ss.room.calc_zones["WholeRoomFluence"].get_values()
+    
+    fluence_values = ss.room.fluence_at(wavelength=222, zone_id="WholeRoomFluence")
     if fluence_values is not None:
         ozone_ppb = calculate_ozone_increase()
         ozone_color = "red" if ozone_ppb > 5 else "blue"
