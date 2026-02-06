@@ -1,5 +1,5 @@
 import streamlit as st
-from guv_calcs.calc_zone import CalcPlane, CalcVol, CalcZone
+from guv_calcs.calc_zone import CalcPlane, CalcVol
 from app.lamp_utils import add_new_lamp
 from app.widget import (
     initialize_lamp,
@@ -174,12 +174,7 @@ def add_new_zone():
     # initialize calculation zone
     new_zone_idx = len(ss.room.calc_zones) + 1
     new_zone_id = f"CalcZone{new_zone_idx}"
-    # this zone object contains nothing but the name and ID and will be
-    # replaced by a CalcPlane or CalcVol object
-    new_zone = CalcZone(zone_id=new_zone_id, enabled=False)
-    # add to room
-    ss.room.add_calc_zone(new_zone)
-    # select for editing
+    # don't create a zone yet; the user will pick Plane or Volume in the sidebar
     ss.editing = "zones"
     ss.selected_zone_id = new_zone_id
     clear_lamp_cache()
