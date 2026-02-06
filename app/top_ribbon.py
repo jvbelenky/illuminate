@@ -56,7 +56,10 @@ def top_ribbon():
     zone_names += [zone.name for zone in ss.room.calc_zones.values()]
     zone_names += [ADD_ZONE]
     zone_ids = [None] + [zone_id for zone_id in ss.room.calc_zones.keys()] + [ADD_ZONE]
-    zone_sel_idx = zone_ids.index(ss.selected_zone_id)
+    if ss.selected_zone_id in zone_ids:
+        zone_sel_idx = zone_ids.index(ss.selected_zone_id)
+    else:
+        zone_sel_idx = 0
     c[4].selectbox(
         "Select calculation zone to edit",
         options=range(len(zone_names)),
